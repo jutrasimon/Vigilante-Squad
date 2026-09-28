@@ -19,9 +19,9 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await page.locator('[data-close="radio-dialog"]').click();
   // Both entry paths use the same screen; entering through a hero preselects them.
   if(mobile)await nora.tap();else await nora.click();
-  await expect(page.locator('#dispatch-dialog')).toBeVisible();
+  await expect(page.locator('aside #dispatch-panel')).toBeVisible();await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(page.locator('#pick-nora')).toHaveAttribute('aria-pressed','true');
-  await page.locator('[data-close="dispatch-dialog"]').click();
+  await page.locator('#dispatch-back').click();
   await page.locator('#send-intervene').click({delay:650});
   await expect(page.locator('#confirm-dispatch')).toBeDisabled();
   const pickNora=page.locator('#pick-nora');
@@ -30,17 +30,18 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
    await expect(pickNora).toHaveAttribute('aria-pressed',k%2?'false':'true');
   }
   await page.locator('#pick-malik').click();
-  await expect(page.locator('#dispatch-comparison tbody tr').nth(0).locator('td').first()).toHaveText('10');
-  await expect(page.locator('#dispatch-comparison tbody tr').nth(1).locator('td').first()).toHaveText('12');
-  await expect(page.locator('#dispatch-comparison tbody tr').nth(2).locator('td').first()).toHaveText('13');
+  await expect(page.locator('[data-total="Corps"]')).toHaveText('10');
+  await expect(page.locator('[data-total="Esprit"]')).toHaveText('12');
+  await expect(page.locator('[data-total="Âme"]')).toHaveText('13');
   await page.screenshot({path:`test-results/dispatch-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await page.evaluate(()=>{(window as any).__heldButton=document.querySelector('#confirm-dispatch');(window as any).__heldAgent=document.querySelector('#agent-nora');});
   await page.waitForTimeout(750);
   expect(await page.evaluate(()=>(window as any).__heldButton===document.querySelector('#confirm-dispatch'))).toBe(true);
   await page.locator('#confirm-dispatch').click({delay:650});
-  await expect(page.locator('#dispatch-dialog')).not.toBeVisible();
+  await expect(page.locator('#dispatch-panel')).not.toBeVisible();
   await expect(page.locator('.arrival')).toContainText('en route');
   await expect(nora.locator('.hero-status')).toHaveText('Occupé · trajet');
+  await expect(nora.locator('.hero-activity')).toContainText('→ Gare Est');await expect(nora.locator('.hero-activity')).toContainText('Altercation à la gare');
   await page.locator('[data-idle="nora"]').selectOption('patrol');
   await expect(page.locator('#toast')).toContainText('Ordre reçu');
   await page.locator('#speed').click();await page.locator('#speed').click();
@@ -57,6 +58,9 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await expect.poll(async()=>Number(await page.getByRole('progressbar').getAttribute('aria-valuenow'))).toBeGreaterThan(0);
   await page.screenshot({path:`test-results/progress-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await expect(page.locator('.outcome')).toBeVisible({timeout:12000});
+  await expect(page.locator('.outcome')).toContainText('Nora + Malik');
+  await expect(page.locator('.event-history')).toContainText('Approche choisie');
+  await page.screenshot({path:`test-results/report-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await expect(nora.locator('.hero-status')).toHaveText('Patrouille');
   await expect(page.locator('[data-idle="nora"]')).toHaveValue('patrol');
   await expect(page.locator('[data-map-incident="quai"]')).toBeVisible({timeout:6000});
@@ -76,7 +80,7 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
 test('Keyboard focus remains on a button while its countdown changes',async({page})=>{
  await page.goto('/');await page.locator('#start').click();await page.locator('#send-intervene').focus();
  await page.waitForTimeout(1100);await expect(page.locator('#send-intervene')).toBeFocused();
- await page.keyboard.press('Enter');await expect(page.locator('#dispatch-dialog')).toBeVisible();
+ await page.keyboard.press('Enter');await expect(page.locator('#dispatch-panel')).toBeVisible();
  await page.locator('#pick-malik').focus();await page.keyboard.press('Enter');
  await page.locator('#confirm-dispatch').focus();await page.waitForTimeout(750);await expect(page.locator('#confirm-dispatch')).toBeFocused();
  await page.keyboard.press('Enter');await expect(page.locator('.arrival')).toBeVisible();

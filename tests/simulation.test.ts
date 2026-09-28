@@ -51,3 +51,11 @@ test('Dispatch preview uses the same team totals and condition as resolution',()
  assert.equal(s.chance(i,c),predicted);const base=s.chance(i,c);i.requirements['Âme']+=5;assert.ok(s.chance(i,c)<base);
  team[0].injured=true;assert.ok(s.chance(i,c)<base);
 });
+
+
+test('Incident report retains actual participants and the completed sequence after release',()=>{
+ const s=new Simulation();s.start();s.dispatch('gare',['malik'],'intervene');s.tick(18);const i=s.incidents[0];s.choose(i.id,'talk');s.tick(16);
+ assert.deepEqual(i.report?.names,['Malik']);assert.equal(i.agents.length,0);assert.equal(i.history.length,4);
+ assert.match(i.history[0].text,/Départ/);assert.match(i.history[1].text,/arrive/);assert.match(i.history[2].text,/Approche choisie/);assert.match(i.history[3].text,/terminée/);
+ assert.ok(i.history.every((h,k)=>!k||h.time>=i.history[k-1].time));assert.ok(i.report!.chance>=15);
+});

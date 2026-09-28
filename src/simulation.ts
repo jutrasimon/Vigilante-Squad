@@ -13,7 +13,7 @@ export function neighbours(n:number):number[]{
 export function route(from:number,to:number){const queue=[from],prev=new Map<number,number>();prev.set(from,-1);for(let i=0;i<queue.length;i++){const n=queue[i];if(n===to)break;for(const next of neighbours(n))if(!prev.has(next)){prev.set(next,n);queue.push(next);}}if(!prev.has(to))return [];const path=[to];while(path[0]!==from)path.unshift(prev.get(path[0])!);return path.slice(1);}
 export interface Agent {id:string;name:string;role:string;stats:Record<Stat,number>;tags:string[];energy:number;injured:boolean;node:number;path:number[];move:number;task:'idle'|'travel'|'patrol'|'investigate'|'mission'|'return';target?:string;intent?:'observe'|'intervene';timer:number;idleTask:IdleTask;patrolStop:number;}
 export interface Choice {id:string;label:string;stat:Stat;tag:string;duration:number;bonus:number;risk:boolean;}
-export interface Incident {requirements:Record<Stat,number>;id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}
+export interface Incident {history:{time:number;text:string}[];report?:{names:string[];chance:number;roll:number;civils:number;trust:number;injured:string[]};requirements:Record<Stat,number>;id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}
 export const choices:Record<Incident['type'],Choice[]>={
  conflict:[{id:'talk',label:'Désamorcer la confrontation',stat:'Âme',tag:'Médiation',duration:15,bonus:0,risk:false},{id:'secure',label:'Protéger les civils',stat:'Corps',tag:'Protection',duration:10,bonus:-5,risk:true}],
  rescue:[{id:'evacuate',label:'Évacuer par les escaliers',stat:'Corps',tag:'Protection',duration:16,bonus:0,risk:true},{id:'guide',label:'Guider vers le toit',stat:'Esprit',tag:'Repérage',duration:22,bonus:5,risk:false}],
@@ -33,7 +33,7 @@ export class Simulation {
  {id:'quai',title:'Montée des eaux',place:'Quai Nord',node:4,at:35,deadline:155,brief:'Un appel coupé signale de l’eau dans un immeuble.',reveal:'Deux résidents sont bloqués à l’étage. L’escalier est encore accessible.',type:'rescue'},
  {id:'transfo',title:'Panne au marché',place:'Marché des Halles',node:16,at:80,deadline:205,brief:'Des étincelles près d’une installation électrique. Des passants s’approchent.',reveal:'Un coffret endommagé alimente encore une zone inondée. Il faut isoler le danger.',type:'tech'},
  {id:'presse',title:'Une vidéo circule',place:'Place Centrale',node:12,at:130,deadline:230,brief:'Une journaliste cherche à comprendre ce qui se passe dans le quartier.',reveal:'Elle a une vidéo partielle de la nuit. Votre version peut changer le récit public.',type:'media'}
-  ].map(i=>({...i,requirements:({conflict:{Corps:8,Esprit:6,'Âme':10},rescue:{Corps:12,Esprit:10,'Âme':6},tech:{Corps:6,Esprit:12,'Âme':6},media:{Corps:4,Esprit:8,'Âme':12}} as Record<string,Record<Stat,number>>)[i.type],phase:'signal',known:false,agents:[],decisionAt:0,finishAt:0,police:false}) as Incident);
+  ].map(i=>({...i,requirements:({conflict:{Corps:8,Esprit:6,'Âme':10},rescue:{Corps:12,Esprit:10,'Âme':6},tech:{Corps:6,Esprit:12,'Âme':6},media:{Corps:4,Esprit:8,'Âme':12}} as Record<string,Record<Stat,number>>)[i.type],history:[],phase:'signal',known:false,agents:[],decisionAt:0,finishAt:0,police:false}) as Incident);
  }
  random(){this.seed=(Math.imul(1664525,this.seed)+1013904223)>>>0;return this.seed/4294967296;}
  log(text:string){this.logs.unshift({time:this.time,text});}
@@ -43,7 +43,7 @@ export class Simulation {
  dispatch(id:string,ids:string[],intent:'observe'|'intervene'){
  const i=this.incidents.find(i=>i.id===id);if(!this.started||this.ended||!i||i.at>this.time||['resolved','missed','working'].includes(i.phase))return false;
  const team=this.agents.filter(a=>ids.includes(a.id)&&this.available(a));if(!team.length)return false;
- for(const a of team){a.path=route(a.node,i.node);a.move=0;a.task='travel';a.target=id;a.intent=intent;}this.log(`${team.map(a=>a.name).join(', ')} → ${i.place}${intent==='observe'?' (enquête)':''}.`);return true;
+ for(const a of team){a.path=route(a.node,i.node);a.move=0;a.task='travel';a.target=id;a.intent=intent;}i.history.push({time:this.time,text:`Départ de ${team.map(a=>a.name).join(', ')} vers ${i.place}${intent==='observe'?' pour enquêter':''}.`});this.log(`${team.map(a=>a.name).join(', ')} → ${i.place}${intent==='observe'?' (enquête)':''}.`);return true;
  }
  assign(id:string,task:'patrol'|'investigate'|'return'){
  const a=this.agents.find(a=>a.id===id);if(!this.started||this.ended||!a||!['idle','patrol','investigate','return'].includes(a.task)||(task!=='return'&&a.energy<15))return false;
@@ -77,7 +77,7 @@ export class Simulation {
  this.log(`${a.name} croise une alerte à ${i.place} et s’engage.`);return true;
  }
  engage(a:Agent,i:Incident){
- a.task='mission';if(!i.agents.includes(a.id))i.agents.push(a.id);a.energy=Math.max(0,a.energy-5);
+ i.history.push({time:this.time,text:`${a.name} arrive sur place.`});a.task='mission';if(!i.agents.includes(a.id))i.agents.push(a.id);a.energy=Math.max(0,a.energy-5);
  if(i.phase==='signal'){i.phase='decision';i.decisionAt=this.time;this.log(`${a.name} sur place à ${i.place}. ${i.reveal}`);}
  }
  progress(i:Incident){return i.phase==='resolved'?100:i.phase==='working'&&i.choice?Math.max(0,Math.min(100,100*(1-(i.finishAt-this.time)/i.choice.duration))):0;}
@@ -89,13 +89,13 @@ export class Simulation {
  const penalty=team.reduce((n,a)=>n+(a.injured?15:0)+(a.energy<35?10:0)+(i.type==='conflict'&&a.tags.includes('Nerveuse')?10:0),0);
  return Math.max(15,Math.min(95,50+(total-i.requirements[c.stat])*5+specialist-penalty+(i.known?10:0)+c.bonus));
  }
- choose(id:string,choice:string,automatic=false){const i=this.incidents.find(i=>i.id===id);if(!i||i.phase!=='decision'||!this.started||this.ended)return false;const c=choices[i.type].find(c=>c.id===choice);if(!c)return false;i.choice=c;i.phase='working';i.finishAt=this.time+c.duration;this.log(`${automatic?'Décision autonome : ':''}${i.place} — ${c.label}.`);return true;}
+ choose(id:string,choice:string,automatic=false){const i=this.incidents.find(i=>i.id===id);if(!i||i.phase!=='decision'||!this.started||this.ended)return false;const c=choices[i.type].find(c=>c.id===choice);if(!c)return false;i.choice=c;i.phase='working';i.finishAt=this.time+c.duration;i.history.push({time:this.time,text:`${automatic?'Choix automatique':'Approche choisie'} : ${c.label} (${c.duration} s).`});this.log(`${automatic?'Décision autonome : ':''}${i.place} — ${c.label}.`);return true;}
  release(i:Incident){for(const a of this.agents.filter(a=>a.target===i.id)){this.resumeIdle(a);}i.agents=[];}
  resolve(i:Incident){const c=i.choice!;const chance=this.chance(i,c);const roll=Math.floor(this.random()*100)+1;const success=roll<=chance;const team=this.team(i);i.success=success;i.phase='resolved';i.outcome=`${success?'Réussite':'Résultat partiel'} · jet ${roll} / ${chance}%.`;
  for(const a of team){a.energy=Math.max(0,a.energy-18);if(!success&&c.risk){a.injured=true;a.energy=Math.max(0,a.energy-12);}}
  if(i.type==='media'){this.trust+=success?2:-1;i.outcome+=success?' Votre version est diffusée.':' Le reportage reste défavorable.';}else{this.saved+=success?2:1;this.trust+=success?1:0;i.outcome+=success?' Deux civils mis en sécurité.':' Un civil aidé; la situation reste dégradée.';}
  if(!success&&c.risk)i.outcome+=' Blessure légère dans l’équipe.';
- this.log(`${i.place} — ${i.outcome}`);this.release(i);
+ i.report={names:team.map(a=>a.name),chance,roll,civils:i.type==='media'?0:success?2:1,trust:i.type==='media'?(success?2:-1):(success?1:0),injured:!success&&c.risk?team.map(a=>a.name):[]};i.history.push({time:this.time,text:success?'Action terminée : réussite.':'Action terminée : résultat partiel.'});this.log(`${i.place} — ${i.outcome}`);this.release(i);
  }
  advanceAgent(a:Agent,dt:number){
  if(a.task==='patrol'){a.energy=Math.max(0,a.energy-dt*.15);if(a.energy<15)this.resumeIdle(a);}
@@ -105,7 +105,7 @@ export class Simulation {
  if(a.task==='travel'){
  const i=this.incidents.find(i=>i.id===a.target)!;
  if(['resolved','missed'].includes(i.phase)){this.resumeIdle(a);return;}
- if(a.intent==='observe'){i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, enquête à ${i.place} : ${i.reveal}`);this.resumeIdle(a);return;}
+ if(a.intent==='observe'){i.history.push({time:this.time,text:`${a.name} termine son enquête : renseignements obtenus.`});i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, enquête à ${i.place} : ${i.reveal}`);this.resumeIdle(a);return;}
  this.engage(a,i);
  }
  if(a.task==='patrol')this.patrolRoute(a);

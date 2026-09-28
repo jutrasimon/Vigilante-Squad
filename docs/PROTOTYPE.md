@@ -91,3 +91,12 @@ Intervenir ouvre la préparation sans héros présélectionné. Cliquer un héro
 Valeurs de test des exigences Corps / Esprit / Âme : conflit 8/6/10, secours 12/10/6, technique 6/12/6, médias 4/8/12. Nouvelle formule prototype cohérente avec les totaux : 50 + 5 × (total de l’attribut utilisé − exigence) + 15 si un spécialiste possède le talent + bonus d’approche et renseignements, moins les malus de fatigue/blessure/nervosité. Bornée à 15–95 %. Les exigences des autres attributs servent à comparer les autres approches, sans bloquer l’envoi.
 
 Sur la carte, l’anneau se vide et le centre affiche les secondes restantes : fenêtre d’intervention en phase signal, temps avant choix autonome en phase décision, durée restante en phase résolution. La progression accomplie demeure affichée dans le panneau et les cartes héros.
+
+
+## Navigation et lisibilité V0.6
+
+La préparation remplace le contenu de la colonne Intervention : retour au dossier par le bouton Retour, sans popup ni blocage de la carte. Sélectionner une autre alerte quitte la préparation. Cliquer un héros libre ouvre la préparation avec lui présélectionné; cliquer un héros occupé ouvre sa mission actuelle. La destination, le délai et le nom de l’événement figurent sur sa carte.
+
+« Exigence » est remplacé par « difficulté » dans chaque approche, avec l’attribut pertinent, le total de l’équipe et une explication du calcul. Aucun changement de formule dans cette version.
+
+Le prototype comprend toujours une seule action de résolution. Le panneau distingue les états réels Trajet → Choix → Action → Bilan, décrit l’action en cours puis conserve la chronologie réelle, les participants et les conséquences. Le tirage numérique est rangé dans le détail du résultat. Ces états ne constituent pas de nouvelles phases jouables à l’intérieur de l’action.
