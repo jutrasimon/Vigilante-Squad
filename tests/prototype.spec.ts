@@ -10,7 +10,9 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   const nora=page.locator('#agent-nora');
   await expect(nora.locator('.hero-status')).toHaveText('Disponible');
   const inScreen=async(selector:string)=>expect(await page.locator(selector).evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}))).toBe(true);
-  await inScreen('.hero-status');await inScreen('#send-intervene');await inScreen('#map');
+  await inScreen('.hero-status');
+  expect(await page.locator('.agent').evaluateAll(cards=>cards.every(card=>Array.from(card.querySelectorAll('.stats b')).every(n=>n.getBoundingClientRect().bottom<=card.getBoundingClientRect().bottom)))).toBe(true);
+  await inScreen('#send-intervene');await inScreen('#map');
   await page.locator('#profiles').click();await expect(page.locator('#profiles-dialog')).toBeVisible();
   await page.locator('[data-close="profiles-dialog"]').click();
   await page.locator('#radio').click();await expect(page.locator('#radio-dialog')).toBeVisible();
