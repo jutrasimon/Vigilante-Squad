@@ -74,7 +74,7 @@ test('Map wheel zoom anchors the cursor and left/middle drag preserve selection'
  await page.goto('/');await page.locator('#start').click();await page.locator('#pause').click();
  const svg=page.locator('#map svg');
  const view=()=>svg.evaluate(n=>{const r=(n as SVGSVGElement).viewBox.baseVal;return {x:r.x,y:r.y,width:r.width,height:r.height};});
- const box=(await svg.boundingBox())!;const x=box.x+box.width*.45,y=box.y+box.height*.45;
+ const box=(await svg.boundingBox())!;const x=Math.round(box.x+box.width*.45),y=Math.round(box.y+box.height*.45);
  const world=()=>svg.evaluate((n,p)=>new DOMPoint(p.x,p.y).matrixTransform((n as SVGSVGElement).getScreenCTM()!.inverse()).toJSON(),{x,y});
  await page.mouse.move(x,y);const anchor=await world();await page.mouse.wheel(0,-350);
  await expect.poll(async()=>(await view()).width).toBeLessThan(800);
@@ -85,6 +85,7 @@ test('Map wheel zoom anchors the cursor and left/middle drag preserve selection'
   await expect(page.locator('#map')).not.toHaveClass(/panning/);
  }
  // Dragging from an actual alert must not trigger its click/recentering callback.
+ await page.locator('#alert-gare').click();
  const hit=page.locator('[data-map-incident="gare"] .map-hit');const b=(await hit.boundingBox())!;
  await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2-30,b.y+b.height/2-20,{steps:5});
  const held=await view();await page.mouse.up();expect(await view()).toEqual(held);
