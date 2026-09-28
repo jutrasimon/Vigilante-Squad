@@ -59,3 +59,12 @@ La police choisit à partir de 55 s une alerte encore non prise en charge, s’y
 ## Limites assumées
 
 Un seul quartier, quatre alertes scriptées, pas de mission à étapes multiples ou de nouvel événement déclenché par une blessure, pas d’équipement, pas d’économie, pas de coopération réseau. Patrouille et enquête de quartier sont encore trop proches (la première se déplace, la seconde reste à son point). À différencier après test plutôt que d’ajouter des sous-systèmes maintenant.
+
+
+## Interface V0.3
+
+Les cartes des héros affichent leur état (disponible, occupé en trajet ou en action, décision attendue, patrouille, enquête, retour, épuisement), leur destination et le délai restant. Toucher un héros occupé ouvre son intervention.
+
+La carte, les héros et le panneau d’intervention partagent l’écran. Sur mobile, les trois zones sont empilées; les informations secondaires défilent dans le panneau. La radio et les profils détaillés s’ouvrent dans des fenêtres dédiées. Sous 650 px de hauteur, un défilement de page reste possible.
+
+Les tests navigateur contrôlent les transitions d’état et la présence des héros et des boutons de décision dans le viewport, sur ordinateur et mobile émulé.
