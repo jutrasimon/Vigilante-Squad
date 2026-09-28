@@ -43,3 +43,11 @@ test('Resolution progress measures elapsed work and reaches 100 percent',()=>{
  const s=new Simulation();s.start();s.dispatch('gare',['malik'],'intervene');s.tick(18);const i=s.incidents[0];
  assert.equal(s.progress(i),0);s.choose(i.id,'talk');s.tick(7.5);assert.equal(s.progress(i),50);s.tick(7.5);assert.equal(s.progress(i),100);
 });
+
+
+test('Dispatch preview uses the same team totals and condition as resolution',()=>{
+ const s=new Simulation();s.start();const i=s.incidents[0],c=choices.conflict[0],team=s.agents.slice(0,2);
+ const predicted=s.chance(i,c,team);s.dispatch(i.id,team.map(a=>a.id),'intervene');s.tick(18);
+ assert.equal(s.chance(i,c),predicted);const base=s.chance(i,c);i.requirements['Âme']+=5;assert.ok(s.chance(i,c)<base);
+ team[0].injured=true;assert.ok(s.chance(i,c)<base);
+});

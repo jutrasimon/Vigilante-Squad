@@ -17,22 +17,32 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await page.locator('[data-close="profiles-dialog"]').click();
   await page.locator('#radio').click();await expect(page.locator('#radio-dialog')).toBeVisible();
   await page.locator('[data-close="radio-dialog"]').click();
-  // Real taps/clicks while the simulation is updating, not a paused UI.
-  for(let k=0;k<8;k++){
-   if(mobile)await nora.tap();else await nora.click();
-   await expect(nora).toHaveAttribute('aria-pressed',k%2?'true':'false');
-  }
-  await page.evaluate(()=>{(window as any).__heldButton=document.querySelector('#send-intervene');(window as any).__heldAgent=document.querySelector('#agent-nora');});
-  await page.waitForTimeout(750);
-  expect(await page.evaluate(()=>(window as any).__heldButton===document.querySelector('#send-intervene'))).toBe(true);
-  // Holding across several 200ms refreshes used to lose this click.
+  // Both entry paths use the same screen; entering through a hero preselects them.
+  if(mobile)await nora.tap();else await nora.click();
+  await expect(page.locator('#dispatch-dialog')).toBeVisible();
+  await expect(page.locator('#pick-nora')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-close="dispatch-dialog"]').click();
   await page.locator('#send-intervene').click({delay:650});
+  await expect(page.locator('#confirm-dispatch')).toBeDisabled();
+  const pickNora=page.locator('#pick-nora');
+  for(let k=0;k<7;k++){
+   if(mobile)await pickNora.tap();else await pickNora.click();
+   await expect(pickNora).toHaveAttribute('aria-pressed',k%2?'false':'true');
+  }
+  await page.locator('#pick-malik').click();
+  await expect(page.locator('#dispatch-comparison tbody tr').nth(0).locator('td').first()).toHaveText('10');
+  await expect(page.locator('#dispatch-comparison tbody tr').nth(1).locator('td').first()).toHaveText('12');
+  await expect(page.locator('#dispatch-comparison tbody tr').nth(2).locator('td').first()).toHaveText('13');
+  await page.screenshot({path:`test-results/dispatch-${mobile?'mobile':'desktop'}.png`,fullPage:true});
+  await page.evaluate(()=>{(window as any).__heldButton=document.querySelector('#confirm-dispatch');(window as any).__heldAgent=document.querySelector('#agent-nora');});
+  await page.waitForTimeout(750);
+  expect(await page.evaluate(()=>(window as any).__heldButton===document.querySelector('#confirm-dispatch'))).toBe(true);
+  await page.locator('#confirm-dispatch').click({delay:650});
+  await expect(page.locator('#dispatch-dialog')).not.toBeVisible();
   await expect(page.locator('.arrival')).toContainText('en route');
   await expect(nora.locator('.hero-status')).toHaveText('Occupé · trajet');
   await page.locator('[data-idle="nora"]').selectOption('patrol');
-  await expect(nora.locator('.hero-status')).toHaveText('Occupé · trajet');
   await expect(page.locator('#toast')).toContainText('Ordre reçu');
-  await expect(page.locator('#selection-label')).toHaveText('0 sélectionné');
   await page.locator('#speed').click();await page.locator('#speed').click();
   await page.waitForTimeout(700);
   expect(await page.evaluate(()=>(window as any).__heldAgent===document.querySelector('#agent-nora'))).toBe(true);
@@ -66,6 +76,9 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
 test('Keyboard focus remains on a button while its countdown changes',async({page})=>{
  await page.goto('/');await page.locator('#start').click();await page.locator('#send-intervene').focus();
  await page.waitForTimeout(1100);await expect(page.locator('#send-intervene')).toBeFocused();
+ await page.keyboard.press('Enter');await expect(page.locator('#dispatch-dialog')).toBeVisible();
+ await page.locator('#pick-malik').focus();await page.keyboard.press('Enter');
+ await page.locator('#confirm-dispatch').focus();await page.waitForTimeout(750);await expect(page.locator('#confirm-dispatch')).toBeFocused();
  await page.keyboard.press('Enter');await expect(page.locator('.arrival')).toBeVisible();
 });
 
@@ -92,4 +105,13 @@ test('Map wheel zoom anchors the cursor and left/middle drag preserve selection'
  await page.locator('#zoomout').click();await page.locator('#zoomout').click();await hit.click();
  await expect(page.locator('#incident h2')).toHaveText('Altercation à la gare');
  await page.mouse.move(x,y);await page.mouse.wheel(0,3000);await expect.poll(async()=>(await view()).width).toBeGreaterThan(held.width);
+});
+
+
+test('Alert countdown ring drains with time and pauses with the simulation',async({page})=>{
+ await page.goto('/');await page.locator('#start').click();
+ const ring=page.locator('[data-map-incident="gare"] .incident-timer');
+ const amount=async()=>parseFloat((await ring.getAttribute('stroke-dasharray'))!);
+ const before=await amount();await expect.poll(amount).toBeLessThan(before);
+ await page.locator('#pause').click();const paused=await amount();await page.waitForTimeout(500);expect(await amount()).toBe(paused);
 });

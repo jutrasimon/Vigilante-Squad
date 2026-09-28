@@ -13,7 +13,7 @@ export function neighbours(n:number):number[]{
 export function route(from:number,to:number){const queue=[from],prev=new Map<number,number>();prev.set(from,-1);for(let i=0;i<queue.length;i++){const n=queue[i];if(n===to)break;for(const next of neighbours(n))if(!prev.has(next)){prev.set(next,n);queue.push(next);}}if(!prev.has(to))return [];const path=[to];while(path[0]!==from)path.unshift(prev.get(path[0])!);return path.slice(1);}
 export interface Agent {id:string;name:string;role:string;stats:Record<Stat,number>;tags:string[];energy:number;injured:boolean;node:number;path:number[];move:number;task:'idle'|'travel'|'patrol'|'investigate'|'mission'|'return';target?:string;intent?:'observe'|'intervene';timer:number;idleTask:IdleTask;patrolStop:number;}
 export interface Choice {id:string;label:string;stat:Stat;tag:string;duration:number;bonus:number;risk:boolean;}
-export interface Incident {id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}
+export interface Incident {requirements:Record<Stat,number>;id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}
 export const choices:Record<Incident['type'],Choice[]>={
  conflict:[{id:'talk',label:'Désamorcer la confrontation',stat:'Âme',tag:'Médiation',duration:15,bonus:0,risk:false},{id:'secure',label:'Protéger les civils',stat:'Corps',tag:'Protection',duration:10,bonus:-5,risk:true}],
  rescue:[{id:'evacuate',label:'Évacuer par les escaliers',stat:'Corps',tag:'Protection',duration:16,bonus:0,risk:true},{id:'guide',label:'Guider vers le toit',stat:'Esprit',tag:'Repérage',duration:22,bonus:5,risk:false}],
@@ -33,7 +33,7 @@ export class Simulation {
  {id:'quai',title:'Montée des eaux',place:'Quai Nord',node:4,at:35,deadline:155,brief:'Un appel coupé signale de l’eau dans un immeuble.',reveal:'Deux résidents sont bloqués à l’étage. L’escalier est encore accessible.',type:'rescue'},
  {id:'transfo',title:'Panne au marché',place:'Marché des Halles',node:16,at:80,deadline:205,brief:'Des étincelles près d’une installation électrique. Des passants s’approchent.',reveal:'Un coffret endommagé alimente encore une zone inondée. Il faut isoler le danger.',type:'tech'},
  {id:'presse',title:'Une vidéo circule',place:'Place Centrale',node:12,at:130,deadline:230,brief:'Une journaliste cherche à comprendre ce qui se passe dans le quartier.',reveal:'Elle a une vidéo partielle de la nuit. Votre version peut changer le récit public.',type:'media'}
- ].map(i=>({...i,phase:'signal',known:false,agents:[],decisionAt:0,finishAt:0,police:false}) as Incident);
+  ].map(i=>({...i,requirements:({conflict:{Corps:8,Esprit:6,'Âme':10},rescue:{Corps:12,Esprit:10,'Âme':6},tech:{Corps:6,Esprit:12,'Âme':6},media:{Corps:4,Esprit:8,'Âme':12}} as Record<string,Record<Stat,number>>)[i.type],phase:'signal',known:false,agents:[],decisionAt:0,finishAt:0,police:false}) as Incident);
  }
  random(){this.seed=(Math.imul(1664525,this.seed)+1013904223)>>>0;return this.seed/4294967296;}
  log(text:string){this.logs.unshift({time:this.time,text});}
@@ -82,7 +82,13 @@ export class Simulation {
  }
  progress(i:Incident){return i.phase==='resolved'?100:i.phase==='working'&&i.choice?Math.max(0,Math.min(100,100*(1-(i.finishAt-this.time)/i.choice.duration))):0;}
  team(i:Incident){return this.agents.filter(a=>i.agents.includes(a.id)&&a.task==='mission'&&a.target===i.id);}
- chance(i:Incident,c:Choice){const team=this.team(i);if(!team.length)return 0;const scores=team.map(a=>a.stats[c.stat]*6+(a.tags.includes(c.tag)?15:0)-(a.injured?15:0)-(a.energy<35?10:0)-(i.type==='conflict'&&a.tags.includes('Nerveuse')?10:0));return Math.max(15,Math.min(95,15+Math.max(...scores)+(team.length-1)*8+(i.known?10:0)+c.bonus));}
+ chance(i:Incident,c:Choice,team:Agent[]=this.team(i)){
+ if(!team.length)return 0;
+ const total=team.reduce((n,a)=>n+a.stats[c.stat],0);
+ const specialist=team.some(a=>a.tags.includes(c.tag))?15:0;
+ const penalty=team.reduce((n,a)=>n+(a.injured?15:0)+(a.energy<35?10:0)+(i.type==='conflict'&&a.tags.includes('Nerveuse')?10:0),0);
+ return Math.max(15,Math.min(95,50+(total-i.requirements[c.stat])*5+specialist-penalty+(i.known?10:0)+c.bonus));
+ }
  choose(id:string,choice:string,automatic=false){const i=this.incidents.find(i=>i.id===id);if(!i||i.phase!=='decision'||!this.started||this.ended)return false;const c=choices[i.type].find(c=>c.id===choice);if(!c)return false;i.choice=c;i.phase='working';i.finishAt=this.time+c.duration;this.log(`${automatic?'Décision autonome : ':''}${i.place} — ${c.label}.`);return true;}
  release(i:Incident){for(const a of this.agents.filter(a=>a.target===i.id)){this.resumeIdle(a);}i.agents=[];}
  resolve(i:Incident){const c=i.choice!;const chance=this.chance(i,c);const roll=Math.floor(this.random()*100)+1;const success=roll<=chance;const team=this.team(i);i.success=success;i.phase='resolved';i.outcome=`${success?'Réussite':'Résultat partiel'} · jet ${roll} / ${chance}%.`;
