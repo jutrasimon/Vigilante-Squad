@@ -77,3 +77,8 @@ Chaque héros dispose d’une tâche par défaut : repos au QG (initialement) ou
 La patrouille suit un circuit couvrant les rues et les deux rives, sans quartiers définis. Sous 15 % d’énergie, le héros rentre se reposer; à 100 %, il reprend sa patrouille. Un héros suffisamment reposé arrivant sur le nœud d’une alerte active s’y engage automatiquement, même si cela interrompt un trajet vers une autre mission. Il attend ensuite le choix d’approche habituel; une enquête explicitement demandée reste une enquête à sa destination. Les alertes futures ou terminées ne déclenchent rien.
 
 La progression de résolution est le temps de travail écoulé depuis le choix d’approche : barre et pourcentage dans le panneau, pourcentage sur la carte et dans la liste d’alertes, petite barre sur les héros engagés. Ce pourcentage est distinct de la probabilité de réussite.
+
+
+## Navigation de la carte
+
+La roulette zoome autour du pointeur (1× à 4×). Maintenir le bouton gauche ou central permet de déplacer la carte, y compris à l’échelle initiale. Un glissement ne sélectionne pas une alerte; un clic simple la sélectionne toujours. Le déplacement au doigt reste possible sur mobile. Les boutons +/− zooment autour du centre actuel.

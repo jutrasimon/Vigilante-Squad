@@ -68,3 +68,27 @@ test('Keyboard focus remains on a button while its countdown changes',async({pag
  await page.waitForTimeout(1100);await expect(page.locator('#send-intervene')).toBeFocused();
  await page.keyboard.press('Enter');await expect(page.locator('.arrival')).toBeVisible();
 });
+
+
+test('Map wheel zoom anchors the cursor and left/middle drag preserve selection',async({page})=>{
+ await page.goto('/');await page.locator('#start').click();await page.locator('#pause').click();
+ const svg=page.locator('#map svg');
+ const view=()=>svg.evaluate(n=>{const r=(n as SVGSVGElement).viewBox.baseVal;return {x:r.x,y:r.y,width:r.width,height:r.height};});
+ const box=(await svg.boundingBox())!;const x=box.x+box.width*.45,y=box.y+box.height*.45;
+ const world=()=>svg.evaluate((n,p)=>new DOMPoint(p.x,p.y).matrixTransform((n as SVGSVGElement).getScreenCTM()!.inverse()).toJSON(),{x,y});
+ await page.mouse.move(x,y);const anchor=await world();await page.mouse.wheel(0,-350);
+ await expect.poll(async()=>(await view()).width).toBeLessThan(800);
+ const after=await world();expect(after.x).toBeCloseTo(anchor.x,1);expect(after.y).toBeCloseTo(anchor.y,1);
+ for(const button of ['left','middle'] as const){
+  const before=await view();await page.mouse.move(x,y);await page.mouse.down({button});await page.mouse.move(x+60,y+35,{steps:8});await page.mouse.up({button});
+  const next=await view();expect(next.x).toBeLessThan(before.x);expect(next.y).toBeLessThan(before.y);
+  await expect(page.locator('#map')).not.toHaveClass(/panning/);
+ }
+ // Dragging from an actual alert must not trigger its click/recentering callback.
+ const hit=page.locator('[data-map-incident="gare"] .map-hit');const b=(await hit.boundingBox())!;
+ await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2-30,b.y+b.height/2-20,{steps:5});
+ const held=await view();await page.mouse.up();expect(await view()).toEqual(held);
+ await page.locator('#zoomout').click();await page.locator('#zoomout').click();await hit.click();
+ await expect(page.locator('#incident h2')).toHaveText('Altercation à la gare');
+ await page.mouse.move(x,y);await page.mouse.wheel(0,3000);await expect.poll(async()=>(await view()).width).toBeGreaterThan(held.width);
+});
