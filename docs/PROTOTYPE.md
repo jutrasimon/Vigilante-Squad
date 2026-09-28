@@ -68,3 +68,12 @@ Les cartes des héros affichent leur état (disponible, occupé en trajet ou en 
 La carte, les héros et le panneau d’intervention partagent l’écran. Sur mobile, les trois zones sont empilées; les informations secondaires défilent dans le panneau. La radio et les profils détaillés s’ouvrent dans des fenêtres dédiées. Sous 650 px de hauteur, un défilement de page reste possible.
 
 Les tests navigateur contrôlent les transitions d’état et la présence des héros et des boutons de décision dans le viewport, sur ordinateur et mobile émulé.
+
+
+## Boucle autonome V0.4
+
+Chaque héros dispose d’une tâche par défaut : repos au QG (initialement) ou patrouille. Le sélecteur « Après » reste accessible pendant une intervention : changer la consigne ne coupe pas la mission. À sa fin, y compris après une enquête, le héros reprend cette consigne. Les boutons de groupe Patrouiller et Retour au QG changent également la consigne.
+
+La patrouille suit un circuit couvrant les rues et les deux rives, sans quartiers définis. Sous 15 % d’énergie, le héros rentre se reposer; à 100 %, il reprend sa patrouille. Un héros suffisamment reposé arrivant sur le nœud d’une alerte active s’y engage automatiquement, même si cela interrompt un trajet vers une autre mission. Il attend ensuite le choix d’approche habituel; une enquête explicitement demandée reste une enquête à sa destination. Les alertes futures ou terminées ne déclenchent rien.
+
+La progression de résolution est le temps de travail écoulé depuis le choix d’approche : barre et pourcentage dans le panneau, pourcentage sur la carte et dans la liste d’alertes, petite barre sur les héros engagés. Ce pourcentage est distinct de la probabilité de réussite.
