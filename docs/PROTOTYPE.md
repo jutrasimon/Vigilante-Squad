@@ -100,3 +100,12 @@ La préparation remplace le contenu de la colonne Intervention : retour au dossi
 « Exigence » est remplacé par « difficulté » dans chaque approche, avec l’attribut pertinent, le total de l’équipe et une explication du calcul. Aucun changement de formule dans cette version.
 
 Le prototype comprend toujours une seule action de résolution. Le panneau distingue les états réels Trajet → Choix → Action → Bilan, décrit l’action en cours puis conserve la chronologie réelle, les participants et les conséquences. Le tirage numérique est rangé dans le détail du résultat. Ces états ne constituent pas de nouvelles phases jouables à l’intérieur de l’action.
+
+
+## Lecture visuelle V0.7
+
+Tabler Icons 3.48.0 est intégré en SVG locaux; le catalogue complet (6 220 icônes) est installé par npm ci. Voir docs/assets/ICONS.md et sa licence.
+
+Les comparaisons sont des barres sur une échelle fixe 0–24 avec marqueur blanc de difficulté, couleurs d’attributs et valeurs numériques. Les attributs non utilisés par les approches sont atténués. Chaque approche affiche une jauge de probabilité, sa durée et un indicateur de blessure possible. Aucun calcul de gameplay n’a changé.
+
+L’événement montre son objectif, l’urgence, la conséquence actuelle de l’inaction (confiance −1), le niveau de renseignements et la police lorsqu’elle vise cet événement. Le bilan utilise trois indicateurs chiffrés : civils aidés, confiance, blessures. Les libellés courts et nombres restent présents pour rendre les icônes et couleurs interprétables.

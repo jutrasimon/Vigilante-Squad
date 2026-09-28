@@ -7,6 +7,8 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');await page.locator('#start').click();
   await expect(page.locator('#map svg')).toBeVisible();
+  await expect(page.locator('.objective-line')).toContainText('Mettre les civils');
+  await page.screenshot({path:`test-results/event-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   const nora=page.locator('#agent-nora');
   await expect(nora.locator('.hero-status')).toHaveText('Repos au QG');
   const inScreen=async(selector:string)=>expect(await page.locator(selector).evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}))).toBe(true);
@@ -33,6 +35,12 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await expect(page.locator('[data-total="Corps"]')).toHaveText('10');
   await expect(page.locator('[data-total="Esprit"]')).toHaveText('12');
   await expect(page.locator('[data-total="Âme"]')).toHaveText('13');
+  await expect(page.locator('#dispatch-panel .comparison-chart')).toHaveAttribute('role','img');
+  await expect(page.locator('#dispatch-panel .bullet-fill')).toHaveCount(3);
+  await expect(page.locator('#dispatch-panel .difficulty-marker')).toHaveCount(2);
+  await expect(page.locator('#dispatch-panel .dial')).toHaveCount(2);
+  await expect(page.locator('#pick-nora svg.icon-tabler')).not.toHaveCount(0);
+  await page.locator('#dispatch-comparison').scrollIntoViewIfNeeded();
   await page.screenshot({path:`test-results/dispatch-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await page.evaluate(()=>{(window as any).__heldButton=document.querySelector('#confirm-dispatch');(window as any).__heldAgent=document.querySelector('#agent-nora');});
   await page.waitForTimeout(750);
