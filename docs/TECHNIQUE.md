@@ -1,8 +1,8 @@
 # Architecture du prototype
 
-- `src/simulation.ts` : état et règles, aucune dépendance à Phaser/DOM. Générateur pseudo-aléatoire seedé, progression en sous-pas ≤0,25 s, graphe routier et trajet BFS.
-- `src/map.ts` : rendu Phaser original par formes géométriques, marqueurs mobiles, clic sur alerte et zoom limité. Carte non rasterisée.
-- `src/main.ts` : interface, commandes de jeu, horloge, radio, bilan et outils de labo.
+- `src/simulation.ts` : état et règles, aucune dépendance au rendu/DOM. Générateur pseudo-aléatoire seedé, progression en sous-pas ≤0,25 s, graphe routier et trajet BFS.
+- `src/map.ts` : carte SVG persistante, marqueurs mobiles et routes mis à jour par attributs, clic/tap/clavier sur les alertes, zoom centré sur la sélection. Aucun Canvas/WebGL ni moteur de jeu.
+- `src/main.ts` : interface HTML, commandes de jeu, horloge, radio, bilan et outils de labo. Morphdom réconcilie les panneaux par identifiants stables : les boutons ne sont pas remplacés à chaque tick.
 - `src/style.css` : interface responsive; trois portraits via atlas WebP et positions CSS.
 - `public/assets/crew.webp` : atlas original généré pour ce prototype, sans personnage de franchise.
 - `docs/art-direction` : références visuelles choisies et propositions non validées.
@@ -27,3 +27,11 @@ Les références sont conservées en JPEG à dimensions originales pour limiter 
 Hébergement principal demandé par Simon : GitHub Pages. Le workflow `.github/workflows/pages.yml` exécute les tests et le build puis publie uniquement `dist/`. Source Pages à régler sur **GitHub Actions** dans les paramètres du dépôt. Le jeton automatique du workflow ne peut pas activer Pages à la première utilisation. Aucune clé ou secret personnel à ajouter.
 
 Vite utilise `base: ./` pour que scripts, CSS et portraits fonctionnent sous `/Vigilante-Squad/`. Les références DA restent dans le dépôt et ne sont pas téléchargées par le jeu. L’ancien site ChatGPT est conservé comme archive; il n’est plus la cible des prochaines publications.
+
+## Réactivité V0.2
+
+Cause du problème V0.1 : remplacer `innerHTML` pendant un appui détruisait le bouton avant son clic. Les comparaisons de chaînes ne protégeaient pas les panneaux contenant des compteurs ou de l’énergie évoluant en continu. Phaser recréait aussi les objets texte à chaque frame.
+
+Correction : Morphdom pour conserver les nœuds HTML, identifiants stables pour les cartes/ordres/choix, SVG persistant pour la carte, animations CSS/Web Animations natives. Une seule boucle requestAnimationFrame pilote le temps et les positions; les panneaux actualisent les valeurs à 5 Hz sans détruire les contrôles. Phaser supprimé des dépendances.
+
+Poids JS de production mesuré : 1 219 ko → 28,5 ko (gzip : 328 ko → 11,5 ko), hors atlas de portraits. Ce poids ne constitue pas une mesure de latence de clic.

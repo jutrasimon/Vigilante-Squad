@@ -20,3 +20,7 @@ Pour l’exécuter ailleurs : `npx playwright install chromium`, puis `npm run t
 5. Essayer la panne électrique avec un profil adapté, puis avec un profil peu adapté.
 6. Lire le bilan; rejouer les mêmes jets, puis les varier.
 7. Sur téléphone : vérifier sélection, lecture, boutons, défilement et absence de débordement horizontal.
+
+## Régression de clics V0.2
+
+Le workflow GitHub exécute désormais trois parcours Chromium avant publication : souris desktop, tactile 390 px et maintien du focus clavier. Ils testent un appui de 650 ms traversant plusieurs mises à jour, l’identité DOM des boutons et des agents, les sélections répétées, les ordres, le cycle mission, la sélection SVG et le bilan. Des captures sont conservées dans l’artifact `interaction-checks`. Voir le résultat du workflow associé au commit pour le statut d’exécution.

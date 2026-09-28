@@ -51,4 +51,8 @@ npx playwright install chromium
 npm run test:ui
 ```
 
-Phaser 3 + TypeScript + Vite; interface HTML/CSS. Les fichiers compilés sont dans `dist/`. Publication statique possible à la racine ou dans un sous-dossier. Le manifeste `.openai/hosting.json` correspond au laboratoire privé de test.
+HTML/CSS + SVG + TypeScript + Vite; Morphdom conserve les éléments interactifs entre les mises à jour. Phaser a été retiré en V0.2. Les fichiers compilés sont dans `dist/`. Publication statique possible à la racine ou dans un sous-dossier. Le manifeste `.openai/hosting.json` correspond au laboratoire privé de test.
+
+## V0.2 — Réactivité
+
+Les boutons gardent leur identité DOM pendant les mises à jour (au lieu de remplacer les panneaux toutes les 200 ms). La carte SVG conserve ses marqueurs et textes. Retours immédiats sur sélection et ordre, désélection après envoi, animations natives et respect de la réduction des mouvements. Les tests navigateur souris, tactile et clavier bloquent la publication GitHub Pages en cas de régression.

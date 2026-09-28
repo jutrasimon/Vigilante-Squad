@@ -1,6 +1,6 @@
 {
   "name": "vigilante-squad",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "directories": {
     "doc": "docs",
@@ -24,14 +24,14 @@
     "url": "https://github.com/jutrasimon/Vigilante-Squad/issues"
   },
   "homepage": "https://github.com/jutrasimon/Vigilante-Squad#readme",
-  "dependencies": {
-    "phaser": "^3.90.0"
-  },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.1"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "morphdom": "^2.7.8"
+  }
 }
