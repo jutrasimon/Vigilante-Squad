@@ -21,3 +21,9 @@ Le moteur de simulation séparé permet une future autorité serveur, avec clien
 ## Assets et archivage
 
 Les références sont conservées en JPEG à dimensions originales pour limiter le poids Git. L’atlas runtime est converti en WebP. Aucun asset de Watchmen/Batman/Kick-Ass/SWAT n’est repris. `scripts/archive-art.py` documente les sources de session et leur conversion; il n’est pas requis pour construire le jeu depuis un clone.
+
+## Publication GitHub Pages
+
+Hébergement principal demandé par Simon : GitHub Pages. Le workflow `.github/workflows/pages.yml` exécute les tests et le build puis publie uniquement `dist/`. Source Pages à régler sur **GitHub Actions** dans les paramètres du dépôt. Le jeton automatique du workflow ne peut pas activer Pages à la première utilisation. Aucune clé ou secret personnel à ajouter.
+
+Vite utilise `base: ./` pour que scripts, CSS et portraits fonctionnent sous `/Vigilante-Squad/`. Les références DA restent dans le dépôt et ne sont pas téléchargées par le jeu. L’ancien site ChatGPT est conservé comme archive; il n’est plus la cible des prochaines publications.

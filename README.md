@@ -4,6 +4,12 @@ Prototype jetable de dispatch de justiciers, en temps réel, **web et mobile fir
 
 ## Jouer
 
+Hébergement cible : **GitHub Pages**, indépendant de ChatGPT. Adresse attendue après activation : https://jutrasimon.github.io/Vigilante-Squad/
+
+Le workflow [Publish playable prototype](.github/workflows/pages.yml) teste, compile et publie automatiquement chaque modification de `main`. Première activation : **Settings → Pages → Build and deployment → Source : GitHub Actions**. Si le premier déploiement a échoué avant cette activation, relancer le workflow depuis Actions.
+
+### Lancer localement
+
 ```sh
 npm ci
 npm run dev
