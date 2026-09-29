@@ -21,3 +21,6 @@ Ruban : permutation complète de 1–100 (70 verts, 30 rouges), trois copies pou
 
 ## Troisième itération — arrêts
 Ruban : une fois sur deux, dépassement d’une case puis recul amorti vers le vrai résultat. Grille : 24 sauts à cadence régulière, nœuds DOM mis en cache et retrait des transitions de halo pour éviter les pauses perçues. Compteur : pop de 420 ms, résultat conservé 1,1 s avant le bilan. Curseur : trois inversions maximum, durée de chaque déplacement proportionnelle à la distance et interpolation douce ; les résultats extrêmes disposent ainsi du temps nécessaire. Les autres variantes gardent leur résultat 650 ms. Ces pauses suivent la durée d’animation choisie.
+
+## Quatrième itération — cadence et continuité
+Grille : échéancier explicite de 24 intervalles croissants (rapport 1 à 4), résultat final inclus dans la même séquence. Sa durée d’affichage est au moins celle du dernier intervalle. Curseur : trajectoire sinusoïdale amortie unique, vitesse initiale nulle, transition continue vers la cible avec vitesse finale nulle ; suppression des arrêts à chaque point intermédiaire.

@@ -25,17 +25,18 @@ const hops=shuffled(cells.filter(v=>v!==result)).slice(0,24).concat(result);
 const gridNodes=Array.from(document.querySelectorAll<HTMLElement>('.grid span'));
 const gridByValue=new Map(cells.map((v,i)=>[v,gridNodes[i]]));let activeCell:HTMLElement|undefined;
 const rebound=Math.random()<.5;
-// Give the final leg time proportional to its distance, including extreme results.
-const cursorStops=[1,95,54,79,result];
-const weights=cursorStops.slice(1).map((v,i)=>Math.max(12,Math.abs(v-cursorStops[i])));
-const weightTotal=weights.reduce((a,b)=>a+b,0);
+// All grid beats, including the final result, share the same increasing intervals.
+const intervals=Array.from({length:hops.length-1},(_,i)=>1+3*Math.pow(i/(hops.length-2),1.6));
+const intervalTotal=intervals.reduce((a,b)=>a+b,0);let beatSum=0;
+const beats=[0,...intervals.map(v=>(beatSum+=v)/intervalTotal)];beats[beats.length-1]=1;
 const smooth=(u:number)=>u*u*u*(u*(u*6-15)+10);
-function cursorAt(t:number){let distance=t*weightTotal;for(let i=0;i<weights.length;i++){if(distance<=weights[i]||i===weights.length-1)return cursorStops[i]+(cursorStops[i+1]-cursorStops[i])*smooth(Math.min(1,distance/weights[i]));distance-=weights[i];}return result;}
-const hold=duration===0?0:variant===2?1100:650;
+// One damped trajectory: continuous velocity, no stop/restart at waypoints.
+function cursorAt(t:number){const w=3*Math.PI;const oscillation=70-69*Math.exp(-3*t)*(Math.cos(w*t)+3/w*Math.sin(w*t));const blend=smooth(Math.max(0,Math.min(1,(t-.55)/.45)));return oscillation*(1-blend)+result*blend;}
+const hold=duration===0?0:variant===2?1100:variant===1?Math.max(650,duration*intervals[intervals.length-1]/intervalTotal):650;
 const start=performance.now();let prev=-1,settled=false;
 function tick(now:number){const elapsed=now-start;const motion=duration===0?1:Math.min(1,elapsed/duration);const eased=1-Math.pow(1-motion,3);let value=result;
 if(variant===0){let position;if(rebound){const u=Math.min(1,motion/.8);position=begin+(end+1-begin)*(1-Math.pow(1-u,3));if(motion>.8)position=end+1-smooth((motion-.8)/.2);}else position=begin+(end-begin)*eased;$('.ribbon-track').style.transform=`translateX(calc(50% - ${position*64+32}px))`;value=ribbon[Math.round(position)];}
-if(variant===1){const hop=Math.min(hops.length-1,Math.floor(motion*(hops.length-1)));value=hops[hop];if(value!==prev){activeCell?.classList.remove('lit');activeCell=gridByValue.get(value);activeCell?.classList.add('lit');}}
+if(variant===1){let hop=0;while(hop<beats.length-1&&motion>=beats[hop+1])hop++;value=hops[hop];if(value!==prev){activeCell?.classList.remove('lit');activeCell=gridByValue.get(value);activeCell?.classList.add('lit');}}
 if(variant===2){const position=Math.round((200+result)*eased);value=position%100||100;const digits=String(value%100).padStart(2,'0');$('.counter').classList.toggle('good',value<=70);$('.counter').classList.toggle('bad',value>70);document.querySelectorAll('.counter span').forEach((el,i)=>el.textContent=digits[i]);}
 if(variant===3){const position=cursorAt(motion);value=Math.round(position);$('.threshold b').style.left=`${position-.5}%`;$('.cursor-value').textContent=String(value);$('.cursor-value').style.color=value<=70?'var(--green)':'var(--red)';}
 if(motion===1&&!settled){settled=true;$('#status').textContent=`Jet : ${result} · ${result<=70?'réussite':'résultat partiel'}`;if(variant===2)$('.counter').classList.add('landed');}
