@@ -24,3 +24,7 @@ Pour l’exécuter ailleurs : `npx playwright install chromium`, puis `npm run t
 ## Régression de clics V0.2
 
 Le workflow GitHub exécute désormais trois parcours Chromium avant publication : souris desktop, tactile 390 px et maintien du focus clavier. Ils testent un appui de 650 ms traversant plusieurs mises à jour, l’identité DOM des boutons et des agents, les sélections répétées, les ordres, le cycle mission, la sélection SVG et le bilan. Des captures sont conservées dans l’artifact `interaction-checks`. Voir le résultat du workflow associé au commit pour le statut d’exécution.
+
+
+## V0.8 — téléphones courts
+Navigation Carte / Intervention, équipe compacte persistante, commandes hors du contenu défilant. Cas Chromium tactile 360×640, 390×700 et 320×568, avec réduction supplémentaire de hauteur pendant la préparation. Vérification des dimensions de carte, cibles tactiles, visibilité réelle des boutons par hit-test et absence de débordement. Captures de carte, événement et préparation dans les artefacts CI. Émulation navigateur, pas validation sur appareil physique.

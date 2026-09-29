@@ -56,14 +56,14 @@ export function createMap(parent:string,getSim:()=>Simulation,onSelect:(id:strin
  window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
  host.addEventListener('lostpointercapture',endDrag);
  host.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
- function update(){const s=getSim();
-  for(const i of s.incidents){const n=incidentNodes.get(i.id)!;const visible=i.at<=s.time&&!['resolved','missed'].includes(i.phase);n.style.display=visible?'':'none';if(!visible)continue;const chosen=i.id===getSelected();n.classList.toggle('selected',chosen);n.classList.toggle('in-progress',i.phase==='working');n.classList.toggle('needs-choice',i.phase==='decision');n.setAttribute('aria-pressed',String(chosen));const duration=i.phase==='signal'?i.deadline-i.at:i.phase==='decision'?30:i.choice?.duration??1;
+ function update(){const s=getSim();const symbolScale=matchMedia('(max-width:760px)').matches?Math.max(1,Math.min(3,.85/(svg.getScreenCTM()?.a||1))):1;
+  for(const i of s.incidents){const n=incidentNodes.get(i.id)!;const visible=i.at<=s.time&&!['resolved','missed'].includes(i.phase);n.style.display=visible?'':'none';if(!visible)continue;const anchor=position(i.node);n.setAttribute('transform',`translate(${anchor.x} ${anchor.y}) scale(${symbolScale})`);const chosen=i.id===getSelected();n.classList.toggle('selected',chosen);n.classList.toggle('in-progress',i.phase==='working');n.classList.toggle('needs-choice',i.phase==='decision');n.setAttribute('aria-pressed',String(chosen));const duration=i.phase==='signal'?i.deadline-i.at:i.phase==='decision'?30:i.choice?.duration??1;
    const remaining=Math.max(0,(i.phase==='signal'?i.deadline:i.phase==='decision'?i.decisionAt+30:i.finishAt)-s.time);
    const fraction=Math.max(0,Math.min(1,remaining/duration));
    n.querySelector('.incident-timer')!.setAttribute('stroke-dasharray',`${fraction*100} 100`);
    n.classList.toggle('urgent',fraction<.25);n.querySelector('.incident-symbol')!.textContent=String(Math.ceil(remaining));
    n.setAttribute('aria-label',`${i.title}, ${Math.ceil(remaining)} secondes restantes${i.phase==='working'?', résolution en cours':i.phase==='decision'?', décision attendue':''}`);}
-  const updateUnit=(id:string,n:number,path:number[],move:number,offset:number)=>{const p=position(n),q=path.length?position(path[0]):p;const x=p.x+(q.x-p.x)*move,y=p.y+(q.y-p.y)*move;const nodes=unitNodes.get(id)!;nodes.marker.setAttribute('transform',`translate(${x+offset} ${y-10})`);nodes.path.setAttribute('d',path.length?`M${x} ${y} `+path.map(n=>{const p=position(n);return `L${p.x} ${p.y}`;}).join(' '):'');};
+  const updateUnit=(id:string,n:number,path:number[],move:number,offset:number)=>{const p=position(n),q=path.length?position(path[0]):p;const x=p.x+(q.x-p.x)*move,y=p.y+(q.y-p.y)*move;const nodes=unitNodes.get(id)!;nodes.marker.setAttribute('transform',`translate(${x+offset*symbolScale} ${y-10*symbolScale}) scale(${symbolScale})`);nodes.path.setAttribute('d',path.length?`M${x} ${y} `+path.map(n=>{const p=position(n);return `L${p.x} ${p.y}`;}).join(' '):'');};
   s.agents.forEach((a,k)=>updateUnit(a.id,a.node,a.path,a.move,k*17-17));updateUnit('police',s.police.node,s.police.path,s.police.move,0);
  }
  update();return{update,focus:camera,zoom:(delta:number)=>zoom(level+delta)};

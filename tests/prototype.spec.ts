@@ -14,7 +14,9 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   const inScreen=async(selector:string)=>expect(await page.locator(selector).evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}))).toBe(true);
   await inScreen('.hero-status');await inScreen('[data-idle]');
   expect(await page.locator('.agent').evaluateAll(cards=>cards.every(card=>Array.from(card.querySelectorAll('.stats b')).every(n=>n.getBoundingClientRect().bottom<=card.getBoundingClientRect().bottom)))).toBe(true);
-  await inScreen('#send-intervene');await inScreen('#map');
+  await inScreen('#map');
+  if(mobile)await page.locator('#view-intervention').tap();
+  await inScreen('#send-intervene');
   await page.locator('#profiles').click();await expect(page.locator('#profiles-dialog')).toBeVisible();
   await page.locator('[data-close="profiles-dialog"]').click();
   await page.locator('#radio').click();await expect(page.locator('#radio-dialog')).toBeVisible();
@@ -71,6 +73,7 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await page.screenshot({path:`test-results/report-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await expect(nora.locator('.hero-status')).toHaveText('Patrouille');
   await expect(page.locator('[data-idle="nora"]')).toHaveValue('patrol');
+  if(mobile)await page.locator('#view-map').tap();
   await expect(page.locator('[data-map-incident="quai"]')).toBeVisible({timeout:6000});
   await page.locator('#pause').click();
   await expect(page.locator('#pause')).toHaveText('Reprendre');
@@ -126,4 +129,26 @@ test('Alert countdown ring drains with time and pauses with the simulation',asyn
  const amount=async()=>parseFloat((await ring.getAttribute('stroke-dasharray'))!);
  const before=await amount();await expect.poll(amount).toBeLessThan(before);
  await page.locator('#pause').click();const paused=await amount();await page.waitForTimeout(500);expect(await amount()).toBe(paused);
+});
+
+for(const viewport of [{width:360,height:640},{width:390,height:700},{width:320,height:568}])test.describe(`Short phone ${viewport.width}`,()=>{
+ test.use({viewport,hasTouch:true,isMobile:true});
+ test('Map and intervention controls remain usable above browser chrome',async({page})=>{
+  await page.goto('/');await page.locator('#start').tap();await page.locator('#pause').tap();
+  const usable=async(selector:string)=>{
+   await expect(page.locator(selector)).toBeVisible();
+   expect(await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect();const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&!!hit&&el.contains(hit);})).toBe(true);
+  };
+  expect((await page.locator('#map').boundingBox())!.height).toBeGreaterThan(170);
+  expect((await page.locator('[data-map-incident="gare"] .map-hit').boundingBox())!.width).toBeGreaterThan(35);
+  await page.screenshot({path:`test-results/short-${viewport.width}-map.png`});
+  await page.locator('#alert-gare').tap();await usable('#send-intervene');
+  await page.screenshot({path:`test-results/short-${viewport.width}-event.png`});
+  await page.locator('#send-intervene').tap();await page.locator('#pick-malik').tap();await usable('#confirm-dispatch');
+  await page.locator('#dispatch-comparison').scrollIntoViewIfNeeded();
+  await page.screenshot({path:`test-results/short-${viewport.width}-prepare.png`});
+  await page.setViewportSize({width:viewport.width,height:viewport.height-40});await usable('#confirm-dispatch');
+  await page.locator('#confirm-dispatch').tap();await expect(page.locator('.arrival')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+ });
 });
