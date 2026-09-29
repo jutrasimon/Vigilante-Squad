@@ -118,3 +118,7 @@ L’événement montre son objectif, l’urgence, la conséquence actuelle de l�
 - Carte : glisser un doigt, pincer deux doigts (ancrage au centre du geste), poursuivre le glissement avec le doigt restant, bouton de réinitialisation. Pas de sélection après un geste.
 - Enquêter : trajet jusqu’au lieu, révélation immédiate et +10 points de probabilité, coût 5 énergie, puis tâche Idle. Ne résout pas l’alerte. Bouton désactivé si déjà renseigné.
 - Jauges provisoires indépendantes des attributs : Nora HP 6 / mental 8, Malik 8 / 10, Silas 10 / 6. Largeur identique, un segment par point de capacité. Blessure : -2 HP. Action terminée : -1 mental si réussite, -2 sinon. Repos QG : +0,08 HP et +0,12 mental / seconde. Blessure guérie à HP pleins. Aucun nouveau malus ou système de mort/panique introduit; seuils de santé mentale à concevoir.
+
+
+### Rencontres automatiques — 50/50
+Au passage sur le nœud d’une alerte active : 50 % intervenir, 50 % enquêter, via le générateur déterministe de la simulation. Une enquête révèle les informations, coûte 5 énergie, puis reprend la tâche Idle. Un seul tirage par passage : rester sur le nœud ne relance pas le choix. Quitter puis revenir permet une nouvelle rencontre. Les ordres explicites à destination restent inchangés.

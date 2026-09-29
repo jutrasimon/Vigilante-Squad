@@ -26,7 +26,7 @@ test('Patrol moves continuously through the map and resumes after recovery',()=>
  a.energy=99.9;s.tick(.25);assert.equal(a.task,'patrol');
 });
 test('Crossing an event interrupts travel and engages without a dispatch click',()=>{
- const s=new Simulation();s.start();const a=s.agents[0];const crossed=s.incidents[1];crossed.at=0;crossed.node=6;
+ const s=new Simulation();s.start();s.random=()=>.49;const a=s.agents[0];const crossed=s.incidents[1];crossed.at=0;crossed.node=6;
  s.dispatch('gare',[a.id],'intervene');s.tick(5.25);
  assert.equal(a.node,6);assert.equal(a.target,'quai');assert.equal(a.task,'mission');assert.equal(crossed.phase,'decision');
  assert.ok(crossed.agents.includes(a.id));assert.equal(s.incidents[0].phase,'signal');
@@ -66,4 +66,20 @@ test('Health and mental tracks record damage and recover within individual capac
  assert.equal(a.hp,a.maxHp-2);assert.equal(a.sanity,a.maxSanity-2);assert.equal(a.injured,true);
  s.tick(60);assert.equal(a.hp,a.maxHp);assert.equal(a.sanity,a.maxSanity);assert.equal(a.injured,false);
  assert.ok(s.agents[2].maxHp>a.maxHp);assert.ok(s.agents[1].maxSanity>s.agents[2].maxSanity);
+});
+
+
+test('Automatic encounter chooses investigation at 50 percent without repeatedly rolling on the spot',()=>{
+ const s=new Simulation();s.start();let rolls=0;s.random=()=>{rolls++;return .5;};
+ const a=s.agents[0],i=s.incidents[0];a.node=i.node;a.task='patrol';
+ assert.equal(s.encounter(a),true);assert.equal(rolls,1);assert.equal(i.known,true);assert.equal(i.phase,'signal');assert.equal(a.task,'return');assert.equal(a.energy,95);
+ assert.equal(s.encounter(a),false);assert.equal(rolls,1);assert.equal(i.agents.length,0);
+ a.node=7;s.encounter(a);a.node=i.node;assert.equal(s.encounter(a),true);assert.equal(rolls,2);
+});
+test('Explicit destination orders are not replaced by an automatic encounter roll',()=>{
+ for(const intent of ['observe','intervene'] as const){
+ const s=new Simulation();s.start();let rolls=0;s.random=()=>{rolls++;return .9;};
+ s.dispatch('gare',['nora'],intent);s.tick(18);assert.equal(rolls,0);
+ assert.equal(s.incidents[0].phase,intent==='observe'?'signal':'decision');
+ }
 });

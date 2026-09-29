@@ -11,7 +11,7 @@ export function neighbours(n:number):number[]{
  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const a=x+dx,b=y+dy;if(a<0||a>4||b<0||b>3)continue;if(((x===3&&a===4)||(x===4&&a===3))&&y!==1&&y!==3)continue;out.push(node(a,b));}return out;
 }
 export function route(from:number,to:number){const queue=[from],prev=new Map<number,number>();prev.set(from,-1);for(let i=0;i<queue.length;i++){const n=queue[i];if(n===to)break;for(const next of neighbours(n))if(!prev.has(next)){prev.set(next,n);queue.push(next);}}if(!prev.has(to))return [];const path=[to];while(path[0]!==from)path.unshift(prev.get(path[0])!);return path.slice(1);}
-export interface Agent {id:string;name:string;role:string;stats:Record<Stat,number>;tags:string[];energy:number;hp:number;maxHp:number;sanity:number;maxSanity:number;injured:boolean;node:number;path:number[];move:number;task:'idle'|'travel'|'patrol'|'investigate'|'mission'|'return';target?:string;intent?:'observe'|'intervene';timer:number;idleTask:IdleTask;patrolStop:number;}
+export interface Agent {id:string;name:string;role:string;stats:Record<Stat,number>;tags:string[];energy:number;hp:number;maxHp:number;sanity:number;maxSanity:number;injured:boolean;node:number;path:number[];move:number;task:'idle'|'travel'|'patrol'|'investigate'|'mission'|'return';target?:string;intent?:'observe'|'intervene';timer:number;idleTask:IdleTask;patrolStop:number;lastEncounter?:{id:string;node:number};}
 export interface Choice {id:string;label:string;stat:Stat;tag:string;duration:number;bonus:number;risk:boolean;}
 export interface Incident {history:{time:number;text:string}[];report?:{names:string[];chance:number;roll:number;civils:number;trust:number;injured:string[]};requirements:Record<Stat,number>;id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}
 export const choices:Record<Incident['type'],Choice[]>={
@@ -70,12 +70,16 @@ export class Simulation {
  a.path=route(a.node,destination);
  }
  encounter(a:Agent){
+ if(a.lastEncounter&&a.lastEncounter.node!==a.node)a.lastEncounter=undefined;
  if(a.energy<15||a.task==='mission')return false;
- const i=this.visible().find(i=>i.node===a.node&&i.deadline>this.time&&['signal','decision','working'].includes(i.phase)&&!(a.task==='travel'&&a.target===i.id));
+ const i=this.visible().find(i=>i.node===a.node&&i.id!==a.lastEncounter?.id&&i.deadline>this.time&&['signal','decision','working'].includes(i.phase)&&!(a.task==='travel'&&a.target===i.id));
  if(!i)return false;
- a.path=[];a.move=0;a.target=i.id;a.intent='intervene';this.engage(a,i);
- this.log(`${a.name} croise une alerte à ${i.place} et s’engage.`);return true;
+ a.lastEncounter={id:i.id,node:a.node};a.path=[];a.move=0;a.target=i.id;
+ if(this.random()<.5){a.intent='intervene';this.engage(a,i);this.log(`${a.name} croise une alerte à ${i.place} et intervient (initiative).`);}
+ else{a.intent='observe';this.log(`${a.name} croise une alerte à ${i.place} et enquête (initiative).`);this.investigate(a,i);}
+ return true;
  }
+ investigate(a:Agent,i:Incident){i.history.push({time:this.time,text:`${a.name} termine son enquête : renseignements obtenus.`});i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, enquête à ${i.place} : ${i.reveal}`);this.resumeIdle(a);}
  engage(a:Agent,i:Incident){
  i.history.push({time:this.time,text:`${a.name} arrive sur place.`});a.task='mission';if(!i.agents.includes(a.id))i.agents.push(a.id);a.energy=Math.max(0,a.energy-5);
  if(i.phase==='signal'){i.phase='decision';i.decisionAt=this.time;this.log(`${a.name} sur place à ${i.place}. ${i.reveal}`);}
@@ -105,7 +109,7 @@ export class Simulation {
  if(a.task==='travel'){
  const i=this.incidents.find(i=>i.id===a.target)!;
  if(['resolved','missed'].includes(i.phase)){this.resumeIdle(a);return;}
- if(a.intent==='observe'){i.history.push({time:this.time,text:`${a.name} termine son enquête : renseignements obtenus.`});i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, enquête à ${i.place} : ${i.reveal}`);this.resumeIdle(a);return;}
+ if(a.intent==='observe'){a.lastEncounter={id:i.id,node:a.node};this.investigate(a,i);return;}
  this.engage(a,i);
  }
  if(a.task==='patrol')this.patrolRoute(a);
