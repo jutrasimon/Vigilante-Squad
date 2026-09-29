@@ -24,3 +24,7 @@ Ruban : une fois sur deux, dépassement d’une case puis recul amorti vers le v
 
 ## Quatrième itération — cadence et continuité
 Grille : échéancier explicite de 24 intervalles croissants (rapport 1 à 4), résultat final inclus dans la même séquence. Sa durée d’affichage est au moins celle du dernier intervalle. Curseur : trajectoire sinusoïdale amortie unique, vitesse initiale nulle, transition continue vers la cible avec vitesse finale nulle ; suppression des arrêts à chaque point intermédiaire.
+
+## Cinquième itération — préparation et confirmation
+Préparation remplacée par les attributs réels de Malik (6/4/8) et Silas (8/6/3), additionnés en 14/10/11, avec barres empilées par héros. Le scénario du gym utilise une exigence illustrative de 12 Corps : 14 − 12 = +2, soit +10 points. Base 50 + avantage 10 + Protection 15 − approche risquée 5 = 70 %. Les paramètres du jeu principal ne changent pas.
+Ruban et grille : pop / halo pulsant sur la sélection finale, pause de 1,5 seconde avant bilan. Curseur : une oscillation supplémentaire conservant une trajectoire continue.

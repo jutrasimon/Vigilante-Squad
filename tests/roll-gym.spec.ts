@@ -2,6 +2,8 @@ import {test,expect} from '@playwright/test';
 for(const width of [320,390,1365])test(`roll gym ${width}`,async({page})=>{
  await page.setViewportSize({width,height:850});
  await page.goto('/roll-gym.html');
+ await expect(page.locator('.stat-sum.used')).toContainText('14');
+ await page.screenshot({path:`test-results/gym-prep-${width}.png`,fullPage:true});
  await page.selectOption('#duration','1200');
  for(let variant=0;variant<4;variant++){
   await page.locator(`[data-variant="${variant}"]`).click();
