@@ -28,3 +28,6 @@ Grille : échéancier explicite de 24 intervalles croissants (rapport 1 à 4), r
 ## Cinquième itération — préparation et confirmation
 Préparation remplacée par les attributs réels de Malik (6/4/8) et Silas (8/6/3), additionnés en 14/10/11, avec barres empilées par héros. Le scénario du gym utilise une exigence illustrative de 12 Corps : 14 − 12 = +2, soit +10 points. Base 50 + avantage 10 + Protection 15 − approche risquée 5 = 70 %. Les paramètres du jeu principal ne changent pas.
 Ruban et grille : pop / halo pulsant sur la sélection finale, pause de 1,5 seconde avant bilan. Curseur : une oscillation supplémentaire conservant une trajectoire continue.
+
+## Sixième itération — calcul vertical
+Suppression du tableau des trois attributs. Un seul bloc : héros 14 contre exigence 12, écart +2 et conversion +10 points sur la même ligne ; puis base +50, mot-clé Protection +15 (une fois), mot-clé d’approche Risquée −5, total 70 %. Le mot-clé Risquée nomme le modificateur existant du gym, sans nouvelle règle dans le jeu. Compteur : pop doux de 800 ms et halo. Curseur : pop et halo sur chiffre / curseur final. Pause de résultat commune de 1,5 s.
