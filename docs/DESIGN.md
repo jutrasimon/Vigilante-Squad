@@ -9,7 +9,7 @@ L’idée initiale d’infiltration tactique à la SWAT et le thème éco-terror
 ## Personnages
 
 - Base retenue : **Corps, Esprit, Âme** (inspiration Tri-Stat; noms conservés).
-- Tags pour compétences, talents et défauts dans une couche unifiée. Profils multidimensionnels, pas de classe « hacker » exclusive.
+- Tags pour compétences, TAGs et défauts dans une couche unifiée. Profils multidimensionnels, pas de classe « hacker » exclusive.
 - Parcours de vie comme justification thématique, pas comme nouvelle mécanique imposée.
 - Différences possibles d’expertise, vitesse, sang-froid, condition physique, coût et engagement; tous ces axes ne doivent pas devenir des stats distinctes par défaut.
 - Les valeurs, formules et effets de cette V0.1 sont des hypothèses de test, pas une transcription officielle de Tri-Stat.
