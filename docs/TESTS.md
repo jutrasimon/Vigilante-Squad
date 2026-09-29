@@ -2,7 +2,7 @@
 
 ## Exécuté avec succès
 
-- `npm test` : 8 tests de simulation (trajets et ponts, cycle complet, enquête, autonomie/fin de nuit, interdiction de double affectation, police indépendante, reproductibilité des jets, retour au QG même sans énergie).
+- `npm test` : 8 tests de simulation (trajets et ponts, cycle complet, repérage, autonomie/fin de nuit, interdiction de double affectation, police indépendante, reproductibilité des jets, retour au QG même sans énergie).
 - `npm run build` : vérification TypeScript stricte et compilation Vite réussies.
 
 ## Non exécuté dans cet environnement
@@ -15,7 +15,7 @@ Pour l’exécuter ailleurs : `npx playwright install chromium`, puis `npm run t
 
 1. Commencer la nuit, envoyer Nora et Malik à la gare.
 2. Choisir la médiation; observer trajet, chance affichée, durée, jet et libération des agents.
-3. Envoyer un agent enquêter sur le quai, puis un autre intervenir; vérifier l’effet du renseignement.
+3. Envoyer un agent en repérage sur le quai, puis un autre intervenir; vérifier l’effet du renseignement.
 4. Laisser une alerte à la police et un agent en patrouille.
 5. Essayer la panne électrique avec un profil adapté, puis avec un profil peu adapté.
 6. Lire le bilan; rejouer les mêmes jets, puis les varier.

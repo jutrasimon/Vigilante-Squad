@@ -18,7 +18,7 @@ L’idée initiale d’infiltration tactique à la SWAT et le thème éco-terror
 
 Inclure secours, violences, enquêtes, incidents techniques, catastrophes naturelles, émeutes et relations médias. Les autorités ne sont pas simplement des obstacles statiques.
 
-Hors mission : patrouiller et enquêter suffisent comme base. Les affectations plus spécifiques restent ouvertes.
+Hors mission : repos au QG ou patrouille. Sur une alerte, le repérage révèle les renseignements et accorde provisoirement +10 points de réussite. « Enquête » désigne un type de mission, pas cette action préparatoire.
 
 ## Direction artistique
 

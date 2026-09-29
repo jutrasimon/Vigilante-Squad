@@ -11,8 +11,8 @@ But : fermer la boucle **alerte → déplacement → découverte → choix → j
 | Agents | Nora, Malik, Silas |
 | Attributs | Corps / Esprit / Âme, valeurs provisoires sur 10 |
 | Trajet | 5 s par segment; Silas à 85% à cause de son genou |
-| Information | Enquête ciblée : déplacement puis révélation, +10 points de probabilité |
-| Patrouille / enquête de quartier | Un renseignement sur une alerte inconnue toutes les 20 s |
+| Information | Repérage ciblé : déplacement puis révélation, +10 points de probabilité |
+| Patrouille / repérage de quartier | Un renseignement sur une alerte inconnue toutes les 20 s |
 | Décision autonome | Après 30 s sur place, approche ayant la probabilité la plus élevée |
 | Renfort | Possible pendant le choix; pas une fois l’action lancée |
 | Fatigue | -5 à l’arrivée, -18 à l’action; blessures risquées : -12 supplémentaires |
@@ -51,19 +51,19 @@ La police choisit à partir de 55 s une alerte encore non prise en charge, s’y
 ## Ce qu’il faut observer
 
 - Choisit-on un profil, ou seulement l’agent le plus proche ?
-- Le déplacement rend-il l’enquête intéressante ou simplement trop coûteuse ?
+- Le déplacement rend-il le repérage intéressante ou simplement trop coûteuse ?
 - A-t-on le temps de lire et choisir sur téléphone ?
 - Les agents autonomes aident-ils ou privent-ils le joueur de décisions ?
 - Les résultats partiels donnent-ils envie de réagir ?
 
 ## Limites assumées
 
-Un seul quartier, quatre alertes scriptées, pas de mission à étapes multiples ou de nouvel événement déclenché par une blessure, pas d’équipement, pas d’économie, pas de coopération réseau. Patrouille et enquête de quartier sont encore trop proches (la première se déplace, la seconde reste à son point). À différencier après test plutôt que d’ajouter des sous-systèmes maintenant.
+Un seul quartier, quatre alertes scriptées, pas de mission à étapes multiples ou de nouvel événement déclenché par une blessure, pas d’équipement, pas d’économie, pas de coopération réseau. Patrouille et repérage de quartier sont encore trop proches (la première se déplace, la seconde reste à son point). À différencier après test plutôt que d’ajouter des sous-systèmes maintenant.
 
 
 ## Interface V0.3
 
-Les cartes des héros affichent leur état (disponible, occupé en trajet ou en action, décision attendue, patrouille, enquête, retour, épuisement), leur destination et le délai restant. Toucher un héros occupé ouvre son intervention.
+Les cartes des héros affichent leur état (disponible, occupé en trajet ou en action, décision attendue, patrouille, repérage, retour, épuisement), leur destination et le délai restant. Toucher un héros occupé ouvre son intervention.
 
 La carte, les héros et le panneau d’intervention partagent l’écran. Sur mobile, les trois zones sont empilées; les informations secondaires défilent dans le panneau. La radio et les profils détaillés s’ouvrent dans des fenêtres dédiées. Sous 650 px de hauteur, un défilement de page reste possible.
 
@@ -72,9 +72,9 @@ Les tests navigateur contrôlent les transitions d’état et la présence des h
 
 ## Boucle autonome V0.4
 
-Chaque héros dispose d’une tâche par défaut : repos au QG (initialement) ou patrouille. Le sélecteur « Après » reste accessible pendant une intervention : changer la consigne ne coupe pas la mission. À sa fin, y compris après une enquête, le héros reprend cette consigne. Les boutons de groupe Patrouiller et Retour au QG changent également la consigne.
+Chaque héros dispose d’une tâche par défaut : repos au QG (initialement) ou patrouille. Le sélecteur « Après » reste accessible pendant une intervention : changer la consigne ne coupe pas la mission. À sa fin, y compris après un repérage, le héros reprend cette consigne. Les boutons de groupe Patrouiller et Retour au QG changent également la consigne.
 
-La patrouille suit un circuit couvrant les rues et les deux rives, sans quartiers définis. Sous 15 % d’énergie, le héros rentre se reposer; à 100 %, il reprend sa patrouille. Un héros suffisamment reposé arrivant sur le nœud d’une alerte active s’y engage automatiquement, même si cela interrompt un trajet vers une autre mission. Il attend ensuite le choix d’approche habituel; une enquête explicitement demandée reste une enquête à sa destination. Les alertes futures ou terminées ne déclenchent rien.
+La patrouille suit un circuit couvrant les rues et les deux rives, sans quartiers définis. Sous 15 % d’énergie, le héros rentre se reposer; à 100 %, il reprend sa patrouille. Un héros suffisamment reposé arrivant sur le nœud d’une alerte active s’y engage automatiquement, même si cela interrompt un trajet vers une autre mission. Il attend ensuite le choix d’approche habituel; un repérage explicitement demandé reste un repérage à sa destination. Les alertes futures ou terminées ne déclenchent rien.
 
 La progression de résolution est le temps de travail écoulé depuis le choix d’approche : barre et pourcentage dans le panneau, pourcentage sur la carte et dans la liste d’alertes, petite barre sur les héros engagés. Ce pourcentage est distinct de la probabilité de réussite.
 
@@ -116,12 +116,12 @@ L’événement montre son objectif, l’urgence, la conséquence actuelle de l�
 - Idle : deux boutons QG / patrouille. Sur écran très court, réglage dans Profils pour conserver la carte.
 - Barre de labo retirée. Ses outils sont disponibles dans Aide > Outils de prototype.
 - Carte : glisser un doigt, pincer deux doigts (ancrage au centre du geste), poursuivre le glissement avec le doigt restant, bouton de réinitialisation. Pas de sélection après un geste.
-- Enquêter : trajet jusqu’au lieu, révélation immédiate et +10 points de probabilité, coût 5 énergie, puis tâche Idle. Ne résout pas l’alerte. Bouton désactivé si déjà renseigné.
+- Repérage : trajet jusqu’au lieu, révélation immédiate et +10 points de probabilité, coût 5 énergie, puis tâche Idle. Ne résout pas l’alerte. Bouton désactivé si déjà renseigné.
 - Jauges provisoires indépendantes des attributs : Nora HP 6 / mental 8, Malik 8 / 10, Silas 10 / 6. Largeur identique, un segment par point de capacité. Blessure : -2 HP. Action terminée : -1 mental si réussite, -2 sinon. Repos QG : +0,08 HP et +0,12 mental / seconde. Blessure guérie à HP pleins. Aucun nouveau malus ou système de mort/panique introduit; seuils de santé mentale à concevoir.
 
 
 ### Rencontres automatiques — 50/50
-Au passage sur le nœud d’une alerte active : 50 % intervenir, 50 % enquêter, via le générateur déterministe de la simulation. Une enquête révèle les informations, coûte 5 énergie, puis reprend la tâche Idle. Un seul tirage par passage : rester sur le nœud ne relance pas le choix. Quitter puis revenir permet une nouvelle rencontre. Les ordres explicites à destination restent inchangés.
+Au passage sur le nœud d’une alerte active : 50 % intervenir, 50 % effectuer un repérage, via le générateur déterministe de la simulation. Un repérage révèle les informations, coûte 5 énergie, puis reprend la tâche Idle. Un seul tirage par passage : rester sur le nœud ne relance pas le choix. Quitter puis revenir permet une nouvelle rencontre. Les ordres explicites à destination restent inchangés.
 
 
 ### Temps de décision visible

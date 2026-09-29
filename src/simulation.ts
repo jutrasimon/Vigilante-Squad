@@ -43,7 +43,7 @@ export class Simulation {
  dispatch(id:string,ids:string[],intent:'observe'|'intervene'){
  const i=this.incidents.find(i=>i.id===id);if(!this.started||this.ended||!i||i.at>this.time||['resolved','missed','working'].includes(i.phase))return false;
  const team=this.agents.filter(a=>ids.includes(a.id)&&this.available(a));if(!team.length)return false;
- for(const a of team){a.path=route(a.node,i.node);a.move=0;a.task='travel';a.target=id;a.intent=intent;}i.history.push({time:this.time,text:`Départ de ${team.map(a=>a.name).join(', ')} vers ${i.place}${intent==='observe'?' pour enquêter':''}.`});this.log(`${team.map(a=>a.name).join(', ')} → ${i.place}${intent==='observe'?' (enquête)':''}.`);return true;
+ for(const a of team){a.path=route(a.node,i.node);a.move=0;a.task='travel';a.target=id;a.intent=intent;}i.history.push({time:this.time,text:`Départ de ${team.map(a=>a.name).join(', ')} vers ${i.place}${intent==='observe'?' pour effectuer un repérage':''}.`});this.log(`${team.map(a=>a.name).join(', ')} → ${i.place}${intent==='observe'?' (repérage)':''}.`);return true;
  }
  assign(id:string,task:'patrol'|'investigate'|'return'){
  const a=this.agents.find(a=>a.id===id);if(!this.started||this.ended||!a||!['idle','patrol','investigate','return'].includes(a.task)||(task!=='return'&&a.energy<15))return false;
@@ -76,10 +76,10 @@ export class Simulation {
  if(!i)return false;
  a.lastEncounter={id:i.id,node:a.node};a.path=[];a.move=0;a.target=i.id;
  if(this.random()<.5){a.intent='intervene';this.engage(a,i);this.log(`${a.name} croise une alerte à ${i.place} et intervient (initiative).`);}
- else{a.intent='observe';this.log(`${a.name} croise une alerte à ${i.place} et enquête (initiative).`);this.investigate(a,i);}
+ else{a.intent='observe';this.log(`${a.name} croise une alerte à ${i.place} et effectue un repérage (initiative).`);this.investigate(a,i);}
  return true;
  }
- investigate(a:Agent,i:Incident){i.history.push({time:this.time,text:`${a.name} termine son enquête : renseignements obtenus.`});i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, enquête à ${i.place} : ${i.reveal}`);this.resumeIdle(a);}
+ investigate(a:Agent,i:Incident){i.history.push({time:this.time,text:`${a.name} termine son repérage : renseignements obtenus.`});i.known=true;a.energy=Math.max(0,a.energy-5);this.log(`${a.name}, repérage à ${i.place} : ${i.reveal}`);this.resumeIdle(a);}
  engage(a:Agent,i:Incident){
  i.history.push({time:this.time,text:`${a.name} arrive sur place.`});a.task='mission';if(!i.agents.includes(a.id))i.agents.push(a.id);a.energy=Math.max(0,a.energy-5);
  if(i.phase==='signal'){i.phase='decision';i.decisionAt=this.time;this.log(`${a.name} sur place à ${i.place}. ${i.reveal}`);}
