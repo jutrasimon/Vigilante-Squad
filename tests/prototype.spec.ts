@@ -170,6 +170,7 @@ test.describe('Actual multi-touch map gestures',()=>{
  test.use({viewport:{width:390,height:700},hasTouch:true,isMobile:true});
  test('Pinch, continue dragging, reset and tap without accidental selection',async({page,context})=>{
   await page.goto('/');await page.locator('#start').tap();await testTool(page,'pause');
+  await page.evaluate(()=>{(window as any).__pointers=[];for(const type of ['pointerdown','pointerup','pointercancel','pointermove'])document.querySelector('#map')!.addEventListener(type,(e)=>{const p=e as PointerEvent;(window as any).__pointers.push([type,p.pointerId,p.clientX,p.clientY]);});});
   const client=await context.newCDPSession(page),svg=page.locator('#map svg');
   const view=()=>svg.evaluate(n=>{const v=(n as SVGSVGElement).viewBox.baseVal;return {x:v.x,y:v.y,width:v.width};});
   const b=(await svg.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
@@ -177,9 +178,9 @@ test.describe('Actual multi-touch map gestures',()=>{
   await touch('touchStart',[{x:x-30,y,id:1},{x:x+30,y,id:2}]);
   for(let d=35;d<=80;d+=5)await touch('touchMove',[{x:x-d,y,id:1},{x:x+d,y,id:2}]);
   expect((await view()).width).toBeLessThan(450);
-  await touch('touchEnd',[{x:x+80,y,id:2}]);const before=await view();
+  await touch('touchEnd',[{x:x-80,y,id:1}]);const before=await view();
   await touch('touchMove',[{x:x+100,y:y+20,id:2}]);await touch('touchEnd',[]);
-  expect((await view()).x).toBeLessThan(before.x);await expect(page.locator('#view-map')).toHaveAttribute('aria-pressed','true');
+  expect((await view()).x,JSON.stringify(await page.evaluate(()=>(window as any).__pointers))).toBeLessThan(before.x);await expect(page.locator('#view-map')).toHaveAttribute('aria-pressed','true');
   await page.locator('#map-reset').tap();expect((await view()).width).toBe(800);
   const hit=page.locator('[data-map-incident="gare"] .map-hit'),r=(await hit.boundingBox())!,px=r.x+r.width/2,py=r.y+r.height/2;
   await touch('touchStart',[{x:px,y:py,id:3}]);await touch('touchMove',[{x:px-35,y:py+20,id:3}]);await touch('touchEnd',[]);
