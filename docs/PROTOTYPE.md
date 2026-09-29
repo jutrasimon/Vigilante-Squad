@@ -122,3 +122,7 @@ L’événement montre son objectif, l’urgence, la conséquence actuelle de l�
 
 ### Rencontres automatiques — 50/50
 Au passage sur le nœud d’une alerte active : 50 % intervenir, 50 % enquêter, via le générateur déterministe de la simulation. Une enquête révèle les informations, coûte 5 énergie, puis reprend la tâche Idle. Un seul tirage par passage : rester sur le nœud ne relance pas le choix. Quitter puis revenir permet une nouvelle rencontre. Les ordres explicites à destination restent inchangés.
+
+
+### Temps de décision visible
+Lors du choix d’approche, un bandeau fixe sous le titre Intervention affiche les secondes restantes et une barre qui se vide sur 30 secondes. Elle passe au corail dans les 10 dernières secondes. Le défilement des options ne masque pas le bandeau. Il disparaît quand l’action commence; pause et accélération suivent le temps de simulation.

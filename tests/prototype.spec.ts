@@ -71,10 +71,15 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   expect(await page.evaluate(()=>(window as any).__heldAgent===document.querySelector('#agent-nora'))).toBe(true);
   await expect(page.locator('[data-choice="talk"]')).toBeVisible({timeout:12000});
   await expect(nora.locator('.hero-status')).toHaveText('À décider');
+  const countdown=page.getByRole('progressbar',{name:'Temps restant pour choisir'});
+  await expect(countdown).toBeVisible();const timeLeft=Number(await countdown.getAttribute('aria-valuenow'));
+  await expect.poll(async()=>Number(await countdown.getAttribute('aria-valuenow'))).toBeLessThan(timeLeft);
+  await page.locator('[data-choice="secure"]').scrollIntoViewIfNeeded();await inScreen('#decision-timer');
+  expect(await countdown.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
   await inScreen('.hero-status');await page.locator('[data-choice="talk"]').scrollIntoViewIfNeeded();
   await page.screenshot({path:`test-results/decision-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await page.locator('[data-choice="talk"]').click({delay:650});
-  await expect(page.locator('.working')).toBeVisible();
+  await expect(page.locator('.working')).toBeVisible();await expect(page.locator('#decision-timer')).not.toBeVisible();
   await expect(nora.locator('.hero-status')).toHaveText('Occupé · action');
   await expect(page.getByRole('progressbar')).toBeVisible();
   await expect.poll(async()=>Number(await page.getByRole('progressbar').getAttribute('aria-valuenow'))).toBeGreaterThan(0);
