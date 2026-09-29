@@ -14,3 +14,7 @@ Conséquences d’exemple : réussite = 2 civils, confiance +1, mental −1 par 
 - Grille : sauts aléatoires non consécutifs, cadence décroissante, case active verte ou rouge selon sa zone.
 - Compteur : les trois chiffres deviennent verts ou rouges selon le nombre affiché, y compris pendant le tirage.
 - Curseur : montée de 1 à 97, oscillations amorties autour de 70, puis déplacement vers le résultat final. Cette chorégraphie est décorative et ne représente pas une évolution des chances.
+
+## Deuxième itération
+Navigation commune via `gyms.html`, accessible depuis le prototype principal et le gym des tirages. Préparation inspirée du diagramme de contributions, bilan en dossier avec résultat, chance et impacts sous les portraits ; le module de tirage disparaît au bilan.
+Ruban : permutation complète de 1–100 (70 verts, 30 rouges), trois copies pour le déroulement, destination choisie avant animation, parcours de 24 cases avec décélération. Grille : même ratio, disposition mélangée, cases compactes sans chiffres, parcours aléatoire préparé avec résultat en dernier. 1 et 100 ont des marqueurs critiques ; conséquences spécifiques non définies, les effets restent ceux du scénario de démonstration. Compteur : deux chiffres, 00 représente 100, pas de flou ; progression calculée jusqu’au résultat. Curseur : moins d’oscillations, valeur colorée. Toutes les variantes gardent le résultat final pendant 16 % de la durée avant le bilan, sans correction du chiffre à la dernière frame.

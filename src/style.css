@@ -169,3 +169,5 @@ footer{padding:5px 12px;align-items:center;gap:10px}.lab-label{margin-right:auto
 .decision-time-track>span{display:block;height:100%;background:currentColor;transition:width .2s linear}
 @media(max-width:760px){#decision-timer{padding:6px 8px}.decision-countdown-label{font-size:12px;margin-bottom:4px}}
 @media(prefers-reduced-motion:reduce){.decision-time-track>span{transition:none}}
+
+.gym-link{color:var(--gold);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px}
