@@ -21,14 +21,23 @@ if(variant===1)$('#stage').innerHTML=`<div class="grid">${cells.map(v=>`<span cl
 if(variant===2)$('#stage').innerHTML='<div class="counter"><span>0</span><span>0</span></div><p class="scale">01–99 · 00 = 100</p>';
 if(variant===3)$('#stage').innerHTML='<div class="cursor-value">1</div><div class="threshold"><i></i><b></b></div><div class="axis"><span>1</span><span>70</span><span>100</span></div><div class="legend"><span>✓ Réussite</span><span>! Partiel</span></div>';
 // Each timeline lands on the actual result before the reveal hold; no final override.
-const hops=shuffled(cells.filter(v=>v!==result)).slice(0,16).concat(result);
-const cursorStops=[1,96,50,82, result<=70?74:66,result];
-function cursorAt(t:number){const segment=t*(cursorStops.length-1);const index=Math.min(cursorStops.length-2,Math.floor(segment));const u=segment-index;return cursorStops[index]+(cursorStops[index+1]-cursorStops[index])*(u*u*(3-2*u));}
-const start=performance.now();let prev=-1;
-function tick(now:number){const t=duration===0?1:Math.min(1,(now-start)/duration);const motion=Math.min(1,t/.84);const eased=1-Math.pow(1-motion,3);let value=result;
-if(variant===0){const position=begin+(end-begin)*eased;$('.ribbon-track').style.transform=`translateX(calc(50% - ${position*64+32}px))`;value=ribbon[Math.round(position)];}
-if(variant===1){const hop=Math.min(hops.length-1,Math.floor(eased*hops.length));value=hops[hop];if(value!==prev){document.querySelector('.grid .lit')?.classList.remove('lit');document.querySelectorAll('.grid span')[cells.indexOf(value)].classList.add('lit');}}
+const hops=shuffled(cells.filter(v=>v!==result)).slice(0,24).concat(result);
+const gridNodes=Array.from(document.querySelectorAll<HTMLElement>('.grid span'));
+const gridByValue=new Map(cells.map((v,i)=>[v,gridNodes[i]]));let activeCell:HTMLElement|undefined;
+const rebound=Math.random()<.5;
+// Give the final leg time proportional to its distance, including extreme results.
+const cursorStops=[1,95,54,79,result];
+const weights=cursorStops.slice(1).map((v,i)=>Math.max(12,Math.abs(v-cursorStops[i])));
+const weightTotal=weights.reduce((a,b)=>a+b,0);
+const smooth=(u:number)=>u*u*u*(u*(u*6-15)+10);
+function cursorAt(t:number){let distance=t*weightTotal;for(let i=0;i<weights.length;i++){if(distance<=weights[i]||i===weights.length-1)return cursorStops[i]+(cursorStops[i+1]-cursorStops[i])*smooth(Math.min(1,distance/weights[i]));distance-=weights[i];}return result;}
+const hold=duration===0?0:variant===2?1100:650;
+const start=performance.now();let prev=-1,settled=false;
+function tick(now:number){const elapsed=now-start;const motion=duration===0?1:Math.min(1,elapsed/duration);const eased=1-Math.pow(1-motion,3);let value=result;
+if(variant===0){let position;if(rebound){const u=Math.min(1,motion/.8);position=begin+(end+1-begin)*(1-Math.pow(1-u,3));if(motion>.8)position=end+1-smooth((motion-.8)/.2);}else position=begin+(end-begin)*eased;$('.ribbon-track').style.transform=`translateX(calc(50% - ${position*64+32}px))`;value=ribbon[Math.round(position)];}
+if(variant===1){const hop=Math.min(hops.length-1,Math.floor(motion*(hops.length-1)));value=hops[hop];if(value!==prev){activeCell?.classList.remove('lit');activeCell=gridByValue.get(value);activeCell?.classList.add('lit');}}
 if(variant===2){const position=Math.round((200+result)*eased);value=position%100||100;const digits=String(value%100).padStart(2,'0');$('.counter').classList.toggle('good',value<=70);$('.counter').classList.toggle('bad',value>70);document.querySelectorAll('.counter span').forEach((el,i)=>el.textContent=digits[i]);}
 if(variant===3){const position=cursorAt(motion);value=Math.round(position);$('.threshold b').style.left=`${position-.5}%`;$('.cursor-value').textContent=String(value);$('.cursor-value').style.color=value<=70?'var(--green)':'var(--red)';}
-$('#stage').dataset.value=String(value);prev=value;if(t<1)frame=requestAnimationFrame(tick);else finish(result);}
+if(motion===1&&!settled){settled=true;$('#status').textContent=`Jet : ${result} · ${result<=70?'réussite':'résultat partiel'}`;if(variant===2)$('.counter').classList.add('landed');}
+$('#stage').dataset.value=String(value);prev=value;if(elapsed<duration+hold)frame=requestAnimationFrame(tick);else finish(result);}
 frame=requestAnimationFrame(tick);};
