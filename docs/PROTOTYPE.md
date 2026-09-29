@@ -126,3 +126,6 @@ Au passage sur le nœud d’une alerte active : 50 % intervenir, 50 % effectuer 
 
 ### Temps de décision visible
 Lors du choix d’approche, un bandeau fixe sous le titre Intervention affiche les secondes restantes et une barre qui se vide sur 30 secondes. Elle passe au corail dans les 10 dernières secondes. Le défilement des options ne masque pas le bandeau. Il disparaît quand l’action commence; pause et accélération suivent le temps de simulation.
+
+### Écran de repérage
+La préparation du repérage affiche les héros, leur état et trajet, la destination, le coût de 5 énergie et les informations obtenues (+10 points pour l’intervention), puis la reprise Idle. Les attributs, TAGs d’intervention, comparaisons de difficulté et chances par approche sont masqués dans ce mode.

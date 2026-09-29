@@ -171,3 +171,5 @@ footer{padding:5px 12px;align-items:center;gap:10px}.lab-label{margin-right:auto
 @media(prefers-reduced-motion:reduce){.decision-time-track>span{transition:none}}
 
 .gym-link{color:var(--gold);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px}
+
+#dispatch-panel.recon-mode .pick-attributes,#dispatch-panel.recon-mode .pick-talent{display:none}.recon-summary{display:grid;gap:8px;padding:12px;background:#202e35;border:1px solid #3a4a57;margin-top:12px}.recon-summary p{display:flex;align-items:center;gap:10px;margin:0;font-size:14px}.recon-summary svg{width:24px;height:24px;flex:0 0 24px;color:#91d6bd}
