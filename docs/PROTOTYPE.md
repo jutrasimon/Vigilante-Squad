@@ -109,3 +109,12 @@ Tabler Icons 3.48.0 est intégré en SVG locaux; le catalogue complet (6 220 ic�
 Les comparaisons sont des barres sur une échelle fixe 0–24 avec marqueur blanc de difficulté, couleurs d’attributs et valeurs numériques. Les attributs non utilisés par les approches sont atténués. Chaque approche affiche une jauge de probabilité, sa durée et un indicateur de blessure possible. Aucun calcul de gameplay n’a changé.
 
 L’événement montre son objectif, l’urgence, la conséquence actuelle de l’inaction (confiance −1), le niveau de renseignements et la police lorsqu’elle vise cet événement. Le bilan utilise trois indicateurs chiffrés : civils aidés, confiance, blessures. Les libellés courts et nombres restent présents pour rendre les icônes et couleurs interprétables.
+
+
+## V0.9 — équipe et tactile
+- Fiches compactes : portrait carré, HP, santé mentale, bloc unique état/lieu/temps/mission. Attributs et énergie accessibles dans Profils et préparation.
+- Idle : deux boutons QG / patrouille. Sur écran très court, réglage dans Profils pour conserver la carte.
+- Barre de labo retirée. Ses outils sont disponibles dans Aide > Outils de prototype.
+- Carte : glisser un doigt, pincer deux doigts (ancrage au centre du geste), poursuivre le glissement avec le doigt restant, bouton de réinitialisation. Pas de sélection après un geste.
+- Enquêter : trajet jusqu’au lieu, révélation immédiate et +10 points de probabilité, coût 5 énergie, puis tâche Idle. Ne résout pas l’alerte. Bouton désactivé si déjà renseigné.
+- Jauges provisoires indépendantes des attributs : Nora HP 6 / mental 8, Malik 8 / 10, Silas 10 / 6. Largeur identique, un segment par point de capacité. Blessure : -2 HP. Action terminée : -1 mental si réussite, -2 sinon. Repos QG : +0,08 HP et +0,12 mental / seconde. Blessure guérie à HP pleins. Aucun nouveau malus ou système de mort/panique introduit; seuils de santé mentale à concevoir.

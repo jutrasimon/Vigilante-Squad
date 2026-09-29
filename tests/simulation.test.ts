@@ -59,3 +59,11 @@ test('Incident report retains actual participants and the completed sequence aft
  assert.match(i.history[0].text,/Départ/);assert.match(i.history[1].text,/arrive/);assert.match(i.history[2].text,/Approche choisie/);assert.match(i.history[3].text,/terminée/);
  assert.ok(i.history.every((h,k)=>!k||h.time>=i.history[k-1].time));assert.ok(i.report!.chance>=15);
 });
+
+
+test('Health and mental tracks record damage and recover within individual capacities',()=>{
+ const s=new Simulation();s.start();const a=s.agents[0];s.dispatch('gare',[a.id],'intervene');s.tick(18);s.choose('gare','secure');s.random=()=>.99;s.tick(10);
+ assert.equal(a.hp,a.maxHp-2);assert.equal(a.sanity,a.maxSanity-2);assert.equal(a.injured,true);
+ s.tick(60);assert.equal(a.hp,a.maxHp);assert.equal(a.sanity,a.maxSanity);assert.equal(a.injured,false);
+ assert.ok(s.agents[2].maxHp>a.maxHp);assert.ok(s.agents[1].maxSanity>s.agents[2].maxSanity);
+});

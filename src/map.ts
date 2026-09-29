@@ -37,24 +37,47 @@ export function createMap(parent:string,getSim:()=>Simulation,onSelect:(id:strin
   viewX=anchor.x-(anchor.x-viewX)*old/level;viewY=anchor.y-(anchor.y-viewY)*old/level;paintCamera();
  }
  function activate(target:EventTarget|null){const n=(target as Element)?.closest<SVGGElement>('[data-map-incident]');if(n){onSelect(n.dataset.mapIncident!);}}
- host.addEventListener('click',e=>{if(suppressClick&&e.detail!==0){e.preventDefault();e.stopPropagation();suppressClick=false;return;}activate(e.target);});
+ host.addEventListener('click',e=>{if((suppressClick||performance.now()-lastTouch<500)&&e.detail!==0){e.preventDefault();e.stopPropagation();suppressClick=false;return;}activate(e.target);});
  host.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&(e.target as Element).closest('[data-map-incident]')){e.preventDefault();activate(e.target);}});
  host.addEventListener('wheel',e=>{e.preventDefault();const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?host.clientHeight:1);zoom(level*Math.exp(-Math.max(-500,Math.min(500,delta))*.002),e.clientX,e.clientY);},{passive:false});
+ const touches=new Map<number,{x:number;y:number;target:EventTarget|null}>();
+ let pinch:{distance:number;level:number;anchor:DOMPoint}|undefined,lastTouch=0;
+ function beginPinch(){const [a,b]=[...touches.values()],m=svg.getScreenCTM();if(!a||!b||!m)return;pinch={distance:Math.max(1,Math.hypot(b.x-a.x,b.y-a.y)),level,anchor:new DOMPoint((a.x+b.x)/2,(a.y+b.y)/2).matrixTransform(m.inverse())};drag=undefined;suppressClick=true;}
  host.addEventListener('pointerdown',e=>{
-  if(drag||![0,1].includes(e.button))return;
+  if(e.pointerType==='touch'){
+   e.preventDefault();touches.set(e.pointerId,{x:e.clientX,y:e.clientY,target:e.target});host.setPointerCapture(e.pointerId);
+   if(touches.size>=2){beginPinch();return;}
+  }else if(drag||![0,1].includes(e.button))return;
   if(e.button===1)e.preventDefault();suppressClick=false;
   drag={id:e.pointerId,x:e.clientX,y:e.clientY,viewX,viewY,scale:svg.getScreenCTM()?.a||1,moved:false};
  });
  host.addEventListener('pointermove',e=>{
+  if(touches.has(e.pointerId)){
+   const t=touches.get(e.pointerId)!;t.x=e.clientX;t.y=e.clientY;
+   if(pinch&&touches.size>=2){
+    e.preventDefault();const [a,b]=[...touches.values()];level=Math.max(1,Math.min(4,pinch.level*Math.hypot(b.x-a.x,b.y-a.y)/pinch.distance));paintCamera();
+    const m=svg.getScreenCTM();if(m){const p=new DOMPoint((a.x+b.x)/2,(a.y+b.y)/2).matrixTransform(m.inverse());viewX+=pinch.anchor.x-p.x;viewY+=pinch.anchor.y-p.y;paintCamera();}return;
+   }
+  }
   if(!drag||e.pointerId!==drag.id)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
-  if(!drag.moved&&Math.hypot(dx,dy)<5)return;
+  if(!drag.moved&&Math.hypot(dx,dy)<6)return;
   drag.moved=true;suppressClick=true;host.setPointerCapture(e.pointerId);host.classList.add('panning');
   viewX=drag.viewX-dx/drag.scale;viewY=drag.viewY-dy/drag.scale;paintCamera();
  });
- function endDrag(e:PointerEvent){if(!drag||e.pointerId!==drag.id)return;suppressClick=drag.moved;drag=undefined;host.classList.remove('panning');if(host.hasPointerCapture(e.pointerId))host.releasePointerCapture(e.pointerId);}
+ function endDrag(e:PointerEvent){
+  const touch=touches.get(e.pointerId);
+  if(touch){
+   const tap=e.type==='pointerup'&&!pinch&&drag?.id===e.pointerId&&!drag.moved;
+   touches.delete(e.pointerId);lastTouch=performance.now();suppressClick=true;
+   if(tap)activate(touch.target);
+   pinch=undefined;drag=undefined;
+   const rest=[...touches.entries()][0];if(rest)drag={id:rest[0],x:rest[1].x,y:rest[1].y,viewX,viewY,scale:svg.getScreenCTM()?.a||1,moved:true};
+  }else{if(!drag||e.pointerId!==drag.id)return;suppressClick=drag.moved;drag=undefined;}
+  host.classList.remove('panning');if(host.hasPointerCapture(e.pointerId))host.releasePointerCapture(e.pointerId);
+ }
  window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
- host.addEventListener('lostpointercapture',endDrag);
+ host.addEventListener('lostpointercapture',e=>{if(touches.has(e.pointerId)||drag?.id===e.pointerId)endDrag(e);});
  host.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
  function update(){const s=getSim();const symbolScale=matchMedia('(max-width:760px)').matches?Math.max(1,Math.min(3,.85/(svg.getScreenCTM()?.a||1))):1;
   for(const i of s.incidents){const n=incidentNodes.get(i.id)!;const visible=i.at<=s.time&&!['resolved','missed'].includes(i.phase);n.style.display=visible?'':'none';if(!visible)continue;const anchor=position(i.node);n.setAttribute('transform',`translate(${anchor.x} ${anchor.y}) scale(${symbolScale})`);const chosen=i.id===getSelected();n.classList.toggle('selected',chosen);n.classList.toggle('in-progress',i.phase==='working');n.classList.toggle('needs-choice',i.phase==='decision');n.setAttribute('aria-pressed',String(chosen));const duration=i.phase==='signal'?i.deadline-i.at:i.phase==='decision'?30:i.choice?.duration??1;
@@ -66,5 +89,5 @@ export function createMap(parent:string,getSim:()=>Simulation,onSelect:(id:strin
   const updateUnit=(id:string,n:number,path:number[],move:number,offset:number)=>{const p=position(n),q=path.length?position(path[0]):p;const x=p.x+(q.x-p.x)*move,y=p.y+(q.y-p.y)*move;const nodes=unitNodes.get(id)!;nodes.marker.setAttribute('transform',`translate(${x+offset*symbolScale} ${y-10*symbolScale}) scale(${symbolScale})`);nodes.path.setAttribute('d',path.length?`M${x} ${y} `+path.map(n=>{const p=position(n);return `L${p.x} ${p.y}`;}).join(' '):'');};
   s.agents.forEach((a,k)=>updateUnit(a.id,a.node,a.path,a.move,k*17-17));updateUnit('police',s.police.node,s.police.path,s.police.move,0);
  }
- update();return{update,focus:camera,zoom:(delta:number)=>zoom(level+delta)};
+ update();return{update,focus:camera,reset:()=>{level=1;viewX=0;viewY=0;paintCamera();},zoom:(delta:number)=>zoom(level+delta)};
 }

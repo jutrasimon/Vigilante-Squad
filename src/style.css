@@ -68,3 +68,91 @@ footer{padding:5px 12px;align-items:center;gap:10px}.lab-label{margin-right:auto
  #dispatch-panel{min-height:0}.prep-scroll{padding:8px;overflow-y:auto}#dispatch-panel .panel-heading{min-height:46px;padding:2px 8px}.panel-heading button{min-height:44px}#dispatch-panel .dispatch-footer{padding:6px 8px;min-height:56px}#dispatch-panel .dispatch-footer button{min-height:44px}#dispatch-panel .dispatch-footer>span{font-size:11px}#dispatch-panel .event-select{font-size:11px}#dispatch-panel .event-select select{min-height:36px}#dispatch-heroes{margin:6px 0}
 }
 @media(max-width:760px) and (max-height:590px){#app main,#app.preparing main{grid-template-rows:minmax(0,1fr) 102px}#app .agent-slot{grid-template-rows:minmax(0,1fr)}#app .idle-setting{display:none}.event-dashboard{padding:6px}.incident-head h2{font-size:21px}}
+
+/* V0.9: compact crew, unified activity, useful controls only. */
+#app{grid-template-rows:64px minmax(0,1fr)}
+#app main,#app.preparing main{grid-template-rows:minmax(0,1fr) 166px}
+#app .squad{grid-template-rows:32px minmax(0,1fr)}
+.squad .assign{display:none}
+#app #agents{padding:6px;gap:8px}
+#app .agent-slot{display:grid;grid-template-columns:minmax(0,1fr) 98px;grid-template-rows:minmax(0,1fr);gap:4px}
+#app .agent-slot .agent{height:100%;display:grid;grid-template-columns:112px minmax(0,1fr);grid-template-rows:48px 44px;gap:5px 10px;padding:6px;align-content:center}
+#app .agent-top{grid-column:1;grid-row:1;display:flex;gap:7px;align-items:center}
+#app .agent-name{font-size:19px;display:block;margin:0;min-width:0}
+#app .portrait,#app .agent-top .portrait,#app #dispatch-panel .hero-pick-head .portrait{aspect-ratio:1;width:44px;height:44px;flex:0 0 44px;background-size:300% 100%}
+#app .hero-current{grid-column:2;grid-row:1/-1;min-width:0;padding:7px;border-left:3px solid currentColor;display:flex;flex-direction:column;justify-content:center;gap:4px;text-align:left;overflow:hidden}
+#app .hero-status{display:flex;gap:5px;align-items:center;background:none;border:0;padding:0;margin:0;min-height:0;white-space:normal;font-size:13px;line-height:1.15;color:inherit}
+#app .hero-activity{display:block;padding:0;min-height:0;white-space:normal;font-size:12px;line-height:1.2;color:inherit;font-weight:400;overflow:hidden}
+#app .hero-activity small{display:block;font-size:11px;line-height:1.2;margin-top:4px;color:inherit}
+#app .idle-setting{padding:2px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:20px 44px;align-content:center;gap:2px;background:transparent}
+#app .idle-setting>span{display:block;grid-column:1/-1;text-align:center;font-size:12px;color:#abbac5}
+#app .idle-setting button{width:44px;min-width:44px;min-height:44px;padding:8px;display:flex;align-items:center;justify-content:center}
+#app .idle-setting button[aria-pressed=true]{color:#f4d78c;background:#443c26;border-color:#d2b264}
+#app .vitals{grid-column:1;grid-row:2;display:grid;gap:3px;min-width:0;width:100%;align-content:center}
+#app .vital{display:flex;align-items:center;gap:5px;min-width:0;color:#9ee3b8;height:20px}
+#app .vital-sanity{color:#c4a6ff}
+.segments{display:flex;gap:2px;height:9px;flex:1;min-width:0}
+.segments>i{flex:1;background:#0d141b;border:1px solid #52616c;min-width:0;height:100%}
+.segments em{display:block;height:100%;background:currentColor}
+#app svg.icon-tabler{width:22px;height:22px;flex:0 0 22px;vertical-align:middle}
+#app .vital svg.icon-tabler{width:20px;height:20px;flex-basis:20px}
+#app .profile .portrait{float:left;margin:0 10px 10px 0;width:60px;height:60px}
+#app .profile .vitals{max-width:240px;clear:both}
+#app .profile .idle-setting{width:100px}
+#app .dispatch-hero .vitals{grid-column:auto;grid-row:auto}
+#app #dispatch-panel .hero-pick-head{flex-wrap:wrap}
+#app #dispatch-panel .hero-pick-head strong{font-size:18px}
+#app .pick-attributes>span{font-size:13px;gap:5px;min-height:24px}
+#app .approach-metrics>span{font-size:12px;gap:4px}
+#app .approach-main>strong{font-size:14px}
+#app .phase-track li{font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px}
+#app .map-tools button{width:44px;min-height:44px;padding:5px}
+#map{touch-action:none;overscroll-behavior:none}
+#map svg{touch-action:none}
+.recon-hint{font-size:12px;color:#b6c6d1;margin:0 0 6px}
+.test-settings{margin-top:15px;border-top:1px solid #49545b;padding-top:10px}
+.test-tools{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.test-tools>div{display:flex;flex-wrap:wrap;gap:5px}.test-tools button{width:auto!important;font-size:13px;padding:8px;margin:0}.test-tools .lab-label{display:none}
+#toast{bottom:20px}
+@media(max-width:1100px) and (min-width:761px){#app .agent-slot{grid-template-columns:minmax(0,1fr)}#app .idle-setting{display:none}#app .agent-slot .agent{grid-template-columns:98px minmax(0,1fr);gap:5px}}
+@media(max-width:760px){
+ #app{grid-template-rows:48px minmax(0,1fr) calc(52px + env(safe-area-inset-bottom))}
+ #app main,#app.preparing main{grid-template-rows:minmax(0,1fr) 222px;gap:5px;padding:5px}
+ #app .squad{grid-template-rows:28px minmax(0,1fr)}
+ #app #agents{padding:3px;gap:4px}
+ #app .agent-slot{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 44px;gap:2px}
+ #app .agent-slot .agent{grid-template-columns:minmax(0,1fr);grid-template-rows:32px 42px minmax(0,1fr);gap:3px;padding:3px;align-content:start}
+ #app .agent-top{grid-row:1;grid-column:1;gap:4px}
+ #app .agent-top .portrait{width:32px;height:32px;flex-basis:32px}
+ #app .agent-name{font-size:17px}
+ #app .vitals{grid-row:2;grid-column:1}
+ #app .hero-current{grid-row:3;grid-column:1;padding:3px;gap:2px;justify-content:flex-start}
+ #app .hero-status{font-size:11px;gap:3px}
+ #app .hero-activity{font-size:10px;line-height:1.15}
+ #app .hero-activity small{font-size:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+ #app .idle-setting{display:flex;padding:0;gap:1px;justify-content:center}
+ #app .idle-setting>span{display:none}
+ #app .idle-setting button{flex:1;width:auto;min-width:44px;height:44px;padding:5px}
+ #app .squad .section-title{padding:0 5px;min-height:28px}
+ #app #profiles{min-height:28px;padding:2px 6px}
+ #app #mobile-nav{padding-bottom:calc(4px + env(safe-area-inset-bottom))}
+ #app .city{grid-template-rows:minmax(0,1fr) 44px 48px}
+ #app .map-tools>span{font-size:9px}
+ #app .map-tools>div{display:flex;gap:3px}
+ #app .hero-status svg.icon-tabler{width:20px;height:20px;flex-basis:20px}
+ #app .phase-track li{font-size:10px;gap:2px}
+ #app .phase-track svg.icon-tabler{width:20px;height:20px;flex-basis:20px}
+ #app #dispatch-panel .hero-pick-head .portrait{width:36px;height:36px;flex-basis:36px}
+ #app .pick-talent{font-size:10px}
+ #app .approach-metrics>span{font-size:10px}
+ #app .stat-row{grid-template-columns:76px minmax(0,1fr) 20px 23px}
+ #app .hero-pick-head .pick-state{margin-left:auto}
+ #toast{bottom:calc(60px + env(safe-area-inset-bottom))}
+}
+@media(max-width:760px) and (max-height:620px){
+ #app main,#app.preparing main{grid-template-rows:minmax(0,1fr) 164px}
+ #app .agent-slot{grid-template-rows:minmax(0,1fr)}
+ #app .agent-slot>.idle-setting{display:none}
+ #app .agent-slot .agent{grid-template-rows:30px 40px minmax(0,1fr)}
+ #app .agent-top .portrait{width:30px;height:30px;flex-basis:30px}
+}

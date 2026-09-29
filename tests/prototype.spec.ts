@@ -1,4 +1,11 @@
-import {test,expect} from '@playwright/test';
+import {test,expect,type Page} from '@playwright/test';
+
+async function testTool(page:Page,id:string){
+ await page.locator('#help').click();
+ if(!(await page.locator('.test-settings').getAttribute('open'))&&!(await page.locator('#'+id).isVisible()))await page.locator('.test-settings summary').click();
+ await page.locator('#'+id).click();
+ if(await page.locator('#intro').isVisible())await page.locator('#start').click();
+}
 
 for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desktop',()=>{
  test.use({viewport:{width:mobile?390:1365,height:900},hasTouch:mobile,isMobile:mobile});
@@ -11,15 +18,20 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await page.screenshot({path:`test-results/event-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   const nora=page.locator('#agent-nora');
   await expect(nora.locator('.hero-status')).toHaveText('Repos au QG');
+  expect(await page.locator('#agents .portrait').evaluateAll(ns=>ns.every(n=>{const r=n.getBoundingClientRect();return Math.abs(r.width-r.height)<1;}))).toBe(true);
+  await expect(page.locator('#agents [role="meter"]')).toHaveCount(6);
+  expect(await page.locator('#agents .segments').evaluateAll(ns=>Math.max(...ns.map(n=>n.getBoundingClientRect().width))-Math.min(...ns.map(n=>n.getBoundingClientRect().width))<1)).toBe(true);
+  expect((await page.locator('.squad').boundingBox())!.height).toBeLessThan(mobile?230:170);
+  await expect(page.locator('footer')).toHaveCount(0);
   const inScreen=async(selector:string)=>expect(await page.locator(selector).evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}))).toBe(true);
-  await inScreen('.hero-status');await inScreen('[data-idle]');
+  await inScreen('.hero-status');await inScreen('#agents [data-idle]');
   expect(await page.locator('.agent').evaluateAll(cards=>cards.every(card=>Array.from(card.querySelectorAll('.stats b')).every(n=>n.getBoundingClientRect().bottom<=card.getBoundingClientRect().bottom)))).toBe(true);
   await inScreen('#map');
   if(mobile)await page.locator('#view-intervention').tap();
   await inScreen('#send-intervene');
   await page.locator('#profiles').click();await expect(page.locator('#profiles-dialog')).toBeVisible();
   await page.locator('[data-close="profiles-dialog"]').click();
-  await page.locator('#radio').click();await expect(page.locator('#radio-dialog')).toBeVisible();
+  await testTool(page,'radio');await expect(page.locator('#radio-dialog')).toBeVisible();
   await page.locator('[data-close="radio-dialog"]').click();
   // Both entry paths use the same screen; entering through a hero preselects them.
   if(mobile)await nora.tap();else await nora.click();
@@ -52,14 +64,14 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await expect(page.locator('.arrival')).toContainText('en route');
   await expect(nora.locator('.hero-status')).toHaveText('Occupé · trajet');
   await expect(nora.locator('.hero-activity')).toContainText('→ Gare Est');await expect(nora.locator('.hero-activity')).toContainText('Altercation à la gare');
-  await page.locator('[data-idle="nora"]').selectOption('patrol');
-  await expect(page.locator('#toast')).toContainText('Ordre reçu');
-  await page.locator('#speed').click();await page.locator('#speed').click();
+  await page.locator('#idle-nora-patrol').click();
+  await expect(page.locator('#idle-nora-patrol')).toHaveAttribute('aria-pressed','true');
+  await testTool(page,'speed');await testTool(page,'speed');
   await page.waitForTimeout(700);
   expect(await page.evaluate(()=>(window as any).__heldAgent===document.querySelector('#agent-nora'))).toBe(true);
   await expect(page.locator('[data-choice="talk"]')).toBeVisible({timeout:12000});
   await expect(nora.locator('.hero-status')).toHaveText('À décider');
-  await inScreen('.hero-status');await inScreen('[data-choice]');
+  await inScreen('.hero-status');await page.locator('[data-choice="talk"]').scrollIntoViewIfNeeded();
   await page.screenshot({path:`test-results/decision-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await page.locator('[data-choice="talk"]').click({delay:650});
   await expect(page.locator('.working')).toBeVisible();
@@ -72,17 +84,17 @@ for(const mobile of [false,true])test.describe(mobile?'Touch mobile':'Mouse desk
   await expect(page.locator('.event-history')).toContainText('Approche choisie');
   await page.screenshot({path:`test-results/report-${mobile?'mobile':'desktop'}.png`,fullPage:true});
   await expect(nora.locator('.hero-status')).toHaveText('Patrouille');
-  await expect(page.locator('[data-idle="nora"]')).toHaveValue('patrol');
+  await expect(page.locator('#idle-nora-patrol')).toHaveAttribute('aria-pressed','true');
   if(mobile)await page.locator('#view-map').tap();
   await expect(page.locator('[data-map-incident="quai"]')).toBeVisible({timeout:6000});
-  await page.locator('#pause').click();
+  await testTool(page,'pause');
   await expect(page.locator('#pause')).toHaveText('Reprendre');
   if(mobile)await page.locator('[data-map-incident="quai"] .map-hit').tap();
   else await page.locator('[data-map-incident="quai"] .map-hit').click();
   await expect(page.locator('#incident h2')).toHaveText('Montée des eaux');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`test-results/web-${mobile?'mobile':'desktop'}.png`,fullPage:true});
-  await page.locator('#finish').click();await expect(page.locator('#summary')).toBeVisible();
+  await testTool(page,'finish');await expect(page.locator('#summary')).toBeVisible();
   await page.locator('#same-night').click();await expect(page.locator('#summary')).not.toBeVisible();
   expect(errors).toEqual([]);
  });
@@ -99,7 +111,7 @@ test('Keyboard focus remains on a button while its countdown changes',async({pag
 
 
 test('Map wheel zoom anchors the cursor and left/middle drag preserve selection',async({page})=>{
- await page.goto('/');await page.locator('#start').click();await page.locator('#pause').click();
+ await page.goto('/');await page.locator('#start').click();await testTool(page,'pause');
  const svg=page.locator('#map svg');
  const view=()=>svg.evaluate(n=>{const r=(n as SVGSVGElement).viewBox.baseVal;return {x:r.x,y:r.y,width:r.width,height:r.height};});
  const box=(await svg.boundingBox())!;const x=Math.round(box.x+box.width*.45),y=Math.round(box.y+box.height*.45);
@@ -128,13 +140,13 @@ test('Alert countdown ring drains with time and pauses with the simulation',asyn
  const ring=page.locator('[data-map-incident="gare"] .incident-timer');
  const amount=async()=>parseFloat((await ring.getAttribute('stroke-dasharray'))!);
  const before=await amount();await expect.poll(amount).toBeLessThan(before);
- await page.locator('#pause').click();const paused=await amount();await page.waitForTimeout(500);expect(await amount()).toBe(paused);
+ await testTool(page,'pause');const paused=await amount();await page.waitForTimeout(500);expect(await amount()).toBe(paused);
 });
 
 for(const viewport of [{width:360,height:640},{width:390,height:700},{width:320,height:568}])test.describe(`Short phone ${viewport.width}`,()=>{
  test.use({viewport,hasTouch:true,isMobile:true});
  test('Map and intervention controls remain usable above browser chrome',async({page})=>{
-  await page.goto('/');await page.locator('#start').tap();await page.locator('#pause').tap();
+  await page.goto('/');await page.locator('#start').tap();await testTool(page,'pause');
   const usable=async(selector:string)=>{
    await expect(page.locator(selector)).toBeVisible();
    expect(await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect();const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&!!hit&&el.contains(hit);})).toBe(true);
@@ -150,5 +162,28 @@ for(const viewport of [{width:360,height:640},{width:390,height:700},{width:320,
   await page.setViewportSize({width:viewport.width,height:viewport.height-40});await usable('#confirm-dispatch');
   await page.locator('#confirm-dispatch').tap();await expect(page.locator('.arrival')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+ });
+});
+
+
+test.describe('Actual multi-touch map gestures',()=>{
+ test.use({viewport:{width:390,height:700},hasTouch:true,isMobile:true});
+ test('Pinch, continue dragging, reset and tap without accidental selection',async({page,context})=>{
+  await page.goto('/');await page.locator('#start').tap();await testTool(page,'pause');
+  const client=await context.newCDPSession(page),svg=page.locator('#map svg');
+  const view=()=>svg.evaluate(n=>{const v=(n as SVGSVGElement).viewBox.baseVal;return {x:v.x,y:v.y,width:v.width};});
+  const b=(await svg.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
+  const touch=async(type:string,points:{x:number;y:number;id:number}[])=>client.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+  await touch('touchStart',[{x:x-30,y,id:1},{x:x+30,y,id:2}]);
+  for(let d=35;d<=80;d+=5)await touch('touchMove',[{x:x-d,y,id:1},{x:x+d,y,id:2}]);
+  expect((await view()).width).toBeLessThan(450);
+  await touch('touchEnd',[{x:x+80,y,id:2}]);const before=await view();
+  await touch('touchMove',[{x:x+100,y:y+20,id:2}]);await touch('touchEnd',[]);
+  expect((await view()).x).toBeLessThan(before.x);await expect(page.locator('#view-map')).toHaveAttribute('aria-pressed','true');
+  await page.locator('#map-reset').tap();expect((await view()).width).toBe(800);
+  const hit=page.locator('[data-map-incident="gare"] .map-hit'),r=(await hit.boundingBox())!,px=r.x+r.width/2,py=r.y+r.height/2;
+  await touch('touchStart',[{x:px,y:py,id:3}]);await touch('touchMove',[{x:px-35,y:py+20,id:3}]);await touch('touchEnd',[]);
+  await expect(page.locator('#view-map')).toHaveAttribute('aria-pressed','true');
+  await page.locator('#map-reset').tap();await hit.tap();await expect(page.locator('#view-intervention')).toHaveAttribute('aria-pressed','true');
  });
 });
