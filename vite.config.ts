@@ -1,2 +1,2 @@
 import { defineConfig } from 'vite';
-export default defineConfig({base:'./',build:{chunkSizeWarningLimit:1600}});
+export default defineConfig({base:'./',build:{rollupOptions:{input:{main:"index.html",gym:"roll-gym.html"}},chunkSizeWarningLimit:1600}});
