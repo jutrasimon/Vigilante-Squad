@@ -32,3 +32,5 @@
 @keyframes result-digit-glow{0%,100%{text-shadow:0 0 0 transparent}40%{text-shadow:0 0 14px currentColor,0 0 28px currentColor}70%{text-shadow:0 0 6px currentColor}}
 @keyframes cursor-halo{0%,100%{box-shadow:0 0 8px var(--result-color)}45%{box-shadow:0 0 16px 5px var(--result-color)}}
 @media(prefers-reduced-motion:reduce){.counter.landed,.counter.landed span,.cursor-value.landed,.threshold.landed b{animation:none}}
+
+.chance{padding-right:14px}.chance>strong{margin-left:auto;text-align:right;white-space:nowrap}.chance .chance-rule{display:block;font-size:11px;color:var(--muted);margin-top:5px}
