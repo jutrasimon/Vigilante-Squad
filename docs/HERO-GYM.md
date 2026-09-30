@@ -14,3 +14,10 @@ Données de démonstration locales; réglages du gym sans effet sur la partie. L
 
 ## Assets
 public/assets/heroes/ : portrait-dossier.webp, portrait-bulletin.webp, gare.webp, grain.svg, scuffs.svg. Les illustrations sont générées pour le projet, sans UI incrustée. Sources de génération : portrait réaliste peint urbain, portrait encré roman graphique, gare nocturne panoramique. Ne pas exporter de boutons en images : conserver les primitives CSS/SVG.
+
+## Raffinement et édition de la fiche
+- En-tête urbain en couches, portrait carré, nom et statut séparés. Les textures restent neutres et les surfaces utilisent les variables de palette.
+- Atelier replié pour laisser la fiche visible sur mobile. Corps, Esprit et Âme modifiables (0–20, plage de test).
+- TAGs personnalisés : nom, description, caractère défavorable et suppression. Modifications temporaires dans le gym, sans impact sur la simulation.
+- Infobulles accessibles au survol, au focus et au toucher ; fermeture par Échap, toucher extérieur ou défilement. Descriptions éditoriales, sans bonus inventé.
+- Cadran : groupe chiffre/unité centré indépendamment du libellé.
