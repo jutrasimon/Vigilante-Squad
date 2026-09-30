@@ -10,7 +10,7 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  await page.getByText('Couleurs et matière',{exact:true}).click();await page.locator('[data-color="accent"]').fill('#33aacc');await expect(page.locator('#sheet')).toHaveCSS('--accent','#33aacc');
  await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.future')).toContainText('contenu à définir');await page.locator('[data-tab="Fiche"]').click();
  await page.locator('[data-idle="patrol"]').click();await expect(page.locator('[data-idle="patrol"]')).toHaveAttribute('aria-pressed','true');
- await page.getByText('Couleurs et matière',{exact:true}).click();
+ await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
  await page.screenshot({path:`test-results/hero-${theme}-${width}.png`,fullPage:true});
  }
  await page.getByText('Attributs et TAGs',{exact:true}).click();
@@ -20,5 +20,10 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  const tag=page.locator('.tag').filter({hasText:'Sang-froid'});await tag.click();await expect(page.getByRole('tooltip')).toContainText('Reste calme sous pression.');await page.keyboard.press('Escape');await expect(page.getByRole('tooltip')).toHaveCount(0);
  const ring=await page.locator('.countdown').boundingBox(),value=await page.locator('.countdown-value').boundingBox();expect(Math.abs((ring!.x+ring!.width/2)-(value!.x+value!.width/2))).toBeLessThan(2);
  await page.locator('summary').filter({hasText:'Tester la fiche'}).click();const before=await page.locator('.attributes').boundingBox();await page.locator('#bark').click();await expect(page.locator('#speech')).toBeVisible();expect((await page.locator('.attributes').boundingBox())!.y).toBe(before!.y);
+ await page.locator('[data-max="hp"]').fill('4');await page.locator('[data-max="hp"]').press('Tab');await expect(page.locator('.hp .track')).toHaveAttribute('aria-valuemax','4');await expect(page.locator('.hp .filled')).toHaveCount(4);
+ await page.locator('[data-max="mental"]').fill('14');await page.locator('[data-max="mental"]').press('Tab');await expect(page.locator('.mental .track i')).toHaveCount(14);
+ await page.locator('#cancel-mission').click();await expect(page.getByRole('dialog')).toBeVisible();await page.locator('#keep-mission').click();await expect(page.locator('.mission')).toBeVisible();
+ await page.locator('#cancel-mission').click();await page.locator('#confirm-cancel').click();await expect(page.locator('.mission')).toHaveCount(0);await expect(page.locator('.hero-state')).toContainText('Patrouille');
+ await page.locator('#state').selectOption('travel');await expect(page.locator('.mini-mission')).toBeVisible();
  await page.locator('#view-mission').click();await expect(page).toHaveURL(/incident=gare/);await expect(page.locator('#intro')).not.toBeVisible();
 });

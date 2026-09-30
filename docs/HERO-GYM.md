@@ -21,3 +21,6 @@ public/assets/heroes/ : portrait-dossier.webp, portrait-bulletin.webp, gare.webp
 - TAGs personnalisés : nom, description, caractère défavorable et suppression. Modifications temporaires dans le gym, sans impact sur la simulation.
 - Infobulles accessibles au survol, au focus et au toucher ; fermeture par Échap, toucher extérieur ou défilement. Descriptions éditoriales, sans bonus inventé.
 - Cadran : groupe chiffre/unité centré indépendamment du libellé.
+
+## Ajustements de la fiche — 30 septembre
+Bandeaux de design retirés. Les Halles désigne le squad/joueur. Attributs en emblèmes alignés, surfaces sobres ; bulletin sans coins coupés ni ligne inclinée. Maximums HP/Mental réglables de 1 à 30, valeurs actuelles bornées au maximum. Idle compact : QG restaure HP, Mental et Énergie (indication de comportement, pas de récupération simulée dans ce gym). Accès mission depuis le statut ; annulation confirmée ramène au choix Idle dans le gym. Infobulles sans étiquette TAG ni points d’interrogation ; **mot-clé** produit du gras dans une description personnalisée.
