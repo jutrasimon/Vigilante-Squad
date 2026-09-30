@@ -47,15 +47,16 @@ for(const width of [320,390,1280])test(`hero proposals ${width}`,async({page})=>
  await page.locator('.tabs [data-tab="Fiche"]').click();await expect(page.locator('.energy .track')).toHaveAttribute('aria-valuenow','74');
 });
 
-for(const width of [320,390])test(`comic barks alignment ${width}`,async({page})=>{
- await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');
- await page.getByText('Tester la fiche',{exact:true}).click();
+for(const width of [320,390,1280])test(`comic barks alignment ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');await page.getByText('Tester la fiche',{exact:true}).click();
+ for(const theme of ['dossier','bulletin']){
+ await page.locator(`[data-theme="${theme}"]`).first().click();
  for(let i=0;i<4;i++){
-  await page.locator('#bark').click();await page.locator('#sheet').scrollIntoViewIfNeeded();await page.waitForTimeout(450);
-  const bubble=page.locator('#speech');await expect(bubble).toBeVisible();await expect(bubble).not.toContainText('MALIK');
-  const b=await bubble.boundingBox(),header=await page.locator('.identity').boundingBox();
-  expect(b!.x).toBeGreaterThanOrEqual(header!.x);expect(b!.x+b!.width).toBeLessThanOrEqual(header!.x+header!.width);
-  expect(Math.abs(b!.x+b!.width/2-header!.x-header!.width/2)).toBeLessThan(2);
-  await page.screenshot({path:`test-results/bark-${width}-${i}.png`,fullPage:true});
+ await page.locator('#bark').click();await page.locator('.identity').scrollIntoViewIfNeeded();await page.waitForTimeout(400);
+ const bubble=page.locator('#speech');await expect(bubble).toBeVisible();await expect(bubble).not.toContainText('MALIK');
+ const b=await bubble.boundingBox(),header=await page.locator('.identity').boundingBox(),status=await page.locator('.hero-state').boundingBox();
+ expect(b!.x).toBeGreaterThanOrEqual(header!.x);expect(b!.x+b!.width).toBeLessThan(status!.x);
+ await page.locator('.identity').screenshot({path:`test-results/dialogue-${theme}-${width}-${i}.png`});
+ }
  }
 });
