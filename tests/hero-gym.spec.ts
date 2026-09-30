@@ -8,7 +8,7 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await expect(page.locator('.hp .filled')).toHaveCount(6);await expect(page.locator('.mental .filled')).toHaveCount(8);
  await page.getByText('Couleurs et matière',{exact:true}).click();await page.locator('[data-color="accent"]').fill('#33aacc');await expect(page.locator('#sheet')).toHaveCSS('--accent','#33aacc');
- await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.future')).toContainText('contenu à définir');await page.locator('[data-tab="Fiche"]').click();
+ await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Départ pour Gare Est');await page.locator('[data-tab="Fiche"]').click();
  await page.locator('[data-idle="patrol"]').click();await expect(page.locator('[data-idle="patrol"]')).toHaveAttribute('aria-pressed','true');
  await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
  await page.screenshot({path:`test-results/hero-${theme}-${width}.png`,fullPage:true});
@@ -26,4 +26,23 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  await page.locator('#cancel-mission').click();await page.locator('#confirm-cancel').click();await expect(page.locator('.mission')).toHaveCount(0);await expect(page.locator('.hero-state')).toContainText('Patrouille');
  await page.locator('#state').selectOption('travel');await expect(page.locator('.mini-mission')).toBeVisible();
  await page.locator('#view-mission').click();await expect(page).toHaveURL(/incident=gare/);await expect(page.locator('#intro')).not.toBeVisible();
+});
+
+for(const width of [320,390,1280])test(`hero proposals ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');
+ for(const theme of ['dossier','bulletin']){
+  await page.locator(`[data-theme="${theme}"]`).first().click();
+  for(const tab of ['Équipement','Véhicule','Journal']){
+   await page.locator(`.tabs [data-tab="${tab}"]`).click();
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+   await page.screenshot({path:`test-results/hero-${theme}-${tab}-${width}.png`,fullPage:true});
+  }
+ }
+ await page.locator('.tabs [data-tab="Équipement"]').click();await page.locator('[data-armour="heavy"]').click();await expect(page.locator('.speed-strip')).toContainText('5');
+ await page.locator('#use-medkit').click();await expect(page.locator('#use-medkit')).toBeDisabled();await expect(page.locator('.charge-track')).toContainText('1/2');
+ await page.locator('.tabs [data-tab="Fiche"]').click();await expect(page.locator('.hp .track')).toHaveAttribute('aria-valuenow','8');
+ await page.locator('.tabs [data-tab="Véhicule"]').click();await page.locator('[data-transport="bike"]').click();await expect(page.locator('.speed-strip')).toContainText('15');await expect(page.locator('.route-preview>strong')).toContainText('72');
+ await page.locator('#test-journey').click();await expect(page.locator('.journal-timeline')).toContainText('Trajet de test terminé');
+ await page.locator('[data-journal-filter="health"]').click();await expect(page.locator('.journal-timeline')).toContainText('Soins sur le terrain');await expect(page.locator('.journal-timeline')).not.toContainText('Trajet de test terminé');
+ await page.locator('.tabs [data-tab="Fiche"]').click();await expect(page.locator('.energy .track')).toHaveAttribute('aria-valuenow','74');
 });

@@ -24,3 +24,10 @@ public/assets/heroes/ : portrait-dossier.webp, portrait-bulletin.webp, gare.webp
 
 ## Ajustements de la fiche — 30 septembre
 Bandeaux de design retirés. Les Halles désigne le squad/joueur. Attributs en emblèmes alignés, surfaces sobres ; bulletin sans coins coupés ni ligne inclinée. Maximums HP/Mental réglables de 1 à 30, valeurs actuelles bornées au maximum. Idle compact : QG restaure HP, Mental et Énergie (indication de comportement, pas de récupération simulée dans ce gym). Accès mission depuis le statut ; annulation confirmée ramène au choix Idle dans le gym. Infobulles sans étiquette TAG ni points d’interrogation ; **mot-clé** produit du gras dans une description personnalisée.
+
+## Propositions des onglets secondaires
+Contenu exclusivement expérimental, non raccordé à la simulation principale. Les deux habillages partagent les mêmes données.
+- Déplacement : bande compacte sous Tri-Stat, icône route, couleur `speed` indépendante. Vitesse de base à pied réglable de 1 à 20 km/h.
+- Équipement : protection légère ou renforcée (−1 km/h à pied ; réduction de dégâts proposée), radio ou outils (TAG contextuel proposé), deux charges de soins (+2 HP plafonnés par charge). Les soins et la pénalité de vitesse fonctionnent dans le gym.
+- Véhicule : à pied / vélo 15 km/h / scooter 25 km/h. Comparaison sur 300 m : secondes = plafond(distance / (km/h / 3,6)). Bouton de test instantané : −2 / −1 / 0 énergie, puis entrée au journal. Pas de carburant ni de maintenance pour ce premier essai. La fiche anime un court trajet de 20 m à la vitesse sélectionnée.
+- Journal : trois exemples initiaux, puis événements des changements de matériel, soins et trajets. Filtres Tout / Missions / État / Matériel. Entrées de test marquées TEST ; réinitialisation au rechargement.
