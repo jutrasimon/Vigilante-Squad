@@ -2,7 +2,7 @@ import {icon as sourceIcon} from './icons';
 const icon=(name:string)=>sourceIcon(name as Parameters<typeof sourceIcon>[0]);
 import './hero-gym.css';
 type Theme='dossier'|'bulletin';
-const defaults={dossier:{accent:'#e6bd57',positive:'#83dcb6',negative:'#f18b85',hp:'#83dcb6',mental:'#b88af1',energy:'#eaba53',surface:'#162630',background:'#0c151e',text:'#eff0e9'},bulletin:{accent:'#efad3e',positive:'#83dcb6',negative:'#f18b85',hp:'#e65650',mental:'#81b0ed',energy:'#efad3e',surface:'#181e21',background:'#0c1012',text:'#eee5d2'}};
+const defaults={dossier:{accent:'#e6bd57',positive:'#83dcb6',negative:'#f18b85',body:'#83dcb6',mind:'#b88af1',soul:'#e6bd57',hp:'#83dcb6',mental:'#b88af1',energy:'#eaba53',surface:'#162630',background:'#0c151e',text:'#eff0e9'},bulletin:{accent:'#efad3e',positive:'#83dcb6',negative:'#f18b85',body:'#83dcb6',mind:'#b88af1',soul:'#e6bd57',hp:'#e65650',mental:'#81b0ed',energy:'#efad3e',surface:'#181e21',background:'#0c1012',text:'#eee5d2'}};
 let theme:Theme='dossier',tab='Fiche',status='travel',idle='rest',hpMax=8,mentalMax=10,hp=6,mental=8,energy=75,remaining=12,running=false;
 const statIcon=(name:string)=>{
 const paths:Record<string,string>={
@@ -21,7 +21,7 @@ root.innerHTML=`<header class="lab"><a href="./gyms.html">← Tous les gyms</a><
 const sheet=document.querySelector<HTMLElement>('#sheet')!;
 const meter=(label:string,value:number,max:number,key:string,ico:string)=>`<div class="meter ${key}"><span>${icon(ico)}<b>${label}</b></span><div class="track" role="meter" aria-label="${label}" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}">${key==='energy'?`<i style="width:${value}%"></i>`:Array.from({length:max},(_,i)=>`<i class="${i<value?'filled':''}"></i>`).join('')}</div><strong>${value}<small>${key==='energy'?' %':` / ${max}`}</small></strong></div>`;
 function applyPalette(){Object.entries(palettes[theme]).forEach(([k,v])=>sheet.style.setProperty('--'+k,v));sheet.style.setProperty('--texture',String(texture));document.querySelectorAll<HTMLElement>('.tag-tooltip,.cancel-dialog').forEach(el=>Object.entries(palettes[theme]).forEach(([k,v])=>el.style.setProperty('--'+k,v)));}
-function colors(){document.querySelector('#colors')!.innerHTML=Object.entries(palettes[theme]).map(([k,v])=>`<label>${({accent:'Accent',positive:'Positif',negative:'Négatif',hp:'HP',mental:'Mental',energy:'Énergie',surface:'Panneaux',background:'Fond',text:'Texte'} as Record<string,string>)[k]}<input type="color" data-color="${k}" value="${v}"></label>`).join('');}
+function colors(){document.querySelector('#colors')!.innerHTML=Object.entries(palettes[theme]).map(([k,v])=>`<label>${({accent:'Accent',positive:'Positif',negative:'Négatif',body:'Corps',mind:'Esprit',soul:'Âme',hp:'HP',mental:'Mental',energy:'Énergie',surface:'Panneaux',background:'Fond',text:'Texte'} as Record<string,string>)[k]}<input type="color" data-color="${k}" value="${v}"></label>`).join('');}
 function render(){hideTooltip();sheet.dataset.theme=theme;applyPalette();document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.theme===theme)));
 const active=status==='travel'||status==='working';
 const stateLabel={travel:'En trajet',working:'En intervention',rest:'Repos au QG',patrol:'Patrouille'}[status];
