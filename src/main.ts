@@ -132,3 +132,6 @@ render();(el('intro') as HTMLDialogElement).showModal();
 let last=performance.now(),acc=0;function loop(now:number){const dt=Math.min((now-last)/1000,.5);last=now;const was=sim.ended;if(!paused)sim.tick(dt*speed);map.update();acc+=dt;if(acc>.2){render();acc=0;}if(!was&&sim.ended)summary();requestAnimationFrame(loop);}requestAnimationFrame(loop);
 // Read-only snapshot for automated prototype checks. No account or remote state.
 Object.defineProperty(window,'vigilante',{get:()=>({time:sim.time,started:sim.started,ended:sim.ended,agents:sim.agents,incidents:sim.incidents,logs:sim.logs})});
+// Gym mission shortcut: open the corresponding incident and center the map.
+const linkedIncident=new URLSearchParams(location.search).get('incident');
+if(linkedIncident&&sim.visible().some(i=>i.id===linkedIncident)){selectedIncident=linkedIncident;(el('intro') as HTMLDialogElement).close();sim.start();setMobileView('intervention');render();map.focus();}
