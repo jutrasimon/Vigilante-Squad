@@ -1,0 +1,20 @@
+/* Biseau: live text, independently recolorable vector surface, intrinsic height. */
+.identity{z-index:3}
+.identity-info{container-type:inline-size}
+.name-anchor{position:relative;display:grid;align-items:center;min-width:0}
+.name-anchor>h1,.name-anchor>.speech{grid-area:1/1}
+.name-anchor:has(.speech:not([hidden]))>h1{visibility:hidden}
+.identity .speech{position:relative;inset:auto;z-index:3;justify-self:start;width:fit-content;min-width:min(100%,7em);max-width:100%;margin:0 0 14px;padding:16px 20px;box-sizing:border-box;background:none;border:0;border-radius:0;box-shadow:none;filter:none;color:var(--bark-text);pointer-events:none;transform:none;transform-origin:left center;animation:biseau-enter .22s ease-out both;font-size:clamp(18px,calc(12px + 6cqi),34px)}
+.identity .speech.long-copy{font-size:clamp(18px,calc(10px + 5cqi),28px)}
+.identity .speech:before,.identity .speech:after{content:none}
+.identity .speech strong{position:relative;z-index:1;display:block;font:800 italic 1em/1.12 'Barlow Condensed','Noto Sans',sans-serif;text-transform:none;letter-spacing:0;text-align:center;text-shadow:none;white-space:normal;overflow-wrap:anywhere;text-wrap:balance}
+.identity .speech .bark-outline{position:absolute;left:-22px;top:0;width:calc(100% + 30px);height:calc(100% + 8px);max-width:none;overflow:visible;pointer-events:none}
+.bark-body{fill:var(--bark-fill);stroke:var(--bark-border);stroke-width:2.5;stroke-linejoin:miter}
+.bark-shadow{fill:var(--bark-shadow);stroke:var(--bark-shadow);stroke-width:2.5;transform:translate(5px,5px)}
+.identity .speech[hidden]{display:none}
+.identity .speech.leaving{animation:biseau-exit .2s ease-in both}
+#bark-copy{width:100%;padding:10px;background:#1b2831;border:1px solid #53616d;border-radius:3px;color:#eaf0f3;font:inherit;resize:vertical}
+@keyframes biseau-enter{from{opacity:0;transform:translateX(-6px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes biseau-exit{to{opacity:0;transform:translateY(-3px)}}
+@media(max-width:600px){.identity .speech{padding:13px 12px;min-width:0;width:100%}}
+@media(prefers-reduced-motion:reduce){.identity .speech,.identity .speech.leaving{animation:none}}
