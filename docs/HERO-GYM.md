@@ -31,3 +31,7 @@ Contenu exclusivement expérimental, non raccordé à la simulation principale. 
 - Équipement : protection légère ou renforcée (−1 km/h à pied ; réduction de dégâts proposée), radio ou outils (TAG contextuel proposé), deux charges de soins (+2 HP plafonnés par charge). Les soins et la pénalité de vitesse fonctionnent dans le gym.
 - Véhicule : à pied / vélo 15 km/h / scooter 25 km/h. Comparaison sur 300 m : secondes = plafond(distance / (km/h / 3,6)). Bouton de test instantané : −2 / −1 / 0 énergie, puis entrée au journal. Pas de carburant ni de maintenance pour ce premier essai. La fiche anime un court trajet de 20 m à la vitesse sélectionnée.
 - Journal : trois exemples initiaux, puis événements des changements de matériel, soins et trajets. Filtres Tout / Missions / État / Matériel. Entrées de test marquées TEST ; réinitialisation au rechargement.
+
+### Bulles au-dessus du nom
+Barks superposés au nom vers la droite, pointe vers le portrait, sans déplacement de la fiche. Dossier : coque sombre anguleuse, contour accent pour les cris. Bulletin : papier tramé, contour en éclats et ombre d’encre. Typographie forte, entrée brève avec rebond, maintien 3,8 s ; mouvement réduit respecté.
+Référence de lecture : Absolute Batman #9 (2025), aperçu https://comic-watch.com/comic-book-reviews/absolute-batman-9-a-bane-in-the-neck : contraste fort, texte serré et pointes dirigées vers le locuteur. Les formes anguleuses sont une adaptation à la demande, pas une copie des bulles de cette page.

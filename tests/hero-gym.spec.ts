@@ -54,8 +54,11 @@ for(const width of [320,390,1280])test(`comic barks alignment ${width}`,async({p
  for(let i=0;i<4;i++){
  await page.locator('#bark').click();await page.locator('.identity').scrollIntoViewIfNeeded();await page.waitForTimeout(400);
  const bubble=page.locator('#speech');await expect(bubble).toBeVisible();await expect(bubble).not.toContainText('MALIK');
- const b=await bubble.boundingBox(),header=await page.locator('.identity').boundingBox(),status=await page.locator('.hero-state').boundingBox();
- expect(b!.x).toBeGreaterThanOrEqual(header!.x);expect(b!.x+b!.width).toBeLessThan(status!.x);
+ const b=await bubble.boundingBox(),header=await page.locator('.identity').boundingBox(),name=await page.locator('.identity h1').boundingBox();
+ expect(b!.x).toBeGreaterThanOrEqual(header!.x);expect(b!.x+b!.width).toBeLessThanOrEqual(header!.x+header!.width+1);
+   expect(b!.x).toBeGreaterThan(header!.x+header!.width*.25);
+   expect(b!.y).toBeLessThan(name!.y+name!.height);
+   expect(b!.y+b!.height).toBeGreaterThan(name!.y);
  await page.locator('.identity').screenshot({path:`test-results/dialogue-${theme}-${width}-${i}.png`});
  }
  }
