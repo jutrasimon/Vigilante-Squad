@@ -28,23 +28,42 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  await page.locator('#view-mission').click();await expect(page).toHaveURL(/incident=gare/);await expect(page.locator('#intro')).not.toBeVisible();
 });
 
-for(const width of [320,390,1280])test(`hero proposals ${width}`,async({page})=>{
- await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');
+for(const width of [320,390,1280])test(`single object workshop ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await page.goto('/hero-gym.html');
+ await page.getByText('Tester la fiche',{exact:true}).click();
  for(const theme of ['dossier','bulletin']){
   await page.locator(`[data-theme="${theme}"]`).first().click();
-  for(const tab of ['Équipement','Véhicule','Journal']){
-   await page.locator(`.tabs [data-tab="${tab}"]`).click();
-   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
-   await page.screenshot({path:`test-results/hero-${theme}-${tab}-${width}.png`,fullPage:true});
+  await page.locator('.tabs [data-tab="Objet"]').click();
+  await expect(page.locator('.tabs [data-tab="Véhicule"]')).toHaveCount(0);
+  await expect(page.locator('.object-card')).toHaveCount(4);
+  await page.locator('#state').selectOption('rest');
+  await page.locator('[data-object="bike"]').click();
+  await expect(page.locator('.speed-strip')).toContainText('18');
+  await expect(page.locator('.object-card:disabled')).toHaveCount(0);
+  await page.locator('.object-workshop').screenshot({path:`test-results/objects-${theme}-hq-${width}.png`});
+  await page.locator('[data-object="vest"]').click();
+  await expect(page.locator('.speed-strip')).toContainText('5');
+  await expect(page.locator('.object-card[aria-pressed="true"]')).toHaveCount(1);
+  await page.locator('[data-object="medkit"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('[data-object="medkit"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.speed-strip')).toContainText('6');
+  await page.locator('[data-object="bike"]').click();
+  for(const state of ['patrol','travel','working']){
+   await page.locator('#state').selectOption(state);
+   await expect(page.locator('.object-card:disabled')).toHaveCount(3);
+   await page.locator('[data-object="vest"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+   await expect(page.locator('[data-object="bike"]')).toHaveAttribute('aria-pressed','true');
   }
+  await page.locator('.object-workshop').screenshot({path:`test-results/objects-${theme}-away-${width}.png`});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.getByText('Couleurs et matière',{exact:true}).click();
+  await page.locator('[data-color="accent"]').fill('#cc44aa');await expect(page.locator('.object-card.equipped')).toHaveCSS('border-top-color','rgb(204, 68, 170)');
+  await page.locator('[data-color="speed"]').fill('#55bbdd');await expect(page.locator('.object-speed')).toHaveCSS('color','rgb(85, 187, 221)');
+  await page.locator('#state').selectOption('rest');await page.locator('[data-color="negative"]').fill('#ee3366');await expect(page.locator('.object-penalty')).toHaveCSS('color','rgb(238, 51, 102)');
+  await page.locator('[data-color="positive"]').fill('#66dd99');await expect(page.locator('.object-tag').first()).toHaveCSS('color','rgb(102, 221, 153)');
+  await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
+  await page.locator('.tabs [data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Objet équipé');
  }
- await page.locator('.tabs [data-tab="Équipement"]').click();await page.locator('[data-armour="heavy"]').click();await expect(page.locator('.speed-strip')).toContainText('5');
- await page.locator('#use-medkit').click();await expect(page.locator('#use-medkit')).toBeDisabled();await expect(page.locator('.charge-track')).toContainText('1/2');
- await page.locator('.tabs [data-tab="Fiche"]').click();await expect(page.locator('.hp .track')).toHaveAttribute('aria-valuenow','8');
- await page.locator('.tabs [data-tab="Véhicule"]').click();await page.locator('[data-transport="bike"]').click();await expect(page.locator('.speed-strip')).toContainText('15');await expect(page.locator('.route-preview>strong')).toContainText('72');
- await page.locator('#test-journey').click();await expect(page.locator('.journal-timeline')).toContainText('Trajet de test terminé');
- await page.locator('[data-journal-filter="health"]').click();await expect(page.locator('.journal-timeline')).toContainText('Soins sur le terrain');await expect(page.locator('.journal-timeline')).not.toContainText('Trajet de test terminé');
- await page.locator('.tabs [data-tab="Fiche"]').click();await expect(page.locator('.energy .track')).toHaveAttribute('aria-valuenow','74');
 });
 
 for(const width of [320,390,1280])test(`comic barks alignment ${width}`,async({page})=>{
