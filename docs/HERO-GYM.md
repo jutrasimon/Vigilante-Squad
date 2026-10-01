@@ -43,3 +43,13 @@ Deux habillages préservés : Dossier (fines bordures) et Bulletin (encrage plus
 Asset réutilisable : `public/assets/heroes/objects.webp`, atlas 2 × 2 sans texte généré avec imagegen intégré. Ordre : vélo, trousse, jumelles, gilet. Prompt : quatre illustrations d’objets comic gritty, fond charbon neutre, sans interface ni texte, chaque objet contenu dans son quadrant. Les cadres, textes, badges et verrouillages sont en HTML/CSS/SVG recolorables.
 
 Les TAGS accordés par les objets partagent les mêmes styles `.tag.positive` que la fiche (cadre, icône bouclier, typographie, palette et variante Bulletin). Ils restent intégrés à la carte cliquable, sans bouton imbriqué. Les valeurs de vitesse gardent leur présentation de statistique.
+
+## Recherche de héros — brute angulaire
+
+Le sélecteur propose les 20 nouveaux héros (8 justiciers et 12 costumes de super-héros), ainsi que Malik comme référence précédente. Les noms sont provisoires. La sélection change uniquement l'identité visuelle de la fiche et les noms dans le journal et la confirmation d'annulation. Les attributs, TAGs, objets et valeurs de démonstration restent les mêmes; aucun pouvoir ou effet lié au handicap n'est ajouté.
+
+Deux cadrages : Portrait et Silhouette. Les images sont des PNG avec un véritable canal alpha, dans `public/assets/heroes/brute-angulaire/` et son sous-dossier `portraits/`. Le portrait est un recadrage de présentation; la silhouette complète reste disponible séparément. Les silhouettes ont été extraites et reproduites à partir des cinq planches approuvées avec imagegen, sans papier, libellé, portrait dupliqué ou fond. Le cadrage et l'optimisation PNG conservent l'alpha. Axiome conserve son fauteuil, Comète sa prothèse, Sentinelle son orthèse et sa béquille, Prisme ses aides auditives et Le Pacte sa canne.
+
+Le décor se trouve dans une couche HTML/CSS indépendante de l'image. Dossier utilise un fond sombre, une grille discrète et des lignes dorées. Bulletin utilise des aplats crème, rouge et bleu, une trame et l'usure neutre. Les couleurs suivent les palettes éditables existantes. L'atelier permet aussi un fond uni ou un damier pour visualiser la transparence. Le damier n'est jamais inclus dans les PNG téléchargés. Les liens Portrait PNG et Silhouette PNG téléchargent les fichiers du héros sélectionné.
+
+Les TAGs et les règles d'objet unique au QG utilisent toujours leurs composants partagés. La recherche reste isolée du prototype de dispatch.
