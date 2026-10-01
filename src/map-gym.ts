@@ -44,6 +44,7 @@ function paint(){if(!base)return;
  const major=/motorway|trunk|primary|secondary/.test(l.id), casing=/casing|outline/.test(l.id);
  const color=ov.color||(g==='road'?(casing?theme.background:major?theme.major:theme.road):g==='rail'?theme.rail:theme[g as keyof Theme]);
  if(l.type==='background')set(l.id,'background-color',color);
+ if(l.type==='fill-extrusion'){set(l.id,'fill-extrusion-color',color);set(l.id,'fill-extrusion-opacity',ov.opacity??theme.buildingOpacity);set(l.id,'fill-extrusion-height',theme.threeD?['*',['coalesce',['get','render_height'],['get','height'],8],theme.height]:0);set(l.id,'fill-extrusion-base',0);}
  if(l.type==='fill'){set(l.id,'fill-color',color);set(l.id,'fill-opacity',ov.opacity??(g==='building'?theme.buildingOpacity:1));if(g==='building')set(l.id,'fill-outline-color',theme.buildingEdge);}
  if(l.type==='line'){set(l.id,'line-color',g==='building'?(ov.color||theme.buildingEdge):color);set(l.id,'line-opacity',ov.opacity??1);const orig=l.paint?.['line-width'];const w=scale(orig,theme.roadWidth);if(w!==undefined&&(g==='road'||g==='rail'))set(l.id,'line-width',w);}
  if(l.type==='symbol'){set(l.id,'text-color',ov.color||theme.label);set(l.id,'text-halo-color',theme.halo);set(l.id,'text-halo-width',1.5);set(l.id,'text-opacity',ov.opacity??1);const size=scale(l.layout?.['text-size'],theme.labelSize);if(size!==undefined)map.setLayoutProperty(l.id,'text-size',size);}
@@ -73,7 +74,7 @@ function download(name:string,data:unknown){const url=URL.createObjectURL(new Bl
 controls();
 try{map=new maplibregl.Map({container:'map',style:STYLE,center:savedCamera?.center||[-73.579,45.519],zoom:savedCamera?.zoom||15,pitch:theme.pitch,bearing:theme.bearing,attributionControl:{compact:true}});
  map.addControl(new maplibregl.NavigationControl(),'bottom-right');map.addControl(new maplibregl.ScaleControl(),'bottom-left');map.touchZoomRotate.disableRotation();
- map.on('load',()=>{base=map.getStyle();const building=base.layers.find(l=>'source-layer'in l&&l['source-layer']==='building');if(building&&'source'in building){map.addLayer({id:'gym-buildings-3d',type:'fill-extrusion',source:building.source,'source-layer':'building',minzoom:13,paint:{'fill-extrusion-height':8,'fill-extrusion-base':0}},base.layers.find(l=>l.type==='symbol')?.id);}
+ map.on('load',()=>{base=map.getStyle();const building=base.layers.find(l=>'source-layer'in l&&l['source-layer']==='building');if(building&&'source'in building&&!base.layers.some(l=>group(l)==='building'&&l.type==='fill-extrusion')){map.addLayer({id:'gym-buildings-3d',type:'fill-extrusion',source:building.source,'source-layer':'building',minzoom:13,paint:{'fill-extrusion-height':8,'fill-extrusion-base':0}},base.layers.find(l=>l.type==='symbol')?.id);}
  $('layer').innerHTML=base.layers.map(l=>`<option value="${esc(l.id)}">${esc(l.id)} · ${l.type}</option>`).join('');paint();renderPoints();layerEditor();status('Carte prête · glisser pour déplacer, pincer pour zoomer.');});
  let lastError=0;map.on('error',()=>{if(Date.now()-lastError>5000){lastError=Date.now();status('Une ressource cartographique ne charge pas. Vérifie la connexion ou recharge la page.');}});
  map.on('click',e=>{if(placing)add(e.lngLat.lng,e.lngLat.lat);});

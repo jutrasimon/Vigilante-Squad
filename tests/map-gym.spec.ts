@@ -30,6 +30,9 @@ test('Live OpenFreeMap style and geographic tiles',async({page})=>{
  await expect(page.locator('#status')).toContainText('Carte prête',{timeout:30000});
  await expect(page.locator('.maplibregl-canvas')).toBeVisible();
  await page.locator('#center').click();await expect(page.locator('.poi')).toHaveCount(1);
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ const styleDownload=page.waitForEvent('download');await page.locator('#style-export').click();const downloaded=await styleDownload;const stream=await downloaded.createReadStream();const parts:Buffer[]=[];for await(const part of stream!)parts.push(part);const style=JSON.parse(Buffer.concat(parts).toString());
+ const volumes=style.layers.filter((l:any)=>l.type==='fill-extrusion'&&/building/.test(l.id));expect(volumes.length).toBeGreaterThan(0);for(const l of volumes)expect(l.paint['fill-extrusion-color']).toBe('#34434b');
  await page.screenshot({path:'test-results/map-real-dossier.png'});
  await page.locator('[data-preset=bulletin]').click();
  await page.waitForTimeout(800);
