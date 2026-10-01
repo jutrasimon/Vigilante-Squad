@@ -18,6 +18,7 @@ const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const palettes=structuredClone(defaults);let texture=.12;
 let baseSpeed=6;
 let exhausted=false,effort=0,showBase=false;
+let pinnedTooltip:HTMLElement|null=null;
 const effectiveStat=(value:number)=>Math.max(0,value-(exhausted?2:0));
 type ObjectId='bike'|'medkit'|'binoculars'|'vest';
 let equippedObject:ObjectId='bike';
@@ -107,16 +108,16 @@ function renderTagEditor(){document.querySelector('#tag-editor')!.innerHTML=tags
 root.addEventListener('change',e=>{const input=e.target as HTMLInputElement;if(input.dataset.stat!==undefined){const n=Number(input.value);if(!Number.isFinite(n))return;stats[+input.dataset.stat].value=Math.max(0,Math.min(20,Math.round(n)));input.value=String(stats[+input.dataset.stat].value);render();}});
 root.addEventListener('submit',e=>{if((e.target as HTMLElement).id!=='tag-form')return;e.preventDefault();const name=document.querySelector<HTMLInputElement>('#tag-name')!,description=document.querySelector<HTMLTextAreaElement>('#tag-description')!,negative=document.querySelector<HTMLInputElement>('#tag-negative')!;if(!name.value.trim()||!description.value.trim())return;tags.push({name:name.value.trim(),description:description.value.trim(),negative:negative.checked,duration:Number((document.querySelector('#tag-duration') as HTMLInputElement).value)||undefined});name.value='';description.value='';negative.checked=false;render();renderTagEditor();});
 root.addEventListener('click',e=>{const remove=(e.target as HTMLElement).closest<HTMLElement>('[data-remove-tag]');if(remove){tags.splice(Number(remove.dataset.removeTag),1);render();renderTagEditor();}});
-function hideTooltip(){document.querySelector('#tag-tooltip')?.remove();document.querySelectorAll('[data-tag]').forEach(b=>{b.setAttribute('aria-expanded','false');b.removeAttribute('aria-describedby');});}
-function showTooltip(button:HTMLElement){hideTooltip();const t=displayTags()[Number(button.dataset.tag)];if(!t)return;const tip=document.createElement('div');tip.id='tag-tooltip';tip.className='tag-tooltip'+(t.negative?' negative':'');tip.role='tooltip';Object.entries(palettes[theme]).forEach(([k,v])=>tip.style.setProperty('--'+k,v));tip.innerHTML=`<div class="tooltip-heading">${icon(t.negative?'alert-triangle':'shield')}</div><strong>${escape(t.name)}</strong><p>${formatDescription(t.description)}</p>`;document.body.append(tip);button.setAttribute('aria-expanded','true');button.setAttribute('aria-describedby',tip.id);const r=button.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.max(12,Math.min(innerWidth-w-12,r.left+r.width/2-w/2))+'px';tip.style.top=(r.top>h+24?r.top-h-12:Math.min(innerHeight-h-12,r.bottom+12))+'px';}
+function hideTooltip(){pinnedTooltip=null;document.querySelector('#tag-tooltip')?.remove();document.querySelectorAll('[data-tag]').forEach(b=>{b.setAttribute('aria-expanded','false');b.removeAttribute('aria-describedby');});}
+function showTooltip(button:HTMLElement,pin=false){const keepPinned=pin||pinnedTooltip===button;hideTooltip();if(keepPinned)pinnedTooltip=button;const t=displayTags()[Number(button.dataset.tag)];if(!t)return;const tip=document.createElement('div');tip.id='tag-tooltip';tip.className='tag-tooltip'+(t.negative?' negative':'');tip.role='tooltip';Object.entries(palettes[theme]).forEach(([k,v])=>tip.style.setProperty('--'+k,v));tip.innerHTML=`<div class="tooltip-heading">${icon(t.negative?'alert-triangle':'shield')}</div><strong>${escape(t.name)}</strong><p>${formatDescription(t.description)}</p>`;document.body.append(tip);button.setAttribute('aria-expanded','true');button.setAttribute('aria-describedby',tip.id);const r=button.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.max(12,Math.min(innerWidth-w-12,r.left+r.width/2-w/2))+'px';tip.style.top=(r.top>h+24?r.top-h-12:Math.min(innerHeight-h-12,r.bottom+12))+'px';}
 sheet.addEventListener('pointerover',e=>{if((e as PointerEvent).pointerType==='touch')return;const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b&&!b.contains((e as PointerEvent).relatedTarget as Node))showTooltip(b);});
-sheet.addEventListener('pointerout',e=>{if((e as PointerEvent).pointerType==='touch')return;const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b&&!b.contains((e as PointerEvent).relatedTarget as Node))hideTooltip();});
+sheet.addEventListener('pointerout',e=>{if((e as PointerEvent).pointerType==='touch')return;const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b&&!pinnedTooltip&&!b.contains((e as PointerEvent).relatedTarget as Node))hideTooltip();});
 sheet.addEventListener('focusin',e=>{const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b)showTooltip(b);});
-sheet.addEventListener('focusout',hideTooltip);
-sheet.addEventListener('click',e=>{const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b)showTooltip(b);});
+sheet.addEventListener('focusout',()=>{if(!pinnedTooltip)hideTooltip();});
+sheet.addEventListener('click',e=>{const b=(e.target as HTMLElement).closest<HTMLElement>('[data-tag]');if(b)showTooltip(b,true);});
 document.addEventListener('pointerdown',e=>{if(!(e.target as HTMLElement).closest('[data-tag],#tag-tooltip'))hideTooltip();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')hideTooltip();});
-window.addEventListener('scroll',hideTooltip,true);window.addEventListener('resize',hideTooltip);
+window.addEventListener('scroll',()=>{if(pinnedTooltip?.isConnected)showTooltip(pinnedTooltip,true);else hideTooltip();},true);window.addEventListener('resize',hideTooltip);
 
 // Limited rich text: escape first, then allow **emphasis** only.
 function formatDescription(text:string){return escape(text).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');}
