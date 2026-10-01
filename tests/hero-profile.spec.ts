@@ -37,6 +37,7 @@ for(const width of [320,390,1280])test(`base comparison has no layout shift ${wi
  await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');
  for(const theme of ['dossier','bulletin']){
  await page.locator(`button[data-theme="${theme}"]`).click();
+ await page.evaluate(()=>document.fonts.ready);
  const geometry=()=>page.locator('.attributes,.speed-strip,.tabs,.tab-content').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,height:r.height};}));
  const before=await geometry();await page.locator('[data-base]').evaluate(el=>el.style.display='none');expect(await geometry()).toEqual(before);await page.locator('[data-base]').evaluate(el=>el.style.removeProperty('display'));
  await page.locator('[data-base]').focus();await page.keyboard.down('Space');expect(await geometry()).toEqual(before);await page.locator('.attributes-wrap').screenshot({path:`test-results/stable-base-${theme}-${width}.png`});await page.keyboard.up('Space');expect(await geometry()).toEqual(before);
