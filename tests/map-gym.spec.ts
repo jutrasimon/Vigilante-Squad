@@ -1,0 +1,26 @@
+import {test,expect} from '@playwright/test';
+test.use({launchOptions:{args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}});
+for(const width of [390,1280])test(`Map workshop and points at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:844});
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://tiles.openfreemap.org/styles/liberty',route=>route.fulfill({json:{version:8,sources:{terrain:{type:'geojson',data:{type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[[[-73.582,45.517],[-73.576,45.517],[-73.576,45.521],[-73.582,45.521],[-73.582,45.517]]]}}]}}},layers:[{id:'background',type:'background',paint:{'background-color':'#ffffff'}},{id:'land',type:'fill',source:'terrain',paint:{'fill-color':'#ffffff'}}]}}));
+ await page.goto('/map-gym.html');
+ await expect(page.locator('#status')).toContainText('Carte prête');
+ await page.locator('#center').click();
+ await expect(page.locator('.poi')).toHaveCount(1);
+ await page.locator('#edit-name').fill('QG de test');await page.locator('#edit-name').blur();
+ await expect(page.locator('.poi-name')).toHaveText('QG de test');
+ if(width<760)await page.locator('#atelier').click();
+ await page.locator('[data-preset=bulletin]').click();
+ await expect(page.locator('[data-theme=land]')).toHaveValue('#c9c1ac');
+ await page.locator('#point-type').selectOption('clue');
+ if(width<760)await page.locator('#close').click();
+ await page.locator('#center').click();await expect(page.locator('.poi')).toHaveCount(2);
+ await page.locator('#edit-type').selectOption('police');
+ await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await expect(page.locator('.poi')).toHaveCount(2);
+ await page.locator('.poi').last().click();await page.locator('#delete-point').click();await expect(page.locator('.poi')).toHaveCount(1);
+ if(width<760)await page.locator('#atelier').click();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ const download=page.waitForEvent('download');await page.locator('#export').click();expect((await download).suggestedFilename()).toBe('vigilante-map-atelier.json');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();expect(errors).toEqual([]);
+});

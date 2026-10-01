@@ -39,6 +39,7 @@ Le bilan permet de rejouer les mêmes jets ou de les varier. Rien n’est sauveg
 - [Alertes : catalogue, jets, difficultés et conséquences](docs/ALERTES.md)
 - [Règles provisoires de cette tranche](docs/PROTOTYPE.md)
 - [Références DA et dernières propositions](docs/art-direction/README.md)
+- [Gym de carte réelle et points d’intérêt](docs/MAP-GYM.md)
 - [Architecture et lancement](docs/TECHNIQUE.md)
 - [Tests réalisés et limites](docs/TESTS.md)
 

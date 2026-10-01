@@ -33,6 +33,7 @@
   "private": true,
   "dependencies": {
     "@tabler/icons": "3.48.0",
+    "maplibre-gl": "^6.11.2",
     "morphdom": "^2.7.8"
   }
 }
