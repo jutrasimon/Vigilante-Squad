@@ -63,3 +63,8 @@ Les TAGs et les règles d'objet unique au QG utilisent toujours leurs composants
 - PV/Mental/Énergie : règles proposées dans un volet repliable de la fiche; conséquences et causes dans le journal. Les réactions à zéro ne sont pas implémentées dans cette démo.
 - Identité : histoire et motivation éditables par héros, enregistrées localement sur l’appareil. Pas de biographie inventée et imposée.
 - Journal : nuit 01 de démonstration, filtres Tout/Missions/Personnage, conséquences en pastilles et rapport dépliable. Essais en mémoire jusqu’au rechargement; ne constitue pas encore un historique du jeu principal.
+
+### Raffinement du profil
+- Journal : « État et équipement » remplace « Personnage ». Les entrées précisent ÉTAT ou ÉQUIPEMENT.
+- Identité : récit en lecture seule, défilement interne (molette, toucher ou clavier). Les anciens textes locaux sont conservés et réunis en un récit. Sans texte local, une proposition narrative remplit le gym.
+- Comparaison des bases : bouton maintenu au-dessus de Corps/Esprit/Âme, aucun toggle persistant. Pendant l’appui, valeurs actuelles grisées et bases à côté, y compris vitesse à pied sans objet ni altération. Relâchement, annulation, perte de focus ou changement de fenêtre rétablissent la vue normale. Les jauges ne sont pas des attributs de base.
