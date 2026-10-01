@@ -68,3 +68,9 @@ Les TAGs et les règles d'objet unique au QG utilisent toujours leurs composants
 - Journal : « État et équipement » remplace « Personnage ». Les entrées précisent ÉTAT ou ÉQUIPEMENT.
 - Identité : récit en lecture seule, défilement interne (molette, toucher ou clavier). Les anciens textes locaux sont conservés et réunis en un récit. Sans texte local, une proposition narrative remplit le gym.
 - Comparaison des bases : bouton maintenu au-dessus de Corps/Esprit/Âme, aucun toggle persistant. Pendant l’appui, valeurs actuelles grisées et bases à côté, y compris vitesse à pied sans objet ni altération. Relâchement, annulation, perte de focus ou changement de fenêtre rétablissent la vue normale. Les jauges ne sont pas des attributs de base.
+
+## Publication et vérification indépendantes
+- `pages.yml` publie après installation npm, tests du moteur et compilation. Aucun navigateur n’est téléchargé ni exécuté pour publier.
+- `browser-checks.yml` exécute les tests UI séparément, à chaque push sur main et sur les PR, ou manuellement. Un échec reste visible sur GitHub sans empêcher Pages de publier.
+- Les téléchargements Chromium sont mis en cache par version du lockfile. Installation limitée à 4 minutes, tests à 4 minutes, job à 12 minutes.
+- Les captures restent disponibles dans l’artifact `interaction-checks` du workflow navigateur. Les contrôles de compilation et du moteur restent obligatoires pour publier.
