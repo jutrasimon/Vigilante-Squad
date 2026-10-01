@@ -24,3 +24,14 @@ for(const width of [390,1280])test(`Map workshop and points at ${width}px`,async
  const download=page.waitForEvent('download');await page.locator('#export').click();expect((await download).suggestedFilename()).toBe('vigilante-map-atelier.json');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();expect(errors).toEqual([]);
 });
+test('Live OpenFreeMap style and geographic tiles',async({page})=>{
+ await page.setViewportSize({width:1280,height:844});
+ await page.goto('/map-gym.html');
+ await expect(page.locator('#status')).toContainText('Carte prête',{timeout:30000});
+ await expect(page.locator('.maplibregl-canvas')).toBeVisible();
+ await page.locator('#center').click();await expect(page.locator('.poi')).toHaveCount(1);
+ await page.screenshot({path:'test-results/map-real-dossier.png'});
+ await page.locator('[data-preset=bulletin]').click();
+ await page.waitForTimeout(800);
+ await page.screenshot({path:'test-results/map-real-bulletin.png'});
+});

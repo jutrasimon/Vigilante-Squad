@@ -1,6 +1,8 @@
 import * as maplibregl from 'maplibre-gl';
 import {type StyleSpecification, type LayerSpecification} from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+maplibregl.setWorkerUrl(workerUrl);
 import './map-gym.css';
 import {icon, type IconName} from './icons';
 const STYLE='https://tiles.openfreemap.org/styles/liberty';
@@ -77,7 +79,7 @@ try{map=new maplibregl.Map({container:'map',style:STYLE,center:savedCamera?.cent
  map.on('click',e=>{if(placing)add(e.lngLat.lng,e.lngLat.lat);});
  map.on('moveend',()=>{const c=map.getCenter();$<HTMLInputElement>('lat').value=c.lat.toFixed(5);$<HTMLInputElement>('lng').value=c.lng.toFixed(5);$('coords').textContent=`${c.lat.toFixed(3)} / ${c.lng.toFixed(3)} · Z${map.getZoom().toFixed(1)}`;save();});
  const c=map.getCenter();$<HTMLInputElement>('lat').value=String(c.lat);$<HTMLInputElement>('lng').value=String(c.lng);
-}catch{status('La carte requiert WebGL. Essaie un navigateur avec accélération graphique.');}
+}catch(error){console.error('Initialisation de la carte',error);status(error instanceof maplibregl.GPUInitializationError?'La carte requiert WebGL. Essaie un navigateur avec accélération graphique.':`Initialisation de la carte impossible : ${error instanceof Error?error.message:'erreur inconnue'}`);}
 $('atelier').onclick=()=>{$('workshop').classList.toggle('open');setTimeout(()=>map?.resize(),220);};$('close').onclick=()=>{$('workshop').classList.remove('open');map?.resize();};
 $('mode').onclick=()=>{placing=!placing;mode();status(placing?'Touche un lieu pour ajouter ton point.':'Placement désactivé.');};$('center').onclick=()=>{if(map){const c=map.getCenter();add(c.lng,c.lat);}};
 $('point-type').onchange=()=>{$<HTMLInputElement>('point-color').value=types[$<HTMLSelectElement>('point-type').value].color;};
