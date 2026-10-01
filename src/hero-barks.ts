@@ -3,7 +3,14 @@ let observer:ResizeObserver|undefined;
 export function observeBark(bubble:HTMLElement|null){
  observer?.disconnect();
  if(!bubble)return;
+ const portrait=bubble.closest('.identity')?.querySelector<HTMLElement>('.portrait-wrap');
+ const anchor=bubble.parentElement;
  const draw=()=>{
+  if(portrait&&anchor){
+   const p=portrait.getBoundingClientRect(),a=anchor.getBoundingClientRect();
+   const overlap=Math.max(0,a.left-(p.right-p.width*.18));
+   bubble.style.setProperty('--bark-overlap',`${overlap}px`);
+  }
   const w=bubble.offsetWidth,h=bubble.offsetHeight;
   if(!w||!h)return;
   const svg=bubble.querySelector<SVGSVGElement>('svg')!;
@@ -13,5 +20,5 @@ export function observeBark(bubble:HTMLElement|null){
   svg.setAttribute('viewBox',`0 0 ${w+tail+8} ${h+8}`);
   svg.querySelectorAll('path').forEach(p=>p.setAttribute('d',path));
  };
- observer=new ResizeObserver(draw);observer.observe(bubble);draw();
+ observer=new ResizeObserver(draw);observer.observe(bubble);if(portrait)observer.observe(portrait);if(anchor)observer.observe(anchor);draw();
 }
