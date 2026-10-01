@@ -60,7 +60,7 @@ for(const width of [320,390,1280])test(`single object workshop ${width}`,async({
   await page.locator('[data-color="accent"]').fill('#cc44aa');await expect(page.locator('.object-card.equipped')).toHaveCSS('border-top-color','rgb(204, 68, 170)');
   await page.locator('[data-color="speed"]').fill('#55bbdd');await expect(page.locator('.object-speed')).toHaveCSS('color','rgb(85, 187, 221)');
   await page.locator('#state').selectOption('rest');await page.locator('[data-color="negative"]').fill('#ee3366');await expect(page.locator('.object-penalty')).toHaveCSS('color','rgb(238, 51, 102)');
-  await page.locator('[data-color="positive"]').fill('#66dd99');await expect(page.locator('.object-tag').first()).toHaveCSS('color','rgb(102, 221, 153)');
+  await page.locator('[data-color="positive"]').fill('#66dd99');await expect(page.locator('.object-tag').first()).toHaveCSS('--positive','#66dd99');
   await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
   await page.locator('.tabs [data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Objet équipé');
  }
