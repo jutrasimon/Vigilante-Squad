@@ -1,5 +1,7 @@
 # Tranche 0.1 — Une nuit aux Halles
 
+> Historique des versions du prototype : les sections ultérieures remplacent certaines règles initiales. Pour la proposition de backbone révisé, voir [ALERTES.md](ALERTES.md). Les règles proposées dans ce nouveau document ne sont pas encore raccordées au moteur.
+
 But : fermer la boucle **alerte → déplacement → découverte → choix → jet → conséquences → bilan**.
 
 ## Hypothèses modifiables
