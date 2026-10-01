@@ -4,6 +4,10 @@ Révision du 1er octobre 2026. **Document de travail : règles proposées à tes
 
 Ce document devient le point d’entrée pour concevoir les alertes. `PROTOTYPE.md` conserve l’historique de la tranche jouable; `ROLL-GYM.md` décrit les animations; `HERO-GYM.md` décrit les essais de fiche. Une animation différente ne change jamais les probabilités.
 
+## Mise à jour — conséquences liées aux événements
+
+Orientation retenue après lecture : l’énergie est un coût prévisible de participation. Les PV, le mental, les TAGS et les objets changent lorsqu’un événement précis du résultat le justifie. Chaque alerte possède cinq résultats : critique positif, réussite, partiel, échec, critique négatif. Aucun gain ou dégât générique ne s’ajoute aux critiques. Le calcul et les difficultés restent provisoirement inchangés; le catalogue détaillé reste à réviser avec Simon.
+
 ## 1. Ce qui est établi et ce qui reste proposé
 
 | Sujet | État |
@@ -42,13 +46,15 @@ Une étape propose généralement deux approches. Chacune précise : action, att
 
 `chance = borne(50 + 5 × (total actuel − difficulté) + TAG + repérage + modificateurs, 15, 95)`
 
-Atteindre la difficulté donne 50 % avant bonus : **ce n’est ni une garantie ni un verrou d’accès**. L’équipe peut tenter une approche sous la difficulté. Aucun bonus anonyme « avantage » supplémentaire : l’écart est déjà converti une fois.
+La base de 50 points s’applique à toutes les tentatives, même sous la difficulté. Un total égal à la difficulté donne donc 50 % avant bonus; un total inférieur retire 5 points par point manquant : **ce n’est ni une garantie ni un verrou d’accès**. L’équipe peut tenter une approche sous la difficulté. Aucun bonus anonyme « avantage » supplémentaire : l’écart est déjà converti une fois.
 
 Exemple proposé pour la gare : Malik Corps 6 + Silas Corps 8 = 14; difficulté 12; écart +2 = +10 points. Base +50, Protection +15, Approche risquée −5 : **70 %**. Avec repérage : **80 %**. La difficulté Corps de la gare jouable est encore 8, donc le même duo y obtient actuellement 90 % sans repérage.
 
 ### Difficulté initiale
 
-| Difficulté | Usage de départ | Héros total 8, sans bonus | Équipe total 14, sans bonus |
+Les colonnes comparent deux **totaux de l’attribut utilisé**, 8 et 14, quel que soit le nombre de héros. « Sans bonus » signifie sans TAG, repérage ni autre modificateur; la base de 50 et l’écart ×5 sont inclus. Exemple : Corps total 14 contre difficulté 6 → 50 + (14 − 6) × 5 = **90 %**.
+
+| Difficulté | Usage de départ | Attribut cumulé = 8, sans bonus | Attribut cumulé = 14, sans bonus |
 |---:|---|---:|---:|
 | 6 | Incident limité | 60 % | 90 % |
 | 8 | Intervention courante | 50 % | 80 % |
@@ -67,6 +73,10 @@ Ce sont des points de départ, pas des niveaux liés au nombre de héros envoyé
 - Épuisé modifie les valeurs **avant** leur addition. Pas de deuxième ligne « fatigue » pour refaire payer la même baisse.
 - Proposition de migration : retirer l’ancien −10 sous 35 énergie et le −15 « blessé » lorsque les états altérés auront des effets explicites sur les valeurs. Ne pas superposer les deux générations de règles.
 - Les descriptions de TAGS ne sont pas du code : chaque effet nécessite un identifiant, un déclencheur et une valeur explicites.
+
+Le bonus de TAG reste **+15 pour l’instant**. Variante suggérée à comparer plus tard : **+10**, soit l’équivalent de deux points d’attribut au lieu de trois. Aucun changement de formule ni d’exemple chiffré n’est appliqué à cette révision.
+
+Synergies entre héros : piste mise de côté. Elles pourraient être représentées par des TAGS conditionnels (présence d’un autre héros, seuil d’attribut, etc.), sans nouvelle couche de calcul pour l’instant.
 
 ### Quand fixer le résultat
 
@@ -92,19 +102,27 @@ La chance affichée comprend le critique positif. À 70 % : 70 résultats réuss
 
 Chaque approche écrit ses conséquences dans quatre champs : **objectif obtenu**, **effet sur la ville**, **effet sur chaque héros**, **suite éventuelle**. Pas de « civils sauvés » générique pour une réparation ou une déclaration publique.
 
-### Coûts et dégâts proposés
+### Coûts d’énergie prévisibles
 
-| Élément | Règle de test |
+| Moment | Coût de test par héros |
 |---|---|
-| Prise en charge sur place | −5 énergie par héros, une fois par alerte |
-| Étape ordinaire | −10 énergie par participant, à la confirmation |
-| Étape intense | −20 énergie par participant, à la confirmation |
-| Mental | −1 à l’issue d’une réussite; −2 à l’issue d’un partiel ou échec, uniquement pour une étape explicitement marquée éprouvante |
-| PV | 0 par défaut. Approche physiquement risquée : −1 en partiel, −2 en échec, par participant exposé |
-| Critique positif | Résultat réussi + avantage propre à l’approche; à défaut, récupération de 5 énergie du coût de l’étape |
-| Critique négatif | Résultat échoué + complication propre; à défaut, −1 mental supplémentaire par participant |
+| Prise en charge sur place | −5 points d’énergie, une seule fois par alerte |
+| Confirmation d’une étape ordinaire | −10 points d’énergie |
+| Confirmation d’une étape intense | −20 points d’énergie |
 
-Le coût normal n’est pas facturé une deuxième fois au résultat. Les pertes sont bornées à zéro et le journal inscrit les pertes réelles. Une approche non violente peut échouer sans blesser quiconque. Les risques sont annoncés avant confirmation.
+Avec une jauge sur 100, −5 points fait passer de 100 à 95 ou de 40 à 35 : ce n’est pas 5 % de l’énergie restante. Chaque étape affiche son coût avant confirmation. Les niveaux 10/20 restent provisoires. L’énergie est dépensée de manière stable, quel que soit le résultat; aucun remboursement automatique sur un critique positif, aucune surcharge automatique sur un échec.
+
+### Conséquences provoquées par ce qui arrive
+
+**Aucune perte automatique de mental pour avoir réussi ou échoué. Aucun barème automatique de PV parce qu’une approche est risquée.** Le résultat décrit l’événement, puis ses effets sur les personnes concernées.
+
+Exemple donné par Simon : « Le héros assiste à la mort d’un civil → −1 mental pour ce témoin ». Ce n’est pas une pénalité pour tous les héros du squad, ni une conséquence implicite de chaque échec. Autre exemple de travail : « Un débris blesse le héros qui dégage le passage → −2 PV pour ce héros ».
+
+La table de résultats de l’alerte est la source unique pour les événements et leurs effets : objectif, confiance, PV, mental, acquisition/retrait d’un TAG, perte d’objet, récompense particulière et suite éventuelle. **Critique positif et critique négatif sont des résultats complets**, pas une réussite ou un échec auxquels on ajoute un paquet générique. Une valeur absente ne déclenche aucune perte ou récompense.
+
+Pour chaque effet, préciser le destinataire (héros exposé, témoins présents, squad), la quantité et, pour un TAG temporaire, sa durée. Une perte d’objet nomme l’objet réellement équipé et les circonstances de sa perte. Un résultat doit rester cohérent avec l’approche; pas de blessure par contact si personne n’est exposé.
+
+Le coût d’énergie n’est pas facturé une deuxième fois au résultat. Les pertes sont bornées à zéro et le journal inscrit **la cause et la variation réelle**. Les risques possibles restent annoncés avant confirmation. Les propositions narratives ci-dessous illustrent cette structure et attendent la révision du catalogue.
 
 PV à zéro : proposition d’indisponibilité et retour assisté, sans mort permanente. Mental à zéro : retrait de l’intervention et récupération au QG. Énergie insuffisante pour payer l’action : confirmation désactivée. Si l’énergie atteint zéro après paiement, l’action déjà engagée se termine puis retour au QG. Ces règles restent à implémenter; le jeu actuel n’applique pas ces réactions.
 
@@ -130,50 +148,139 @@ Les nouvelles familles ne supposent pas de nouveaux attributs. Un accident n’e
 
 ### Résultats propres à chaque alerte
 
-Valeurs de confiance de test, accordées **une fois à la clôture**, pas à chaque étape. Les coûts personnels ci-dessus s’ajoutent. Un résultat partiel conserve une utilité sans produire automatiquement une victoire complète.
+**Structure retenue; contenu narratif et chiffres ci-dessous proposés, non validés.** Le catalogue sera révisé ultérieurement. Les résultats déjà esquissés sont conservés; les nouveaux critiques illustrent des événements spécifiques. Les variantes incomplètes sont marquées « à écrire » plutôt que remplies par un effet générique.
 
-| Alerte | Réussite | Partiel | Échec | Expiration sans prise en charge |
-|---|---|---|---|---|
-| Altercation | 2 civils en sécurité, confiance +1; violence stoppée si dialogue | 1 civil en sécurité, confiance 0; relais nécessaire | Aucun civil sécurisé par l’équipe, confiance −1 | Confrontation aggravée, confiance −1 |
-| Braquage | Otages sécurisés, confiance +1; fuite possible du suspect si extraction | Une partie des otages extraite, confiance 0 | Otages toujours menacés, confiance −1; relais police | Suspect fuit; secours encore nécessaires, confiance −1 |
-| Accident | Occupants extraits OU stabilisés, confiance +1 | Une personne assistée; secours requis, confiance 0 | Aucun objectif atteint, confiance −1 | Relais secours retardé, confiance −1 |
-| Incendie | Accès ouvert puis habitants évacués, confiance +1 | Une partie évacuée; pompiers prennent le relais, confiance 0 | Accès perdu; retrait, confiance −1 | Zone condamnée, confiance −1 |
-| Inondation | 2 résidents sécurisés, confiance +1 | 1 résident sécurisé, confiance 0 | Aucun résident sécurisé par l’équipe, confiance −1 | Accès fermé; relais secours, confiance −1 |
-| Panne | Circuit isolé OU périmètre tenu, confiance +1; réparation requise après périmètre | Zone partiellement sécurisée, confiance 0 | Danger toujours présent, confiance −1 | Panne étendue, confiance −1 |
-| Émeute | Foule apaisée OU menace ciblée traitée, confiance +1 | Zone refuge établie; tension persistante, confiance 0 | Tension accrue, confiance −1 | Dispersion policière à gérer, confiance −1 |
-| Disparition | Personne localisée et sécurisée, confiance +1 | Piste fiable transmise pour suivi, confiance 0 | Piste perdue, confiance 0 | Piste refroidie, confiance 0 |
-| Médias | Confiance +2 | Version partiellement retenue, confiance 0 | Confiance −1 | Version non contestée, confiance −1 |
+La confiance est accordée une fois à la clôture. Les coûts d’énergie sont payés séparément. Les indices obtenus sont des informations à définir pour le scénario, pas des bonus cachés. L’acquisition d’un TAG ou d’une récompense spéciale pourra être inscrite directement dans ces mêmes tableaux, avec effet/durée précisés; aucune nouvelle récompense permanente n’est imposée ici.
 
-Le nombre d’otages, d’occupants ou d’habitants doit être une donnée de chaque instance : pas de compteur universel de deux civils. « Aucun civil sécurisé par l’équipe » ne signifie pas « civil mort ». Aucun décès automatique n’est ajouté par cette proposition.
+#### Altercation
 
-## 6. Trois fiches complètes pour tester le moteur
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Les deux civils sont protégés et un témoin identifie l’agresseur; confiance +1, indice obtenu. |
+| Réussite | 2 civils en sécurité; confiance +1. |
+| Partiel | 1 civil en sécurité; relais nécessaire; confiance 0. |
+| Échec | Aucun civil sécurisé; confiance −1. Si extraction physique : un coup atteint le héros au contact → ce héros −1 PV. |
+| Critique négatif | Un civil meurt devant les héros présents → témoins −1 mental; confiance −1; relais des secours. |
+| Expiration sans prise en charge | Confrontation aggravée; confiance −1. |
+
+#### Braquage
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Otages sécurisés et suspect identifié; confiance +1, indice obtenu. |
+| Réussite | Otages sécurisés; confiance +1; suspect possiblement en fuite selon l’approche. |
+| Partiel | Une partie des otages extraite; confiance 0. |
+| Échec | Otages toujours menacés; relais police; confiance −1. |
+| Critique négatif | La situation dégénère; conséquences précises à écrire selon négociation/extraction. Aucun dégât générique. |
+| Expiration sans prise en charge | Suspect en fuite, secours requis; confiance −1. |
+
+#### Accident
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Occupants assistés et témoin retrouvé; confiance +1, témoignage obtenu. |
+| Réussite | Occupants extraits ou stabilisés; confiance +1. |
+| Partiel | Une personne assistée, secours requis; confiance 0. |
+| Échec | Objectif non atteint; confiance −1. Si dégagement : un débris blesse le héros au contact → −2 PV pour lui. |
+| Critique négatif | Un occupant meurt malgré l’intervention → héros témoins −1 mental; confiance −1. |
+| Expiration sans prise en charge | Relais des secours retardé; confiance −1. |
+
+#### Incendie
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Habitants évacués et origine suspecte repérée; confiance +1, indice obtenu. |
+| Réussite | Habitants évacués; confiance +1. |
+| Partiel | Une partie évacuée; relais pompiers; confiance 0. |
+| Échec | Accès perdu; retrait; confiance −1. |
+| Critique négatif | Effondrement du passage; effet précis sur les héros exposés à définir selon l’approche. Aucun dégât automatique. |
+| Expiration sans prise en charge | Zone condamnée; confiance −1. |
+
+#### Inondation
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | 2 résidents sécurisés et accès balisé pour les secours; confiance +1, accès connu. |
+| Réussite | 2 résidents sécurisés; confiance +1. |
+| Partiel | 1 résident sécurisé; confiance 0. |
+| Échec | Aucun résident sécurisé par l’équipe; confiance −1. |
+| Critique négatif | L’eau emporte le matériel d’un héros engagé dans l’escalier : objet équipé perdu. Variante toit et absence d’objet : événement à écrire, aucun remplacement générique. |
+| Expiration sans prise en charge | Accès fermé; relais secours; confiance −1. |
+
+#### Panne
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Circuit isolé et cause identifiée, ou périmètre tenu et cause signalée; confiance +1, renseignement technique obtenu. |
+| Réussite | Circuit isolé ou périmètre tenu; confiance +1; réparation requise après périmètre. |
+| Partiel | Zone partiellement sécurisée; confiance 0. |
+| Échec | Danger toujours présent; confiance −1. |
+| Critique négatif | Sur isolation : décharge électrique → opérateur −2 PV, danger persistant, confiance −1. Sur périmètre : effet spécifique à écrire. |
+| Expiration sans prise en charge | Panne étendue; confiance −1. |
+
+#### Émeute
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Foule apaisée et témoin prêt à identifier l’organisateur; confiance +1, piste obtenue. |
+| Réussite | Foule apaisée ou menace ciblée traitée; confiance +1. |
+| Partiel | Zone refuge établie; tension persistante; confiance 0. |
+| Échec | Tension accrue; confiance −1. |
+| Critique négatif | Un projectile blesse un héros présent au contact de la foule → ce héros −1 PV; confiance −1. Pour une observation à distance : résultat distinct à écrire. |
+| Expiration sans prise en charge | Dispersion policière à gérer; confiance −1. |
+
+#### Disparition
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Personne sécurisée et piste sur l’origine de la disparition; confiance +1, indice obtenu. |
+| Réussite | Personne localisée et sécurisée; confiance +1. |
+| Partiel | Piste fiable transmise pour suivi; confiance 0. |
+| Échec | Piste perdue; confiance 0. |
+| Critique négatif | Fausse piste : objectif non atteint, information invalidée. Aucun dégât personnel sans autre événement explicite. |
+| Expiration sans prise en charge | Piste refroidie; confiance 0. |
+
+#### Médias
+
+| Résultat | Événement et effets |
+|---|---|
+| Critique positif | Un témoin confirme publiquement les faits; confiance +3. |
+| Réussite | Version retenue; confiance +2. |
+| Partiel | Version partiellement retenue; confiance 0. |
+| Échec | Reportage défavorable; confiance −1. |
+| Critique négatif | Une contradiction discrédite la déclaration; confiance −2. Aucun dégât PV ou mental automatique. |
+| Expiration sans prise en charge | Version non contestée; confiance −1. |
+
+Le nombre de civils dépend de l’instance. Un décès n’est jamais déduit du mot « échec » : il doit être écrit dans le résultat, comme dans les exemples ci-dessus. Les effets sur le mental concernent les témoins explicitement désignés. Les résultats d’expiration sont des événements du monde, pas des jets ratés par des héros absents.
+
+## 6. Trois fiches de travail pour tester le moteur
 
 ### A. Altercation à la gare — une étape
 
 - Fenêtre : 95 s après apparition; objectif : mettre deux civils à l’abri.
 - Choix automatique après 30 s sur place; approche ayant la meilleure chance, puis risque PV le plus faible en cas d’égalité, puis ordre stable du catalogue.
-- Dialogue : Âme D10, Médiation +15, 15 s, coût ordinaire, éprouvant, aucun dégât PV.
-- Protection : Corps D12, Protection +15, Risquée −5, 10 s, coût ordinaire, éprouvant, risque PV.
-- Résultats : table du catalogue. Critique positif : résultat réussi et +1 confiance supplémentaire. Critique négatif : résultat échoué et −1 mental supplémentaire.
+- Dialogue : Âme D10, Médiation +15, 15 s, coût ordinaire; conséquences événementielles dans le tableau Altercation.
+- Protection : Corps D12, Protection +15, Risquée −5, 10 s, coût ordinaire; exposition physique prise en compte dans le tableau Altercation.
+- Résultats et critiques : exclusivement le tableau Altercation; aucune conséquence générique ajoutée.
 - Test de référence : duo Malik/Silas, Protection, sans renseignement = 70 %. Jet 1 critique; 64 réussite; 70 réussite; 71 et 84 partiels; 85 partiel; 86 échec; 100 critique négatif.
 
 ### B. Émeute — deux étapes conditionnelles
 
 - Fenêtre de prise en charge : 100 s. L’approche Dialogue peut terminer directement l’alerte.
-- Étape 1 : calmer la foule (Âme D12, Médiation, 20 s, ordinaire, éprouvant) OU identifier les agitateurs (Esprit D10, Repérage, 18 s, ordinaire, aucun coût mental).
+- Étape 1 : calmer la foule (Âme D12, Médiation, 20 s, ordinaire) OU identifier les agitateurs (Esprit D10, Repérage, 18 s, ordinaire).
 - Dialogue réussi : clôture réussie. Partiel : zone refuge, clôture partielle. Échec : relais police, clôture échouée.
 - Identification réussie : étape 2 débloquée, acteurs identifiés. Partiel : étape 2 débloquée mais renseignements incomplets. Échec : pas d’intervention ciblée à l’aveugle; relais police, clôture échouée.
-- Étape 2 : convaincre les agitateurs de se retirer (Âme D10, Médiation, 15 s, ordinaire, éprouvant) OU extraire les personnes menacées (Corps D12, Protection, 12 s, intense, éprouvant, risque PV).
+- Étape 2 : convaincre les agitateurs de se retirer (Âme D10, Médiation, 15 s, ordinaire) OU extraire les personnes menacées (Corps D12, Protection, 12 s, intense, exposition physique).
 - Identification réussie donne +10 à l’étape 2; identification partielle donne 0. Ce +10 utilise le même emplacement de renseignement que le repérage, donc jamais +20.
 - Le résultat de l’étape 2 détermine la clôture selon le catalogue. Les coûts de l’étape 1 restent acquis. Un repérage préalable n’identifie pas automatiquement les agitateurs : il prépare l’étape, sans accomplir son objectif.
-- Critiques : bonus par défaut énergie/mental. Aucun bonus de confiance au milieu de la chaîne.
+- Critiques de clôture : tableau Émeute. Pour l’étape d’identification intermédiaire, écrire ses propres événements critiques avant de l’implémenter; aucun bonus générique ni gain de confiance au milieu de la chaîne.
 
 ### C. Médias — une étape sans dégât physique
 
 - Fenêtre : 100 s après apparition. Objectif : répondre à une vidéo incomplète.
 - Explication : Âme D10, Médiation, 14 s; toujours disponible.
 - Faits vérifiés : Esprit D8, Repérage, 18 s; nécessite le renseignement « faits vérifiés » lié à cet incident, issu d’un repérage ou d’un rapport pertinent. Un TAG Repérage seul n’est pas une preuve.
-- Coût ordinaire; aucune perte PV ni mentale par défaut. Résultats : confiance +2 / 0 / −1. Critique positif : +3 au lieu de +2; critique négatif : −2 au lieu de −1. Ces valeurs remplacent les bonus critiques génériques.
+- Coût ordinaire. Les cinq résultats sont définis dans le tableau Médias, avec l’événement qui explique la variation de confiance. Aucun effet supplémentaire hors tableau.
 - Le rapport peut parler de blessés antérieurs mais le jet médiatique ne crée pas de nouvelle blessure.
 
 ## 7. Temps, repérage et factions
@@ -199,7 +306,7 @@ Retrait : confirmer l’annulation, conserver les coûts et objectifs déjà acq
 | Alerte | identifiant, famille, titre, lieu, apparition, échéance, objectifs, renseignement, faction, étapes |
 | Approche | identifiant, libellé, attribut, difficulté, TAG pertinent, prérequis éventuel, modificateurs nommés, durée, coût, risques |
 | Étape en cours | participants, approche, début/fin, instantané du calcul, jet unique, état |
-| Résultat | catégorie, objectifs acquis, confiance, pertes/gains réels par héros, TAGS appliqués, prochaine étape ou clôture |
+| Résultat | catégorie, objectifs acquis, confiance, pertes/gains réels par héros, événements et destinataires, TAGS appliqués/retirés et durée, objets perdus/gagnés, récompenses, prochaine étape ou clôture |
 | Journal | heure, alerte/étape, action, participants, résultat, conséquences, détail du calcul replié |
 
 Préparation : objectif et lieu; attribut actuel cumulé face à la difficulté; écart; base; TAGS déclenchés avec porteurs; total à droite; durée et conséquences possibles. Les autres attributs restent dans la fiche héros, pas dans une nouvelle salade de chiffres.
