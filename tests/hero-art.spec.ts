@@ -13,7 +13,7 @@ test('twenty transparent heroes work in both art directions',async({page})=>{
    await page.locator(`button[data-theme="${theme}"]`).click();
    await expect(page.locator('#sheet')).toHaveAttribute('data-hero',hero.id);
    for(const view of ['portrait','silhouette']){
-    await page.locator(`[data-art-view="${view}"]`).click();
+    await page.locator(`button[data-art-view="${view}"]`).click();
     const image=page.locator('.portrait');
     await expect(image).toHaveAttribute('src',`./assets/heroes/brute-angulaire/${view==='portrait'?'portraits/':''}${hero.id}.png`);
     await image.evaluate(async el=>{await (el as HTMLImageElement).decode();});
@@ -57,6 +57,6 @@ for(const width of [320,390,1280])test(`separate backgrounds and downloadable ar
  await expect(page.getByRole('link',{name:'Portrait PNG',exact:true})).toHaveAttribute('download','nyx-portrait.png');
  await expect(page.getByRole('link',{name:'Silhouette PNG',exact:true})).toHaveAttribute('download','nyx.png');
  await page.locator('#hero-select').selectOption('malik');
- await expect(page.locator('[data-art-view="silhouette"]')).toBeDisabled();
+ await expect(page.locator('button[data-art-view="silhouette"]')).toBeDisabled();
  await expect(page.locator('.portrait')).toHaveAttribute('src','./assets/heroes/portrait-bulletin.webp');
 });

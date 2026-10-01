@@ -65,7 +65,7 @@ setInterval(()=>{if(!running||document.querySelector('dialog[open]'))return;rema
 function syncHeroControls(){
  const picker=document.querySelector<HTMLSelectElement>('#hero-select')!;picker.value=selectedHero;
  document.querySelector<HTMLSelectElement>('#hero-background')!.value=heroBackground;
- document.querySelectorAll<HTMLButtonElement>('[data-art-view]').forEach(button=>{
+ document.querySelectorAll<HTMLButtonElement>('button[data-art-view]').forEach(button=>{
   button.setAttribute('aria-pressed',String(button.dataset.artView===artView));
   button.disabled=selectedHero==='malik'&&button.dataset.artView==='silhouette';
  });
@@ -82,7 +82,7 @@ root.addEventListener('change',event=>{
  }
 });
 root.addEventListener('click',event=>{
- const button=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-art-view]');
+ const button=(event.target as HTMLElement).closest<HTMLButtonElement>('button[data-art-view]');
  if(!button||button.disabled)return;
  const value=button.dataset.artView;if(value!=='portrait'&&value!=='silhouette')return;
  artView=value;render();
