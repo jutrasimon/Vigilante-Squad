@@ -33,7 +33,7 @@ function status(s:string){$('status').textContent=s;}
 function group(l:LayerSpecification){const id=l.id.toLowerCase(),src='source-layer'in l?String(l['source-layer']):'';
  if(l.type==='background')return 'background';if(/water/.test(src+id))return 'water';if(/building/.test(src+id))return 'building';if(/park|landcover|landuse/.test(src+id))return 'park';if(/rail/.test(id))return 'rail';if(/transportation/.test(src)||/road|bridge|tunnel/.test(id))return 'road';return 'land';}
 function scale(v:unknown,m:number):any{if(typeof v==='number')return v*m;if(!Array.isArray(v))return undefined;const a=structuredClone(v);if(a[0]==='interpolate'||a[0]==='interpolate-hcl'||a[0]==='interpolate-lab'){for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}if(a[0]==='step'){a[2]=scale(a[2],m)??a[2];for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}return ['*',a,m];}
-function paint(){if(!base||!map.isStyleLoaded())return;
+function paint(){if(!base)return;
  const set=(id:string,key:string,v:unknown)=>{try{(map.setPaintProperty as (id:string,key:string,v:unknown)=>unknown)(id,key,v);}catch{}};
  for(const l of base.layers){const g=group(l),ov=overrides[l.id]||{};let visible=true;
  if(l.type==='symbol')visible=theme.labels;
