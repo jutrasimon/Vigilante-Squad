@@ -8,7 +8,7 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await expect(page.locator('.hp .filled')).toHaveCount(6);await expect(page.locator('.mental .filled')).toHaveCount(8);
  await page.getByText('Couleurs et matière',{exact:true}).click();await page.locator('[data-color="accent"]').fill('#33aacc');await expect(page.locator('#sheet')).toHaveCSS('--accent','#33aacc');
- await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Départ pour Gare Est');await page.locator('[data-tab="Fiche"]').click();
+ await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Gare Est · Civils protégés');await page.locator('[data-tab="Fiche"]').click();
  await page.locator('[data-idle="patrol"]').click();await expect(page.locator('[data-idle="patrol"]')).toHaveAttribute('aria-pressed','true');
  await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
  await page.screenshot({path:`test-results/hero-${theme}-${width}.png`,fullPage:true});

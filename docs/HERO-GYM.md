@@ -53,3 +53,13 @@ Deux cadrages : Portrait et Silhouette. Les images sont des PNG avec un véritab
 Le décor se trouve dans une couche HTML/CSS indépendante de l'image. Dossier utilise un fond sombre, une grille discrète et des lignes dorées. Bulletin utilise des aplats crème, rouge et bleu, une trame et l'usure neutre. Les couleurs suivent les palettes éditables existantes. L'atelier permet aussi un fond uni ou un damier pour visualiser la transparence. Le damier n'est jamais inclus dans les PNG téléchargés. Les liens Portrait PNG et Silhouette PNG téléchargent les fichiers du héros sélectionné.
 
 Les TAGs et les règles d'objet unique au QG utilisent toujours leurs composants partagés. La recherche reste isolée du prototype de dispatch.
+
+## Profil : état actuel, identité et journal (propositions du gym)
+- Valeurs actuelles en gros; bouton « Valeurs de base et effets » pour le calcul Corps / Esprit / Âme et déplacement. Aucun changement au moteur principal.
+- Épuisé : −2 aux trois attributs (plancher 0), −2 km/h (plancher 1). Mission normale : 1 effort; difficile : 2. À 3 efforts, Épuisé apparaît. Récupération complète au QG le retire. Ces seuils sont des propositions, ajustables après essai.
+- Atelier : boutons de mission normale/difficile, récupération et case Épuisé. Les jauges diminuent et le journal enregistre les conséquences. Les TAGS libres peuvent avoir une durée en missions (0 = permanent); leur texte ne crée pas automatiquement un modificateur numérique.
+- Les TAGS d’objet apparaissent sur la fiche, sans doubler un TAG permanent identique. Infobulles : source, permanence/durée. Détails des objets sous l’image.
+- Résumé supérieur et panneau mission utilisent la même source pour trajet, repérage, choix, action et retour. Animation de démonstration : trajet → choix → action → retour → activité choisie.
+- PV/Mental/Énergie : règles proposées dans un volet repliable de la fiche; conséquences et causes dans le journal. Les réactions à zéro ne sont pas implémentées dans cette démo.
+- Identité : histoire et motivation éditables par héros, enregistrées localement sur l’appareil. Pas de biographie inventée et imposée.
+- Journal : nuit 01 de démonstration, filtres Tout/Missions/Personnage, conséquences en pastilles et rapport dépliable. Essais en mémoire jusqu’au rechargement; ne constitue pas encore un historique du jeu principal.
