@@ -5,11 +5,15 @@ for(const width of [320,390,1280])test(`biseau resizing and palette ${width}`,as
  await page.locator('#bark-copy').fill('On y va.');await page.locator('#bark').click();
  const bubble=page.locator('#speech');await expect(bubble).toBeVisible();
  for(const theme of ['dossier','bulletin']){
-  await page.locator(`button[data-theme="${theme}"]`).click();
+  await page.locator(`button[data-theme="${theme}"]`).click();await page.evaluate(()=>document.fonts.ready);
+  const layout=()=>page.locator('.portrait,.identity h1,.hero-state,.attributes,.speed-strip,.tabs').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return [r.x+scrollX,r.y+scrollY,r.width,r.height];}));
+  const before=await layout();
   for(const text of ['On y va.','Dis-moi qu’on a un plan. Un vrai, cette fois.','Wir warten auf die anderen. Diesmal gehen wir gemeinsam hinein.','みんなを待とう。今度は一緒に行こう。']){
    await page.locator('#bark-copy').fill(text);await expect(bubble).toHaveText(text);await page.waitForTimeout(250);
-   const bounds=await bubble.evaluate(el=>{const b=el.getBoundingClientRect(),t=el.querySelector('strong')!,r=t.getBoundingClientRect(),m=document.querySelector('.hero-state')!.getBoundingClientRect();return {overflow:t.scrollWidth>t.clientWidth+1,inside:r.top>=b.top&&r.bottom<=b.bottom,clear:b.bottom<=m.top,viewport:document.documentElement.scrollWidth<=innerWidth,path:el.querySelector('.bark-body')!.getAttribute('d')};});
-   expect(bounds).toMatchObject({overflow:false,inside:true,clear:true,viewport:true});expect(bounds.path).toBeTruthy();
+   const bounds=await bubble.evaluate(el=>{const b=el.getBoundingClientRect(),t=el.querySelector('strong')!,r=t.getBoundingClientRect(),style=getComputedStyle(el);return {overflow:t.scrollWidth>t.clientWidth+1,inside:r.top>=b.top&&r.bottom<=b.bottom,absolute:style.position==='absolute',viewport:document.documentElement.scrollWidth<=innerWidth,path:el.querySelector('.bark-body')!.getAttribute('d')};});
+   expect(bounds).toMatchObject({overflow:false,inside:true,absolute:true,viewport:true});expect(bounds.path).toBeTruthy();
+   await expect(page.locator('.identity h1')).toHaveCSS('visibility','visible');
+   const after=await layout();after.forEach((rect,i)=>rect.forEach((v,j)=>expect(v).toBeCloseTo(before[i][j],1)));
   }
  }
  await page.getByText('Couleurs et matière',{exact:true}).click();

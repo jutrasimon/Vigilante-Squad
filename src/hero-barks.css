@@ -1,10 +1,8 @@
-/* Biseau: live text, independently recolorable vector surface, intrinsic height. */
+/* Biseau: live text, independently recolorable vector surface, absolute overlay with intrinsic height; never participates in layout. */
 .identity{z-index:3}
 .identity-info{container-type:inline-size}
-.name-anchor{position:relative;display:grid;align-items:center;min-width:0}
-.name-anchor>h1,.name-anchor>.speech{grid-area:1/1}
-.name-anchor:has(.speech:not([hidden]))>h1{visibility:hidden}
-.identity .speech{position:relative;inset:auto;z-index:3;justify-self:start;width:fit-content;min-width:min(100%,7em);max-width:100%;margin:0 0 14px;padding:16px 20px;box-sizing:border-box;background:none;border:0;border-radius:0;box-shadow:none;filter:none;color:var(--bark-text);pointer-events:none;transform:none;transform-origin:left center;animation:biseau-enter .22s ease-out both;font-size:clamp(18px,calc(12px + 6cqi),34px)}
+.name-anchor{position:relative;min-width:0}
+.identity .speech{position:absolute;inset:auto;left:0;top:50%;translate:0 -50%;z-index:20;width:fit-content;min-width:min(100%,7em);max-width:100%;margin:0;padding:16px 20px;box-sizing:border-box;background:none;border:0;border-radius:0;box-shadow:none;filter:none;color:var(--bark-text);pointer-events:none;transform:none;transform-origin:left center;animation:biseau-enter .22s ease-out both;font-size:clamp(18px,calc(12px + 6cqi),34px)}
 .identity .speech.long-copy{font-size:clamp(18px,calc(10px + 5cqi),28px)}
 .identity .speech:before,.identity .speech:after{content:none}
 .identity .speech strong{position:relative;z-index:1;display:block;font:800 italic 1em/1.12 'Barlow Condensed','Noto Sans',sans-serif;text-transform:none;letter-spacing:0;text-align:center;text-shadow:none;white-space:normal;overflow-wrap:anywhere;text-wrap:balance}
