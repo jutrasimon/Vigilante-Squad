@@ -33,3 +33,12 @@ for(const width of [320,1280])test(`hold base values and internal story scrollin
  await page.locator('[data-tab="Identité"]').click();const story=page.locator('.story-scroll');await story.scrollIntoViewIfNeeded();await story.hover();const y=await page.evaluate(()=>scrollY);await page.mouse.wheel(0,450);await expect.poll(()=>story.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);expect(await page.evaluate(()=>scrollY)).toBe(y);
  await page.locator('#sheet').screenshot({path:`test-results/story-${width}.png`});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
 });
+for(const width of [320,390,1280])test(`base comparison has no layout shift ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});await page.goto('/hero-gym.html');
+ for(const theme of ['dossier','bulletin']){
+ await page.locator(`button[data-theme="${theme}"]`).click();
+ const geometry=()=>page.locator('.attributes,.speed-strip,.tabs,.tab-content').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,height:r.height};}));
+ const before=await geometry();await page.locator('[data-base]').evaluate(el=>el.style.display='none');expect(await geometry()).toEqual(before);await page.locator('[data-base]').evaluate(el=>el.style.removeProperty('display'));
+ await page.locator('[data-base]').focus();await page.keyboard.down('Space');expect(await geometry()).toEqual(before);await page.locator('.attributes-wrap').screenshot({path:`test-results/stable-base-${theme}-${width}.png`});await page.keyboard.up('Space');expect(await geometry()).toEqual(before);
+ }
+});
