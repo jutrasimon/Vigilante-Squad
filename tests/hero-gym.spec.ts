@@ -9,7 +9,7 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  await expect(page.locator('.hp .filled')).toHaveCount(6);await expect(page.locator('.mental .filled')).toHaveCount(8);
  await page.getByText('Couleurs et matière',{exact:true}).click();await page.locator('[data-color="accent"]').fill('#33aacc');await expect(page.locator('#sheet')).toHaveCSS('--accent','#33aacc');
  await page.locator('[data-tab="Journal"]').click();await expect(page.locator('.journal-timeline')).toContainText('Gare Est · Civils protégés');await page.locator('[data-tab="Fiche"]').click();
- await page.locator('[data-idle="patrol"]').click();await expect(page.locator('[data-idle="patrol"]')).toHaveAttribute('aria-pressed','true');
+ await page.locator('[data-idle="watch"]').click();await expect(page.locator('[data-idle="watch"]')).toHaveAttribute('aria-pressed','true');
  await page.locator('#reset-colors').click();await page.getByText('Couleurs et matière',{exact:true}).click();
  await page.screenshot({path:`test-results/hero-${theme}-${width}.png`,fullPage:true});
  }
@@ -23,7 +23,7 @@ for(const width of [320,390,1280])test(`hero gym ${width}`,async({page})=>{
  await page.locator('[data-max="hp"]').fill('4');await page.locator('[data-max="hp"]').press('Tab');await expect(page.locator('.hp .track')).toHaveAttribute('aria-valuemax','4');await expect(page.locator('.hp .filled')).toHaveCount(4);
  await page.locator('[data-max="mental"]').fill('14');await page.locator('[data-max="mental"]').press('Tab');await expect(page.locator('.mental .track i')).toHaveCount(14);
  await page.locator('#cancel-mission').click();await expect(page.getByRole('dialog')).toBeVisible();await page.locator('#keep-mission').click();await expect(page.locator('.mission')).toBeVisible();
- await page.locator('#cancel-mission').click();await page.locator('#confirm-cancel').click();await expect(page.locator('.mission')).toHaveCount(0);await expect(page.locator('.hero-state')).toContainText('Patrouille');
+ await page.locator('#cancel-mission').click();await page.locator('#confirm-cancel').click();await expect(page.locator('.mission')).toHaveCount(0);await expect(page.locator('.hero-state')).toContainText('Surveillance');
  await page.locator('#state').selectOption('travel');await expect(page.locator('.mini-mission')).toBeVisible();
  await page.locator('#view-mission').click();await expect(page).toHaveURL(/incident=gare/);await expect(page.locator('#intro')).not.toBeVisible();
 });
@@ -48,7 +48,7 @@ for(const width of [320,390,1280])test(`single object workshop ${width}`,async({
   await expect(page.locator('[data-object="medkit"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('.speed-strip')).toContainText('6');
   await page.locator('[data-object="bike"]').click();
-  for(const state of ['patrol','travel','working']){
+  for(const state of ['watch','travel','working']){
    await page.locator('#state').selectOption(state);
    await expect(page.locator('.object-card:disabled')).toHaveCount(3);
    await page.locator('[data-object="vest"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
