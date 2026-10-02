@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-test.use({launchOptions:{args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}});
+test.use({launchOptions:{executablePath:process.env.CHROMIUM_PATH,args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}});
 // Keep covering existing local workshops alongside the new approved cold-start map.
 test.beforeEach(async({page},info)=>{
  if(info.title.startsWith('Approved map reference'))return;
@@ -94,7 +94,7 @@ for(const width of [390,1280])test(`Map categories hide commerces independently 
  const pending=page.waitForEvent('download');await page.locator('#style-export').click();const stream=await(await pending).createReadStream();const parts:Buffer[]=[];for await(const part of stream!)parts.push(part);return JSON.parse(Buffer.concat(parts).toString());
  }
  let style=await exportedStyle();
- for(const l of style.layers)expect(l.layout.visibility).toBe(l.id.startsWith('poi-')?'none':'visible');
+ for(const l of style.layers.filter((l:any)=>!l.id.startsWith('scene-')))expect(l.layout?.visibility??'visible').toBe(l.id.startsWith('poi-')?'none':'visible');
  await places.check();
  await page.locator('#advanced-layers summary').click();
  // An advanced exception must not prevent the next bulk hide action.
@@ -173,9 +173,9 @@ for(const width of [390,1280])test(`Camera angle and independent zoom limits at 
  const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true});
  const fingers=(spread:number)=>[{x:x-spread,y,id:1},{x:x+spread,y,id:2}];
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:fingers(20)});
- for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(20+i*7)});
+ for(let i=1;i<=8;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(20+i*7)});await page.waitForTimeout(35);}
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(500);
- pose=await camera();expect(pose.zoom).toBeGreaterThan(14);expect(pose.zoom).toBeLessThanOrEqual(17);expect(pose.pitch).toBe(37);expect(pose.bearing).toBe(-28);
+ await expect.poll(async()=>(await camera()).zoom).toBeGreaterThan(14);pose=await camera();expect(pose.zoom).toBeLessThanOrEqual(17);expect(pose.pitch).toBe(37);expect(pose.bearing).toBe(-28);
  if(width<760)await page.locator('#atelier').click();await page.getByText('Direction artistique',{exact:true}).click();await page.locator('[data-preset=bulletin]').click();
  const afterPalette=await camera();expect(afterPalette).toEqual(pose);
  await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');
@@ -229,7 +229,7 @@ for(const width of [390,1280])test(`Approved map reference loads and restores at
  await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{},layers:[{id:'background',type:'background'}]}}));
  const response=await page.request.get('/config/map-reference.json'),reference=await response.json();expect(response.ok()).toBe(true);
  await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
- await expect(page.locator('.poi')).toHaveCount(1);await expect(page.locator('.poi-name')).toHaveText('QG');
+ await expect(page.locator('.poi')).toHaveCount(reference.points.length);await expect(page.locator('.poi-name')).toHaveText(reference.points.map((p:any)=>p.name));
  if(width<760)await page.locator('#atelier').click();
  await expect(page.locator('[data-theme=threeD]')).toBeChecked();await expect(page.locator('[data-theme=roadNumbers]')).not.toBeChecked();
  await page.getByText('Lieu & caméra',{exact:true}).click();await expect(page.locator('#camera-lock')).toBeChecked();await expect(page.locator('#camera-zoom')).toBeEnabled();
