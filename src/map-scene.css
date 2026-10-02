@@ -42,3 +42,6 @@
 .viewport .zone-label{z-index:1}.viewport .poi{z-index:2}.viewport .agent-token,.viewport .vehicle-token{z-index:3}
 
 .vehicle-token.is-selected{filter:drop-shadow(0 0 7px #78dcde);outline:2px solid #78dcde;outline-offset:4px;border-radius:8px}
+.weather-rain{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}.weather-rain[hidden]{display:none}.rain-controls{border-top:1px solid #435460;margin-top:20px;padding-top:8px}#juice-new-event{min-width:0}#juice-delete-event,#juice-clear-legacy{font-size:11px;color:#a8bac4;min-height:30px}#zone-tolerance{width:100%}
+
+.viewport:has(#hero-window:not([hidden])) #selection{left:auto;right:16px;z-index:8}

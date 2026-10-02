@@ -84,7 +84,7 @@ Un clic sur un héros ouvre la **vraie fiche du Hero Gym**, intégrée en mode `
 
 Le **Crayon** sur la map et **Encercler un secteur** dans l'atelier activent le dessin. Garder le bouton ou le doigt appuyé, tracer un contour et relâcher : il se ferme en polygone géographique. La map ne se déplace pas pendant le dessin. Échap ou Annuler sort du mode; un trait trop court laisse le crayon actif pour recommencer. Les zones demeurent attachées au terrain pendant déplacement et zoom.
 
-Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un héros et choisir **Surveiller cette zone** ou **Patrouiller dans cette zone**. Un héros a une zone active; le réassigner libère la précédente. Supprimer une zone libère son héros. Le héros rejoint automatiquement le secteur par les rues, puis se déplace à l’intérieur. La surveillance marque des pauses plus longues que la patrouille. La résolution des interventions n’est pas simulée.
+Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un héros et activer **Surveillance**. Un héros a une zone active; le réassigner libère la précédente. Supprimer une zone libère son héros. Le héros rejoint automatiquement le secteur par les rues, puis se déplace à l’intérieur. Surveillance et patrouille sont une seule activité, avec des pauses entre les parcours. La résolution des interventions n’est pas simulée.
 
 ### Persistance et vérification
 
@@ -95,10 +95,10 @@ Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un 
 ## Raffinements du 2 octobre
 
 - Le crayon conserve le contour libre, retire les boucles de fermeture accidentelles et arrondit les angles. Les contours ne sont pas remplacés par des cercles. Les lignes ont des jointures arrondies.
-- Surveillance et Patrouille ont chacune une couleur réglable dans Crayon & zones, sauvegardée dans `scene.zoneColors`. Changer l'ordre actualise la couleur. Le portrait du héros assigné apparaît dans la liste et le libellé sur la carte.
+- Surveillance possède une couleur réglable dans Crayon & zones, sauvegardée dans `scene.zoneColors`. Changer l'ordre actualise la couleur. Le portrait du héros assigné apparaît dans la liste et le libellé sur la carte.
 - Un secteur ouvre sa propre fenêtre de réglages sur la carte (nom, héros, ordre, recentrage, suppression). Le bouton cible dans la liste recentre la caméra sur le secteur, dans les limites de déplacement configurées.
-- La fiche est toujours le vrai `hero-gym.html` embarqué. Les activités hors mission partagent `hero-activities.ts` (QG, Surveillance, Patrouille). Le choix Surveillance est aussi présent dans le Hero Gym indépendant.
-- Sélectionner un héros ou un véhicule puis cliquer une destination sur la carte déclenche un trajet routier visible. Les boutons cible recentrent uniquement la caméra. Le glisser-déposer reste un outil de placement.
+- La fiche est toujours le vrai `hero-gym.html` embarqué. Les activités hors mission partagent `hero-activities.ts` (QG, Surveillance). Le choix Surveillance est aussi présent dans le Hero Gym indépendant.
+- Sélectionner un héros ou un véhicule, activer Déplacer puis cliquer une destination déclenche un trajet routier visible. Les boutons cible recentrent uniquement la caméra. Le glisser-déposer reste un outil de placement.
 - La poignée de la fiche règle maintenant largeur et hauteur indépendamment, avec défilement interne. La hauteur facultative `scene.window.height` conserve la compatibilité avec les exports précédents.
 - Le socle du héros est centré exactement sur l'ancrage géographique; le survol des points anime uniquement leur symbole. Les types de points gardent leurs couleurs initiales distinctes, également appliquées lorsqu'on change leur type.
 - La référence publique reprend l'export fourni le 2 octobre : caméra, couleurs, trois points et Béton. Les sauvegardes locales restent prioritaires; utiliser Restaurer la référence pour la charger.
@@ -114,9 +114,9 @@ L'export **Atelier complet (JSON)** inclut les paramètres de caméra, le thème
 
 ### Déplacements
 
-Ouvrir la fiche d’un héros puis cliquer un point ou le terrain. Le héros rejoint la rue la plus proche de la destination, avec un trajet en pointillés de la couleur de son halo. La fiche reste ouverte. Son bouton cible recentre la caméra sur sa position actuelle. Sélectionner un véhicule, dans la liste ou sur la carte, utilise le même geste. La vitesse de simulation (×1 à ×30) accélère les essais.
+Ouvrir la fiche d’un héros, choisir **Déplacer le héros**, puis cliquer un point ou le terrain. Un clic ordinaire inspecte seulement le point; sa fenêtre propose aussi **Déplacer ici**. Le petit × du statut annule l’action après confirmation et arrête le héros sur place. Le héros rejoint la rue la plus proche de la destination, avec un trajet en pointillés de la couleur de son halo. La fiche reste ouverte. Son bouton cible recentre la caméra sur sa position actuelle. Sélectionner un véhicule, dans la liste ou sur la carte, utilise le même geste. La vitesse de simulation (×1 à ×30) accélère les essais.
 
-Dans la fiche commune, Surveillance et Patrouille affichent un menu **Secteur**. L’affectation fonctionne aussi depuis la fenêtre du secteur. Le héros rejoint le secteur puis choisit des parcours routiers qui restent dedans. QG choisit le point QG le plus proche, le rejoint et y reste. Sans QG, secteur accessible ou trajet continu, un message explique le blocage; aucun trajet direct à travers les bâtiments n’est créé.
+Dans la fiche commune, **Surveillance** (qui englobe la patrouille) affiche un menu de secteurs sans label superflu, avec son effet sur l’énergie dessous. L’affectation fonctionne aussi depuis la fenêtre du secteur. Le héros rejoint le secteur puis parcourt ses rues, en gardant le statut Surveillance. Une marge réglable de 0 à 80 m (35 m par défaut) tolère les imprécisions du crayon et prolonge les petits bouts de rue vers les intersections proches. QG choisit le point QG le plus proche, le rejoint et y reste. Sans QG, secteur accessible ou trajet continu, un message explique le blocage; aucun trajet direct à travers les bâtiments n’est créé.
 
 Le réseau est construit depuis les rues chargées par MapLibre, sans nouveau service de routage : intersections, connexions de ponts/tunnels et distinction rues/sentiers. Les véhicules évitent les sentiers. C’est une simulation de jeu bidirectionnelle, sans feux ni règles de sens unique. La couverture dépend des tuiles chargées : charger la zone en déplaçant/dézoomant la caméra si un trajet manque. Les trajets en cours, destinations, vitesses et affectations sont sauvegardés; un trajet importé reprend là où il était.
 
@@ -124,6 +124,10 @@ Le réseau est construit depuis les rues chargées par MapLibre, sans nouveau se
 
 ### Effets
 
-L’onglet **Juice** permet de choisir la carte, un héros, un véhicule, un point ou un secteur (liste ou clic sur la map). Cocher Pop, Squash & stretch, Flash, Secousse écran, Zoom caméra, Travelling, Explosion ou Pluie de particules. Régler intensité, durée et couleur puis **Tester**; **Arrêter** coupe les effets. Un déclenchement au clic ou à l’arrivée d’un acteur peut être mémorisé. Les animations respectent la réduction des mouvements et les limites de caméra.
+L’onglet **Juice** configure des règles par **type** (tous les héros, véhicules, alertes, etc.) et **déclencheur**. Clic, arrivée et perte de HP sont branchés; les noms libres comme `solved` peuvent être créés puis testés. Choisir une cible individuelle ou toutes les cibles du type pour l’essai. Pop, squash, flash, shake, zoom, travelling et explosion partagent intensité, durée et couleur. Les nouvelles entités héritent des règles de leur type.
 
-`scene.juice` sauvegarde chaque configuration par cible dans l’export **Atelier complet**, avec `scene.travelSpeed` et `journey` sur les acteurs. Les anciens exports restent acceptés. `tests/map-routing.spec.ts` couvre les routes, le retour au QG, les affectations, véhicules, effets et export/import; `tests/map-roads.test.ts` vérifie notamment ponts, intersections, réseau discontinu et confinement dans les contours concaves.
+Pour intégrer un événement de jeu : `window.dispatchEvent(new CustomEvent('vigilante:juice', {detail: {type: 'point:alert', event: 'solved'}}))`. Un `target: 'hero:ID'` peut remplacer le type. Créer un nom ne crée pas automatiquement une nouvelle logique de gameplay.
+
+**DA → Pluie** ajoute une pluie d’ambiance indépendante : activation, densité, vitesse, vent, visibilité, teinte et éclaboussures. Elle respecte la réduction des animations et se suspend lorsque l’onglet est masqué. L’ancien effet ponctuel de pluie de particules reste lisible dans les anciens fichiers.
+
+L’export **Atelier complet (JSON)** conserve `scene.juice` (version 2, déclencheurs et règles), `scene.weather`, marges des secteurs, affectations, trajets, vitesse et tous les réglages existants. Les anciens ordres Patrouille deviennent Surveillance; les anciennes règles Juice individuelles sont conservées. Les tests couvrent le déplacement explicite, l’annulation confirmée, les routes tolérantes, les règles par type, la pluie et la comparaison intégrale de la scène après export/import/rechargement.
