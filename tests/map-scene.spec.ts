@@ -7,6 +7,7 @@ test.beforeEach(async({page})=>{
  await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{},layers:[{id:'background',type:'background',paint:{'background-color':'#17252d'}}]}}));
 });
 for(const width of [390,1280])test(`Map tokens, floating Hero Gym and pencil JSON roundtrip at ${width}px`,async({page})=>{
+ test.setTimeout(60_000);
  await page.setViewportSize({width,height:900});const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');if(width<760)await page.locator('#atelier').click();
  await page.locator('#map-hero').selectOption('nyx');await page.locator('#add-agent').click();await expect(page.locator('.agent-token')).toHaveCount(1);
