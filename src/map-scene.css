@@ -45,3 +45,16 @@
 .weather-rain{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}.weather-rain[hidden]{display:none}.rain-controls{border-top:1px solid #435460;margin-top:20px;padding-top:8px}#juice-new-event{min-width:0}#juice-delete-event,#juice-clear-legacy{font-size:11px;color:#a8bac4;min-height:30px}#zone-tolerance{width:100%}
 
 .viewport:has(#hero-window:not([hidden])) #selection{left:auto;right:16px;z-index:8}
+/* Selection effects live in Juice, never in a second animation system. */
+.agent-token.is-selected .token-portrait,.agent-token.is-selected .token-ground{animation:none}
+.agent-token .token-portrait,.token-shadows .agent-token .token-ground{box-shadow:0 4px 12px #0008}
+.poi,.agent-token,.vehicle-token,.zone-label,.poi-resident{cursor:pointer!important}
+.poi:active,.agent-token:active,.vehicle-token:active{cursor:grabbing!important}
+#selection,#zone-editor{overflow:auto;overscroll-behavior:contain;z-index:6}
+.viewport:has(#hero-window:not([hidden])) #selection{z-index:6}
+.poi-residents{position:absolute;left:calc(100% + 8px);top:0;display:flex;gap:4px;pointer-events:auto}
+.poi-resident{display:block;width:32px;height:38px;border:2px solid var(--point);border-radius:5px;background:#15252b;overflow:hidden}
+.poi-resident img{width:100%;height:100%;object-fit:cover}
+.weather-lightning{position:absolute;inset:0;opacity:0;z-index:3;pointer-events:none;mix-blend-mode:screen}
+#route-controls{border-top:1px solid #3a4c58;margin-top:16px}
+.agent-token[hidden]{display:none!important}
