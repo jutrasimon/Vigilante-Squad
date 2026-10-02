@@ -147,3 +147,9 @@ La fiche partagée affiche un progress bar et les secondes restantes, calculées
 **Juice** ajoute Temporary Zoom (verrou des gestes caméra, approche, effet, retour au cadrage initial), Shake de l’objet, Pinpoint, Pulse et Glow. `centered` se déclenche après le bouton de recentrage de chaque type. `focus` active ses règles à la sélection, maintient Pulse/Glow puis les arrête à la désélection. Les autres effets focus sont ponctuels à l’entrée de sélection. Les règles de halo animé proviennent désormais de ce module commun. Les règles `click`, `arrival`, `hit` restent branchées; `solved` et les déclencheurs personnalisés sont prêts à être émis par le jeu et testables dans l’atelier.
 
 Tous les paramètres sont validés dans le JSON **Atelier complet**. Les tests vérifient cache réutilisé, changements de marge, progression réelle, retour QG, portraits persistants, non-chevauchement des fenêtres, fin du focus, déclenchement centered, retour de caméra, éclaboussures, éclairs et scène identique après export/import/rechargement.
+
+## Surveillance simplifiée
+
+À l’affectation, un seul parcours routier traversant le secteur est préparé. Le héros rejoint son départ puis effectue le même aller-retour en continu, sans pause ni nouveau calcul à chaque extrémité. Le parcours intérieur est invisible; le trajet d’approche conserve son tracé et son temps restant. Le statut demeure Surveillance. La couverture de gameplay reste celle du secteur assigné, indépendante de la position visuelle du héros dans ce parcours.
+
+`journey.loopStart` et `journey.loopActive`, avec le chemin, la position et l’index suivant, sont validés et exportés pour reprendre la boucle à l’import. Une ancienne patrouille à destinations successives est convertie une seule fois au chargement. Changer de secteur/marge, donner un nouvel ordre ou annuler remplace/arrête la boucle; les tours suivants ne déclenchent pas une nouvelle arrivée Juice.
