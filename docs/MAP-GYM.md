@@ -102,3 +102,9 @@ Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un 
 - La poignée de la fiche règle maintenant largeur et hauteur indépendamment, avec défilement interne. La hauteur facultative `scene.window.height` conserve la compatibilité avec les exports précédents.
 - Le socle du héros est centré exactement sur l'ancrage géographique; le survol des points anime uniquement leur symbole. Les types de points gardent leurs couleurs initiales distinctes, également appliquées lorsqu'on change leur type.
 - La référence publique reprend l'export fourni le 2 octobre : caméra, couleurs, trois points et Béton. Les sauvegardes locales restent prioritaires; utiliser Restaurer la référence pour la charger.
+
+### Halo des héros et export complet
+
+Le halo reste bleu (`#78dcde`) indépendamment de l'activité. Chaque héros possède un sélecteur dans Héros & véhicules; sa couleur facultative `scene.agents[].color` est enregistrée dans l'atelier. Une ancienne sauvegarde sans couleur retrouve le bleu. L'ouverture de sa fiche sélectionne le token : bordure plus épaisse et pulsation sans déplacement de son ancrage. Fermer la fiche retire l'effet; la préférence système de réduction des animations est respectée.
+
+L'export **Atelier complet (JSON)** inclut les paramètres de caméra, le thème, les couches, les points et toute la scène, notamment couleurs des secteurs, halos, ambiance, positions, affectations et dimensions de la fenêtre. **Style seul (MapLibre)** reste un export du fond de carte. Les tests modifient tous les paramètres d'ambiance et les nouvelles couleurs avant export, puis comparent la scène entière après import et rechargement.
