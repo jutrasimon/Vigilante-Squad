@@ -150,18 +150,18 @@ Tous les paramètres sont validés dans le JSON **Atelier complet**. Les tests v
 
 ## Surveillance simplifiée
 
-À l’affectation, un seul parcours routier traversant le secteur est préparé. Le héros rejoint son départ puis effectue le même aller-retour en continu, sans pause ni nouveau calcul à chaque extrémité. Le parcours intérieur est invisible; le trajet d’approche conserve son tracé et son temps restant. Le statut demeure Surveillance. La couverture de gameplay reste celle du secteur assigné, indépendante de la position visuelle du héros dans ce parcours.
+À l’affectation, un seul parcours routier traversant le secteur est préparé. Le héros rejoint son départ puis effectue le même aller-retour en continu, sans pause ni nouveau calcul à chaque extrémité. Le parcours intérieur est invisible; le trajet d’approche conserve son tracé et son temps restant. Le trajet d’approche affiche En déplacement et son décompte; la boucle affiche Surveillance et son coût énergétique. La couverture de gameplay reste celle du secteur assigné, indépendante de la position visuelle du héros dans ce parcours.
 
 `journey.loopStart` et `journey.loopActive`, avec le chemin, la position et l’index suivant, sont validés et exportés pour reprendre la boucle à l’import. Une ancienne patrouille à destinations successives est convertie une seule fois au chargement. Changer de secteur/marge, donner un nouvel ordre ou annuler remplace/arrête la boucle; les tours suivants ne déclenchent pas une nouvelle arrivée Juice.
 
 ### Équipe, bâtiments et retours visuels
 
 - Barre d’équipe en bas : portrait, HP, mental, énergie, activité, centrage. Le portrait ouvre la fiche partagée du Hero Gym, sans copie de son interface.
-- Le résumé de la fiche reprend le décompte du trajet. Surveillance conserve le nom du secteur et son coût (0,15 énergie/s), y compris pendant les déplacements. Le coût est partagé avec la simulation et appliqué aux héros affectés; les ressources sont sauvegardées.
-- Les héros au repos rejoignent automatiquement le QG le plus proche. Une action annulée reste annulée, y compris après rechargement.
+- Le résumé de la fiche reprend le décompte du trajet. Surveillance conserve le nom du secteur et son coût (0,15 énergie/s), pendant la boucle de surveillance, après le trajet d’approche. Le coût est partagé avec la simulation et appliqué aux héros affectés; les ressources sont sauvegardées.
+- Les héros au repos rejoignent automatiquement le QG le plus proche. L’activité idle est mémorisée séparément des ordres temporaires : à leur fin, le héros reprend son secteur ou rejoint le QG le plus proche. Annuler l’activité idle la suspend sans effacer sa préférence.
 - Les déclencheurs Juice `click`, `arrival`, `hit`, `centered`, `focus` sont connectés et non supprimables. Toute modification de règle s’applique et se sauvegarde immédiatement. `solved` et les événements personnalisés restent appelables via `vigilante:juice`. L’édition laisse les clics du jeu actifs; « Choisir une cible sur la carte » active explicitement la sélection d’une cible d’essai. Pinpoint est dessiné derrière les marqueurs.
-- Bâtiments interactifs : choisir un bâtiment, changer sa couleur, activer sa pulsation, l’associer à un point (sa sélection souligne le bâtiment), le détruire avec une explosion, puis le restaurer. Les empreintes et les états sont enregistrés dans `scene.buildings`. Cela masque les volumes cartographiques dans cet atelier; ce n’est pas une simulation de fracture physique. Les géométries proviennent des tuiles chargées au moment de la sélection.
-- La pluie masque les éclaboussures devant les bâtiments visibles, avec cache spatial invalidé aux mouvements et modifications. Les éclairs produisent deux flashs successifs.
+- Bâtiments interactifs : choisir un bâtiment, changer sa couleur, l’associer à un point (sa sélection souligne le bâtiment), le détruire avec une explosion, puis le restaurer. Les empreintes et les états sont enregistrés dans `scene.buildings`. Cela masque les volumes cartographiques dans cet atelier; ce n’est pas une simulation de fracture physique. Les géométries proviennent des tuiles chargées au moment de la sélection.
+- La pluie masque les éclaboussures devant les bâtiments visibles, avec cache spatial invalidé aux mouvements et modifications. Le nombre de flashs, leur durée et les intervalles entre flashs sont réglables par plages.
 - Le double-clic ne zoome plus. Les commandes de navigation, l’échelle et la bannière de statut visuelle sont retirées; une attribution discrète reste présente. Ville et pays sont modifiables dans Lieu & caméra et enregistrés dans `place`.
 - L’export complet inclut ces réglages et les bâtiments détruits. L’export « style seul » demeure un style MapLibre, pas une sauvegarde du jeu.
 
@@ -169,6 +169,17 @@ Tous les paramètres sont validés dans le JSON **Atelier complet**. Les tests v
 
 Direction artistique propose une vignette réglable : intensité, couleur, ouverture centrale, douceur, rondeur et centre horizontal/vertical. Les anciens exports conservent leur intensité de vignette.
 
-Le signal des limites dessine une brume lumineuse sur le côté bloqué lors d’un déplacement à la souris, au clavier ou au toucher. Le zoom à sa limite produit une pulsation périphérique. Les mouvements programmatiques ne déclenchent pas le signal. Activation, couleur, intensité, largeur et durée sont réglables en DA, avec un bouton de prévisualisation; les animations respectent la préférence de mouvement réduit et ne capturent aucun clic.
+Le signal des limites dessine une brume lumineuse sur le côté bloqué lors d’un déplacement à la souris, au clavier ou au toucher. Le zoom à sa limite produit une pulsation périphérique. Les mouvements programmatiques ne déclenchent pas le signal. Activation, couleur, intensité, largeur, fondu et durée sont réglables en DA, avec un bouton de prévisualisation; les animations respectent la préférence de mouvement réduit et ne capturent aucun clic.
 
 Juice inclut « Vignette écran ». Sa forme suit la DA, avec la couleur/intensité/durée propres à la règle. Sur `focus`, elle reste active pendant la sélection; autrement elle apparaît puis disparaît. Elle ne modifie pas la vignette permanente. Tous ces paramètres sont enregistrés dans l’atelier JSON.
+
+### Corrections de la carte et personnalisation
+
+- La barre héros reprend les icônes, couleurs de ressources et jauges segmentées de la fiche partagée : HP menthe, mental mauve, énergie or. Elle distingue trajet, tâche actuelle et idle mémorisé.
+- Le parcours de surveillance couvre les rues et ruelles connectées du secteur. La marge vaut 12 m par défaut, sans extension cachée; le parcours est préparé une fois puis bouclé. Les anciens parcours sont recalculés une seule fois au chargement (`patrolVersion: 2`).
+- `agents[].idle` et `resumeIdle` conservent l’activité préférée et le retour après un ordre temporaire, même à l’import. Le glisser de token reste un outil de placement.
+- Une sélection isole un polygone de bâtiment, même lorsque la tuile regroupe plusieurs bâtiments ou réutilise un identifiant. Les voisins du groupe restent affichés. Les anciennes sélections groupées sont réduites à leur premier bâtiment, faute de position de clic enregistrée.
+- Les bâtiments sont des cibles Juice normales. `destroyed` et `restored` sont connectés et protégés. La règle de destruction par défaut combine explosion, débris et fumée; sa modification est immédiate. Le panneau bâtiment conserve les couleurs normale/détruite, l’association à un point et les actions détruire/restaurer. Un volume de décombres bas reste après destruction.
+- Les éclaboussures utilisent la position exacte du point pour éviter que les bâtiments voisins ne masquent toute une rue étroite. Les libellés sont placés avant les volumes dans le style pour l’occlusion.
+- L’attribution est repliée dans un bouton d’information et un compteur FPS apparaît en bas à droite.
+- L’export complet comprend les préférences idle, parcours, couleurs, bâtiments, règles Juice, météo et paramètres de fondu; la configuration de référence n’est pas remplacée.
