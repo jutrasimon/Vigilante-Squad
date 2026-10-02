@@ -189,3 +189,30 @@ for(const width of [390,1280])test(`Chosen camera locks without moving at ${widt
  await expect(page.locator('#status')).toContainText('Atelier importé');expect(await camera()).toEqual(imported);
 
 });
+
+for(const width of [390,1280])test(`3D buildings survive palettes and camera locking at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:844});
+ await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{buildings:{type:'geojson',data:{type:'FeatureCollection',features:[{type:'Feature',properties:{render_height:42},geometry:{type:'Polygon',coordinates:[[[-73.5794,45.5188],[-73.5788,45.5188],[-73.5788,45.5192],[-73.5794,45.5192],[-73.5794,45.5188]]]}}]}}},layers:[{id:'background',type:'background'},{id:'building-volumes',type:'fill-extrusion',source:'buildings',paint:{'fill-extrusion-height':42}}]}}));
+ await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
+ if(width<760)await page.locator('#atelier').click();
+ const volumes=page.locator('#road-controls [data-theme=threeD]');await expect(volumes).toBeVisible();await volumes.check();
+ await page.getByText('Direction artistique',{exact:true}).click();
+ await page.locator('[data-theme=height]').evaluate(node=>{(node as HTMLInputElement).value='1.7';node.dispatchEvent(new Event('input',{bubbles:true}));});
+ await page.getByText('Lieu & caméra',{exact:true}).click();
+ await page.locator('[data-theme=pitch]').evaluate(node=>{(node as HTMLInputElement).value='45';node.dispatchEvent(new Event('input',{bubbles:true}));});
+ await page.locator('#camera-lock').check();
+ for(const preset of ['bulletin','neon','dossier']){
+  await page.locator(`[data-preset=${preset}]`).click();
+  await expect(volumes).toBeChecked();await expect(page.locator('[data-theme=height]')).toHaveValue('1.7');await expect(page.locator('#camera-lock')).toBeChecked();
+ }
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ async function style(){const pending=page.waitForEvent('download');await page.locator('#style-export').click();const stream=await(await pending).createReadStream();const chunks:Buffer[]=[];for await(const c of stream!)chunks.push(c);return JSON.parse(Buffer.concat(chunks).toString());}
+ const volume=(await style()).layers.find((l:{id:string})=>l.id==='building-volumes');
+ expect(volume.layout.visibility).toBe('visible');expect(volume.paint['fill-extrusion-height']).not.toBe(0);
+ await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');
+ if(width<760)await page.locator('#atelier').click();await expect(volumes).toBeChecked();
+ await page.getByText('Direction artistique',{exact:true}).click();await expect(page.locator('[data-theme=height]')).toHaveValue('1.7');
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ await volumes.uncheck();expect((await style()).layers.find((l:{id:string})=>l.id==='building-volumes').paint['fill-extrusion-height']).toBe(0);
+ await page.locator('[data-preset=bulletin]').click();await expect(volumes).not.toBeChecked();
+});
