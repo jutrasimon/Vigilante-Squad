@@ -4,7 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 maplibregl.setWorkerUrl(workerUrl);
 import './map-gym.css';
-import {createCameraPolicy,type CameraPose} from './map-camera';
+import {createCameraPolicy,type CameraPose,type ZoomBounds} from './map-camera';
 import {icon, type IconName} from './icons';
 const STYLE='https://tiles.openfreemap.org/styles/liberty';
 const KEY='vigilante-map-gym-v1';
@@ -14,14 +14,19 @@ type Theme=typeof defaults;
 type Point={id:string;type:string;name:string;lng:number;lat:number;color:string};
 type Override={visible?:boolean;color?:string;opacity?:number};
 let theme:Theme={...defaults}, points:Point[]=[], overrides:Record<string,Override>={};
-let savedCamera:({center:[number,number];locked?:boolean;mode?:string}&Partial<CameraPose>)|undefined;
-let cameraLocked=false;
+let savedCamera:({center:[number,number];locked?:boolean;mode?:string;zoomBounds?:ZoomBounds}&Partial<CameraPose>)|undefined;
+let cameraLocked=false,zoomBounds:ZoomBounds={};
+function readBounds(value?:ZoomBounds):ZoomBounds{
+ const next:ZoomBounds={};
+ for(const key of ['min','max'] as const){const v=value?.[key];if(v!==undefined){if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>22)throw Error('Limite de zoom invalide');next[key]=v;}}
+ if((next.min??0)>(next.max??22))throw Error('Limites de zoom inversées');return next;
+}
 function readPose(camera?:Partial<CameraPose>):CameraPose{
  const number=(v:unknown,fallback:number,min:number,max:number)=>typeof v==='number'&&Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
  return {pitch:number(camera?.pitch,theme.pitch,0,60),bearing:number(camera?.bearing,theme.bearing,-180,180),zoom:number(camera?.zoom,15,0,22)};
 }
 let cameraPolicy:ReturnType<typeof createCameraPolicy>|undefined;
-try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){theme={...defaults,...s.theme};points=Array.isArray(s.points)?s.points:[];overrides=s.overrides||{};savedCamera=s.camera;cameraLocked=savedCamera?.locked??savedCamera?.mode==='game';}}catch{}
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){theme={...defaults,...s.theme};points=Array.isArray(s.points)?s.points:[];overrides=s.overrides||{};savedCamera=s.camera;cameraLocked=savedCamera?.locked??savedCamera?.mode==='game';zoomBounds=readBounds(savedCamera?.zoomBounds);}}catch{}
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const button=(id:string,label:string,i:IconName)=>`<button id="${id}" title="${label}" aria-label="${label}">${icon(i)}<span>${label}</span></button>`;
@@ -34,30 +39,44 @@ function check(key:keyof Theme,label:string){return `<label class="check"><input
 function controls(){
  $('road-controls').innerHTML=check('solidRoads','Routes pleines')+check('roadNumbers','Numéros de routes')+check('threeD','Bâtiments en volume');
  $('colors').innerHTML=Object.entries(colors).map(([k,label])=>`<label class="color-row">${label}<input data-theme="${k}" type="color" value="${theme[k as keyof Theme]}"></label>`).join('');
- $('camera-controls').innerHTML=range('pitch','Inclinaison',0,60,1)+range('bearing','Rotation',-180,180,1)+`<label class="range">Zoom<output id="out-camera-zoom"></output><input id="camera-zoom" type="range" min="0" max="22" step=".1"></label><label class="check camera-lock"><input id="camera-lock" type="checkbox">Verrouiller la caméra</label><p class="hint">Garde cet angle et ce zoom. Tu peux toujours déplacer la carte.</p>`;cameraUI();
+ $('camera-controls').innerHTML=range('pitch','Inclinaison',0,60,1)+range('bearing','Rotation',-180,180,1)+`<label class="range">Zoom<output id="out-camera-zoom"></output><input id="camera-zoom" type="range" min="0" max="22" step=".1"></label><label class="check camera-lock"><input id="camera-lock" type="checkbox">Verrouiller la caméra</label><p class="hint">Garde cet angle et cette rotation. Déplacement et zoom restent libres.</p><div class="zoom-bounds">${(['min','max'] as const).map(key=>`<div class="zoom-bound"><span>${key==='min'?'Loin · zoom minimum':'Près · zoom maximum'}</span><output id="out-zoom-${key}">Libre</output><button id="zoom-lock-${key}" data-zoom-bound="${key}" type="button" aria-pressed="false"></button></div>`).join('')}</div><p class="hint">Place la vue à la limite voulue, puis ferme son cadenas.</p>`;cameraUI();
  $('visual-controls').innerHTML=range('roadWidth','Largeur des rues',.3,3,.1)+range('buildingOpacity','Opacité bâtiments',0,1,.05)+range('labelSize','Taille des libellés',.5,1.8,.1)+range('height','Hauteur 3D',.3,3,.1)+range('grain','Grain',0,.25,.01)+range('vignette','Vignette',0,.8,.05)+range('poiSize','Taille des points',32,72,2)+check('labels','Libellés de la ville')+check('buildings','Bâtiments')+check('parks','Parcs')+check('poiLabels','Noms des points');
 }
 function cameraUI(){
  $<HTMLInputElement>('camera-lock').checked=cameraLocked;
+ const zoom=$<HTMLInputElement>('camera-zoom');zoom.min=String(zoomBounds.min??0);zoom.max=String(zoomBounds.max??22);
  const pose=map?{pitch:map.getPitch(),bearing:map.getBearing(),zoom:map.getZoom()}:readPose(savedCamera);
  for(const input of $('camera-controls').querySelectorAll<HTMLInputElement>('input[type=range]')){
   const key=input.id==='camera-zoom'?'zoom':input.dataset.theme as 'pitch'|'bearing';
-  const value=pose[key];input.disabled=cameraLocked;input.value=String(value);
+  const value=pose[key];input.disabled=key!=='zoom'&&cameraLocked;input.value=String(value);
   $('out-'+(key==='zoom'?'camera-zoom':key)).textContent=key==='zoom'?value.toFixed(1):`${Math.round(value)}°`;
  }
+ for(const key of ['min','max'] as const){
+  const value=zoomBounds[key],locked=value!==undefined;
+  $('out-zoom-'+key).textContent=locked?value.toFixed(1):'Libre';
+  const button=$<HTMLButtonElement>('zoom-lock-'+key),label=key==='min'?'limite loin':'limite près';
+  button.innerHTML=icon(locked?'lock':'lock-open');button.setAttribute('aria-pressed',String(locked));
+  button.title=locked?`Libérer la ${label}`:`Fixer la ${label} au zoom actuel`;button.setAttribute('aria-label',button.title);
+ }
 }
-function applyCamera(pose?:CameraPose){cameraPolicy?.apply(cameraLocked,pose);cameraUI();}
+function applyCamera(pose?:CameraPose){cameraPolicy?.apply(cameraLocked,zoomBounds,pose);cameraUI();}
+$('camera-controls').addEventListener('click',e=>{
+ const button=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-zoom-bound]');if(!button||!map)return;
+ const key=button.dataset.zoomBound as 'min'|'max';
+ if(zoomBounds[key]!==undefined)delete zoomBounds[key];else zoomBounds[key]=map.getZoom();
+ applyCamera();save();
+});
 $('camera-controls').addEventListener('change',e=>{
  const input=e.target as HTMLInputElement;if(input.id!=='camera-lock')return;
  cameraLocked=input.checked;applyCamera();save();
- status(cameraLocked?'Caméra verrouillée · déplacement seulement.':'Caméra déverrouillée · ajuste ta vue.');
+ status(cameraLocked?'Angle verrouillé · déplacement et zoom libres.':'Caméra déverrouillée · ajuste ta vue.');
 });
 $('camera-controls').addEventListener('input',e=>{
- const input=e.target as HTMLInputElement;if(input.id!=='camera-zoom'||cameraLocked)return;
+ const input=e.target as HTMLInputElement;if(input.id!=='camera-zoom')return;
  applyCamera({pitch:map.getPitch(),bearing:map.getBearing(),zoom:Number(input.value)});save();
 });
 function save(){try{localStorage.setItem(KEY,JSON.stringify(snapshot()));}catch{status('Sauvegarde locale indisponible; utilise l’export JSON.');}}
-function snapshot(){const c=map?.getCenter();return {version:1,theme,points,overrides,camera:{center:c?[c.lng,c.lat]:[-73.579,45.519],zoom:map?.getZoom()??15,pitch:map?.getPitch()??theme.pitch,bearing:map?.getBearing()??theme.bearing,locked:cameraLocked}};}
+function snapshot(){const c=map?.getCenter();return {version:1,theme,points,overrides,camera:{center:c?[c.lng,c.lat]:[-73.579,45.519],zoom:map?.getZoom()??15,pitch:map?.getPitch()??theme.pitch,bearing:map?.getBearing()??theme.bearing,locked:cameraLocked,zoomBounds:{...zoomBounds}}};}
 function status(s:string){$('status').textContent=s;}
 function group(l:LayerSpecification){const id=l.id.toLowerCase(),src='source-layer'in l?String(l['source-layer']):'';
  if(l.type==='background')return 'background';if(/water/.test(src+id))return 'water';if(/building/.test(src+id))return 'building';if(/park|landcover|landuse/.test(src+id))return 'park';if(/rail/.test(id))return 'rail';if(/transportation/.test(src)||/road|bridge|tunnel/.test(id))return 'road';return 'land';}
@@ -200,7 +219,7 @@ controls();
 try{map=new maplibregl.Map({container:'map',style:STYLE,center:savedCamera?.center||[-73.579,45.519],...readPose(savedCamera),attributionControl:{compact:true}});
  map.addControl(new maplibregl.NavigationControl(),'bottom-right');map.addControl(new maplibregl.ScaleControl(),'bottom-left');cameraPolicy=createCameraPolicy(map);applyCamera();
  map.on('load',()=>{base=map.getStyle();const building=base.layers.find(l=>'source-layer'in l&&l['source-layer']==='building');if(building&&'source'in building&&!base.layers.some(l=>group(l)==='building'&&l.type==='fill-extrusion')){map.addLayer({id:'gym-buildings-3d',type:'fill-extrusion',source:building.source,'source-layer':'building',minzoom:13,paint:{'fill-extrusion-height':8,'fill-extrusion-base':0}},base.layers.find(l=>l.type==='symbol')?.id);}
- paint();renderPoints();layerList();status(cameraLocked?'Carte prête · caméra verrouillée, déplacement seulement.':'Carte prête · glisser pour déplacer, pincer pour zoomer.');});
+ paint();renderPoints();layerList();status(cameraLocked?'Carte prête · angle verrouillé, zoom disponible.':'Carte prête · glisser pour déplacer, pincer pour zoomer.');});
  let lastError=0;map.on('error',()=>{if(Date.now()-lastError>5000){lastError=Date.now();status('Une ressource cartographique ne charge pas. Vérifie la connexion ou recharge la page.');}});
  map.on('click',e=>{if(placing)add(e.lngLat.lng,e.lngLat.lat);});
  map.on('moveend',()=>{theme.pitch=map.getPitch();theme.bearing=map.getBearing();cameraUI();const c=map.getCenter();$<HTMLInputElement>('lat').value=c.lat.toFixed(5);$<HTMLInputElement>('lng').value=c.lng.toFixed(5);$('coords').textContent=`${c.lat.toFixed(3)} / ${c.lng.toFixed(3)} · Z${map.getZoom().toFixed(1)}`;save();});
@@ -214,6 +233,6 @@ $('go').onclick=()=>{const lat=Number($<HTMLInputElement>('lat').value),lng=Numb
 $('workshop').addEventListener('input',e=>{const input=e.target as HTMLInputElement,key=input.dataset.theme as keyof Theme;if(!key)return;(theme as unknown as Record<string,unknown>)[key]=input.type==='checkbox'?input.checked:input.type==='range'?Number(input.value):input.value;const out=document.getElementById(`out-${key}`);if(out)out.textContent=String(theme[key]);if(key==='pitch'||key==='bearing'){if(cameraLocked)return;applyCamera({pitch:theme.pitch,bearing:theme.bearing,zoom:map.getZoom()});}paint();layerList();save();});
 $('workshop').addEventListener('click',e=>{const b=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-preset],[data-select]');if(!b)return;if(b.dataset.select){selected=b.dataset.select;const p=points.find(p=>p.id===selected)!;map?.easeTo({center:[p.lng,p.lat]});editor();return;}const preset=b.dataset.preset;const v=preset==='bulletin'?{background:'#ded5bf',land:'#c9c1ac',water:'#476578',park:'#87997e',building:'#aea18b',buildingEdge:'#796c5c',road:'#eee6d4',major:'#9d6950',label:'#343638',halo:'#dcd2bc',accent:'#cc604e',grain:.12}:preset==='neon'?{water:'#082f45',park:'#172f35',building:'#26304c',buildingEdge:'#5a5384',road:'#395b6c',major:'#ad668f',label:'#a8cede',accent:'#78dcde',grain:.03}:{};theme={...theme,...defaults,...v,threeD:theme.threeD,height:theme.height,pitch:map.getPitch(),bearing:map.getBearing()};overrides={};controls();layerList();paint();save();});
 $('export').onclick=()=>download('vigilante-map-atelier.json',snapshot());$('style-export').onclick=()=>{if(base)download('vigilante-map-style.json',map.getStyle());else status('Attends le chargement de la carte avant l’export.');};
-$('reset').onclick=()=>{if(!confirm('Réinitialiser la palette, la caméra et supprimer les points de cet atelier ?'))return;cameraLocked=false;theme={...defaults};points=[];overrides={};selected=undefined;controls();layerList();applyCamera({pitch:0,bearing:0,zoom:15});map?.jumpTo({center:[-73.579,45.519]});paint();renderPoints();editor();save();};
+$('reset').onclick=()=>{if(!confirm('Réinitialiser la palette, la caméra et supprimer les points de cet atelier ?'))return;cameraLocked=false;zoomBounds={};theme={...defaults};points=[];overrides={};selected=undefined;controls();layerList();applyCamera({pitch:0,bearing:0,zoom:15});map?.jumpTo({center:[-73.579,45.519]});paint();renderPoints();editor();save();};
 $('import').onchange=async()=>{try{const f=$<HTMLInputElement>('import').files?.[0];if(!f)return;if(f.size>1000000)throw Error();const s=JSON.parse(await f.text());if(s.version!==1||!Array.isArray(s.points)||s.points.length>500)throw Error();for(const p of s.points)if(!types[p.type]||typeof p.id!=='string'||typeof p.name!=='string'||p.name.length>80||!Number.isFinite(p.lng)||Math.abs(p.lng)>180||!Number.isFinite(p.lat)||Math.abs(p.lat)>85||!/^#[0-9a-f]{6}$/i.test(p.color))throw Error();const next={...defaults};for(const k of Object.keys(defaults) as (keyof Theme)[]){const v=s.theme?.[k];if(v===undefined&&(k==='solidRoads'||k==='roadNumbers'))continue;if(typeof v!==typeof defaults[k])throw Error();if(typeof v==='string'&&!/^#[0-9a-f]{6}$/i.test(v))throw Error();if(typeof v==='number'&&(!Number.isFinite(v)||v<0&&k!=='bearing'))throw Error();(next as unknown as Record<string,unknown>)[k]=v;}
- theme=next;points=s.points;overrides=s.overrides||{};selected=undefined;cameraLocked=s.camera?.locked??s.camera?.mode==='game';controls();layerList();applyCamera(readPose(s.camera));if(s.camera&&Array.isArray(s.camera.center)&&s.camera.center.length===2&&s.camera.center.every(Number.isFinite))map.jumpTo({center:s.camera.center});paint();renderPoints();editor();save();status('Atelier importé.');}catch{status('Import refusé : fichier atelier invalide.');}};
+ const nextBounds=readBounds(s.camera?.zoomBounds);theme=next;points=s.points;overrides=s.overrides||{};selected=undefined;cameraLocked=s.camera?.locked??s.camera?.mode==='game';zoomBounds=nextBounds;controls();layerList();applyCamera(readPose(s.camera));if(s.camera&&Array.isArray(s.camera.center)&&s.camera.center.length===2&&s.camera.center.every(Number.isFinite))map.jumpTo({center:s.camera.center});paint();renderPoints();editor();save();status('Atelier importé.');}catch{status('Import refusé : fichier atelier invalide.');}};
