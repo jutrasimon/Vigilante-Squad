@@ -59,3 +59,35 @@ Dans **Sauvegarde & export**, **Restaurer la référence** remet tous les régla
 - Centre et point QG conservés aux coordonnées exactes de l’export.
 
 Cette référence concerne la carte réelle du gym; la carte SVG du jeu principal reste distincte jusqu’à son intégration.
+
+## Atelier de terrain — 2 octobre 2026
+
+### Cadrage et limites de déplacement
+
+Le cadenas **Loin · zoom minimum** capture maintenant le centre et les quatre coins géographiques de la vue. À cette distance, le centre reste fixé; zoomer ouvre progressivement la portion du secteur dans laquelle déplacer la caméra. La contrainte s'applique avant le rendu, pour la souris, le tactile, le clavier et les déplacements programmatiques. Le module `map-limits.ts` utilise la projection Mercator et le contour de la vue inclinée, sans imposer un nouvel angle.
+
+Les quatre cadenas **Gauche / Droite / Haut / Bas** mémorisent indépendamment la position du centre à la limite choisie. Les axes suivent l'orientation enregistrée au premier cadenas. Un côté ne peut pas croiser son opposé. Le bouton **Limiter aux quatre coins de cette vue** capture le cadrage courant et le fixe aussi comme zoom minimum. Libérer le cadrage libère la limite de zoom loin. Le cadrage loin est prioritaire si des limites de centre entrent en conflit avec son centre.
+
+`camera.movement.frame` conserve centre, zoom, inclinaison, rotation et empreinte géographique; `camera.movement.pan` conserve origine, orientation et côtés définis. Les anciens JSON sans ces champs restent importables. S'ils ont un zoom minimum, une empreinte est créée à cette distance autour du centre enregistré. La référence JSON originale n'est pas réécrite.
+
+### Ambiance
+
+Dans **Direction artistique → Ambiance & effets** : éclairage des volumes, direction et couleur de lumière, contraste, saturation, glow des points/tokens, pulsation des alertes, ombre des tokens et opacité des zones. Trois essais Neutre / Nuit / Chaud permettent une exploration légère. La pulsation respecte la préférence de réduction des animations. Le relief reste contrôlé par les bâtiments en volume et leur hauteur. L'éclairage est celui des extrusions MapLibre; l'ombre des tokens est un effet graphique, sans simulation d'ombres portées des bâtiments.
+
+### Héros, fiche et véhicules
+
+**Héros & véhicules** utilise les portraits existants du Hero Gym. Placer au centre ou activer le placement puis toucher la map; les tokens sont déplaçables par glisser. Les portraits restent lisibles face à l'écran, avec un socle suivant inclinaison/rotation; les véhicules sont alignés sur le plan de la map et disposent d'une orientation réglable.
+
+Un clic sur un héros ouvre la **vraie fiche du Hero Gym**, intégrée en mode `?embed=1&hero=...`. La fenêtre flotte sur la map : barre pour déplacer, boutons −/+ et poignée du coin pour redimensionner, bouton × pour fermer. Son canevas reste de 520 × 920, incluant la barre; le contenu défile indépendamment. Un nouveau clic rouvre la fiche. Position, taille, ouverture et héros sélectionné sont sauvegardés. HP, Mental et Énergie sont transmis par messages strictement entre la fiche et son parent de même origine; l'ordre de zone apparaît aussi dans la fiche. Le gym complet conserve son affichage habituel.
+
+### Crayon et zones
+
+Le **Crayon** sur la map et **Encercler un secteur** dans l'atelier activent le dessin. Garder le bouton ou le doigt appuyé, tracer un contour et relâcher : il se ferme en polygone géographique. La map ne se déplace pas pendant le dessin. Échap ou Annuler sort du mode; un trait trop court laisse le crayon actif pour recommencer. Les zones demeurent attachées au terrain pendant déplacement et zoom.
+
+Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un héros et choisir **Surveiller cette zone** ou **Patrouiller dans cette zone**. Un héros a une zone active; le réassigner libère la précédente. Supprimer une zone libère son héros. Ce sont des ordres d'atelier : les tokens restent immobiles, sans trajet ni résolution d'intervention. Les flèches de déplacement ne sont pas encore ajoutées.
+
+### Persistance et vérification
+
+`scene` conserve ambiance, agents, véhicules, zones et fenêtre dans le même JSON version 1. Ancien export sans scène : scène vide. Import invalide : les nouveaux champs sont validés avant le remplacement de l'atelier. Plafonds : 100 agents, 100 véhicules, 100 zones, 1 500 sommets par contour et 1 Mo par fichier importé. Pas de génération automatique d'événements, pas de maillage 3D supplémentaire ni de service externe ajouté.
+
+`tests/map-scene.spec.ts` vérifie la fiche réelle, ratio/déplacement/fermeture, dessin, affectations, suppression, effets, positions, sauvegarde/rechargement, export/import, rejet de données invalides et caméra bloquée au zoom loin. Les essais navigateur utilisent une source cartographique locale pour vérifier ces interactions indépendamment du fournisseur.

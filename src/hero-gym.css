@@ -57,3 +57,13 @@ body{background:radial-gradient(ellipse at 70% 10%,#223440 0,transparent 55%),#0
 /* Keep workshop scrolling independent from the hero sheet. */
 .tools{max-height:calc(100dvh - 96px);overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#53616d #101a21}
 @media(max-width:850px){.tools{max-height:45dvh}}
+
+/* The map uses the actual sheet in a fixed-size, scaled viewport. */
+.hero-embedded body{background:transparent;overflow:hidden}
+.hero-embedded .lab,.hero-embedded .tools,.hero-embedded #notice{display:none}
+.hero-embedded .workspace{display:block;margin:0;padding:0;max-width:none}
+.hero-embedded .sheet{width:520px;height:872px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--accent) var(--background);padding:20px;box-shadow:none;border:0}
+.hero-embedded .sheet .identity{gap:16px}
+.hero-embedded .sheet .identity h1{font-size:58px}
+.hero-embedded .tags .tag{padding:12px 8px;gap:6px;flex:1 1 auto}
+.hero-embedded .tags .tag b{white-space:nowrap;font-size:14px}

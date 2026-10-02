@@ -8,6 +8,8 @@ import referenceJSON from '../public/config/map-reference.json?raw';
 const reference=JSON.parse(referenceJSON);
 import {createCameraPolicy,type CameraPose,type ZoomBounds} from './map-camera';
 import {icon, type IconName} from './icons';
+import {captureFrame,plane,rotated,readMovement,type MovementLimits,type PanBounds} from './map-limits';
+import {createScene,emptyScene,readScene,type Scene} from './map-scene';
 const STYLE='https://tiles.openfreemap.org/styles/liberty';
 const KEY='vigilante-map-gym-v1';
 const types:Record<string,{label:string;icon:IconName;color:string}>={hq:{label:'QG',icon:'home',color:'#edc25d'},alert:{label:'Alerte',icon:'alert-triangle',color:'#ed7968'},police:{label:'Police',icon:'shield',color:'#77bcec'},clue:{label:'Indice',icon:'search',color:'#bca0ef'},civil:{label:'Civils',icon:'users',color:'#8ad6b1'},hospital:{label:'Secours',icon:'first-aid-kit',color:'#ed9dba'},watch:{label:'Surveillance',icon:'eye',color:'#6fd9dc'}};
@@ -28,7 +30,8 @@ function readPose(camera?:Partial<CameraPose>):CameraPose{
  return {pitch:number(camera?.pitch,theme.pitch,0,60),bearing:number(camera?.bearing,theme.bearing,-180,180),zoom:number(camera?.zoom,15,0,22)};
 }
 let cameraPolicy:ReturnType<typeof createCameraPolicy>|undefined;
-try{const s=JSON.parse(localStorage.getItem(KEY)||'null')??structuredClone(reference);if(s){theme={...defaults,...s.theme};points=Array.isArray(s.points)?s.points:[];overrides=s.overrides||{};savedCamera=s.camera;cameraLocked=savedCamera?.locked??savedCamera?.mode==='game';zoomBounds=readBounds(savedCamera?.zoomBounds);}}catch{}
+let movement:MovementLimits={},sceneState:Scene=emptyScene(),sceneTools:ReturnType<typeof createScene>|undefined;
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null')??structuredClone(reference);if(s){theme={...defaults,...s.theme};points=Array.isArray(s.points)?s.points:[];overrides=s.overrides||{};savedCamera=s.camera;cameraLocked=savedCamera?.locked??savedCamera?.mode==='game';zoomBounds=readBounds(savedCamera?.zoomBounds);movement=readMovement(s.camera?.movement);sceneState=readScene(s.scene);}}catch{}
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const button=(id:string,label:string,i:IconName)=>`<button id="${id}" title="${label}" aria-label="${label}">${icon(i)}<span>${label}</span></button>`;
@@ -41,7 +44,7 @@ function check(key:keyof Theme,label:string){return `<label class="check"><input
 function controls(){
  $('road-controls').innerHTML=check('solidRoads','Routes pleines')+check('roadNumbers','Numéros de routes')+check('threeD','Bâtiments en volume');
  $('colors').innerHTML=Object.entries(colors).map(([k,label])=>`<label class="color-row">${label}<input data-theme="${k}" type="color" value="${theme[k as keyof Theme]}"></label>`).join('');
- $('camera-controls').innerHTML=range('pitch','Inclinaison',0,60,1)+range('bearing','Rotation',-180,180,1)+`<label class="range">Zoom<output id="out-camera-zoom"></output><input id="camera-zoom" type="range" min="0" max="22" step=".1"></label><label class="check camera-lock"><input id="camera-lock" type="checkbox">Verrouiller la caméra</label><p class="hint">Garde cet angle et cette rotation. Déplacement et zoom restent libres.</p><div class="zoom-bounds">${(['min','max'] as const).map(key=>`<div class="zoom-bound"><span>${key==='min'?'Loin · zoom minimum':'Près · zoom maximum'}</span><output id="out-zoom-${key}">Libre</output><button id="zoom-lock-${key}" data-zoom-bound="${key}" type="button" aria-pressed="false"></button></div>`).join('')}</div><p class="hint">Place la vue à la limite voulue, puis ferme son cadenas.</p>`;cameraUI();
+ $('camera-controls').innerHTML=range('pitch','Inclinaison',0,60,1)+range('bearing','Rotation',-180,180,1)+`<label class="range">Zoom<output id="out-camera-zoom"></output><input id="camera-zoom" type="range" min="0" max="22" step=".1"></label><label class="check camera-lock"><input id="camera-lock" type="checkbox">Verrouiller la caméra</label><p class="hint">Garde cet angle et cette rotation. Déplacement et zoom suivent leurs propres limites.</p><div class="zoom-bounds">${(['min','max'] as const).map(key=>`<div class="zoom-bound"><span>${key==='min'?'Loin · zoom minimum':'Près · zoom maximum'}</span><output id="out-zoom-${key}">Libre</output><button id="zoom-lock-${key}" data-zoom-bound="${key}" type="button" aria-pressed="false"></button></div>`).join('')}</div><p class="hint">Loin mémorise aussi ce cadrage. Au zoom minimum, le déplacement est bloqué; en zoomant, tu explores ce secteur.</p><div id="pan-controls" class="pan-bounds"></div>`;cameraUI();panUI();
  $('visual-controls').innerHTML=range('roadWidth','Largeur des rues',.3,3,.1)+range('buildingOpacity','Opacité bâtiments',0,1,.05)+range('labelSize','Taille des libellés',.5,1.8,.1)+range('height','Hauteur 3D',.3,3,.1)+range('grain','Grain',0,.25,.01)+range('vignette','Vignette',0,.8,.05)+range('poiSize','Taille des points',32,72,2)+check('labels','Libellés de la ville')+check('buildings','Bâtiments')+check('parks','Parcs')+check('poiLabels','Noms des points');
 }
 function cameraUI(){
@@ -62,23 +65,43 @@ function cameraUI(){
  }
 }
 function applyCamera(pose?:CameraPose){cameraPolicy?.apply(cameraLocked,zoomBounds,pose);cameraUI();}
+function panUI(){
+ const el=document.getElementById('pan-controls');if(!el)return;
+ el.innerHTML=`<h2>Limites de déplacement</h2>${(['left','right','top','bottom'] as const).map(key=>{const label={left:'Gauche',right:'Droite',top:'Haut',bottom:'Bas'}[key],locked=movement.pan?.[key]!==undefined;return `<div class="pan-row"><span>${label}<small>${locked?'Position fixée':'Libre'}</small></span><button data-pan-bound="${key}" aria-label="${locked?'Libérer':'Fixer'} la limite ${label.toLowerCase()}" aria-pressed="${locked}">${icon(locked?'lock':'lock-open')}</button></div>`;}).join('')}<button id="pan-frame">${icon('target')}Limiter aux quatre coins de cette vue</button>${movement.frame?'<button id="pan-clear-frame">Libérer le cadrage</button>':''}<p class="hint">Pour chaque côté : place le centre à sa limite, puis ferme le cadenas. Les directions suivent l’angle enregistré au premier verrou.</p>`;
+}
+function setMovement(){cameraPolicy?.movement(movement);panUI();}
+function setFrame(){if(!map)return;movement.frame=captureFrame(map);zoomBounds.min=map.getZoom();setMovement();applyCamera();}
+$('camera-controls').addEventListener('click',e=>{
+ const button=(e.target as HTMLElement).closest<HTMLButtonElement>('button');if(!button||!map)return;
+ const key=button.dataset.panBound as 'left'|'right'|'top'|'bottom'|undefined;
+ if(key){
+  const c=map.getCenter(),pan=movement.pan??{origin:[c.lng,c.lat],bearing:map.getBearing()} as PanBounds;
+  if(pan[key]!==undefined)delete pan[key];else {
+   const o=plane(pan.origin),p=plane([c.lng,c.lat]),v=rotated([p[0]-o[0],p[1]-o[1]],pan.bearing),value=v[key==='left'||key==='right'?0:1];
+   if(key==='left'&&value>(pan.right??Infinity)||key==='right'&&value<(pan.left??-Infinity)||key==='top'&&value>(pan.bottom??Infinity)||key==='bottom'&&value<(pan.top??-Infinity)){status('Cette limite croise celle du côté opposé. Libère l’autre côté pour la déplacer.');return;}
+   pan[key]=value;
+  }
+  movement.pan=pan;setMovement();save();
+ }else if(button.id==='pan-frame'){setFrame();save();status('Cadrage et zoom minimum fixés aux quatre coins de cette vue.');}
+ else if(button.id==='pan-clear-frame'){delete movement.frame;delete zoomBounds.min;setMovement();applyCamera();save();}
+});
 $('camera-controls').addEventListener('click',e=>{
  const button=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-zoom-bound]');if(!button||!map)return;
  const key=button.dataset.zoomBound as 'min'|'max';
- if(zoomBounds[key]!==undefined)delete zoomBounds[key];else zoomBounds[key]=map.getZoom();
- applyCamera();save();
+ if(zoomBounds[key]!==undefined){delete zoomBounds[key];if(key==='min')delete movement.frame;}else {zoomBounds[key]=map.getZoom();if(key==='min')movement.frame=captureFrame(map);}
+ applyCamera();setMovement();save();
 });
 $('camera-controls').addEventListener('change',e=>{
  const input=e.target as HTMLInputElement;if(input.id!=='camera-lock')return;
  cameraLocked=input.checked;applyCamera();save();
- status(cameraLocked?'Angle verrouillé · déplacement et zoom libres.':'Caméra déverrouillée · ajuste ta vue.');
+ status(cameraLocked?'Angle verrouillé · déplacement et zoom dans leurs limites.':'Caméra déverrouillée · ajuste ta vue.');
 });
 $('camera-controls').addEventListener('input',e=>{
  const input=e.target as HTMLInputElement;if(input.id!=='camera-zoom')return;
  applyCamera({pitch:map.getPitch(),bearing:map.getBearing(),zoom:Number(input.value)});save();
 });
 function save(){try{localStorage.setItem(KEY,JSON.stringify(snapshot()));}catch{status('Sauvegarde locale indisponible; utilise l’export JSON.');}}
-function snapshot(){const c=map?.getCenter();return {version:1,theme,points,overrides,camera:{center:c?[c.lng,c.lat]:[-73.579,45.519],zoom:map?.getZoom()??15,pitch:map?.getPitch()??theme.pitch,bearing:map?.getBearing()??theme.bearing,locked:cameraLocked,zoomBounds:{...zoomBounds}}};}
+function snapshot(){const c=map?.getCenter();return {version:1,theme,points,overrides,camera:{center:c?[c.lng,c.lat]:[-73.579,45.519],zoom:map?.getZoom()??15,pitch:map?.getPitch()??theme.pitch,bearing:map?.getBearing()??theme.bearing,locked:cameraLocked,zoomBounds:{...zoomBounds},movement:structuredClone(movement)},scene:sceneTools?.snapshot()??structuredClone(sceneState)};}
 function status(s:string){$('status').textContent=s;}
 function group(l:LayerSpecification){const id=l.id.toLowerCase(),src='source-layer'in l?String(l['source-layer']):'';
  if(l.type==='background')return 'background';if(/water/.test(src+id))return 'water';if(/building/.test(src+id))return 'building';if(/park|landcover|landuse/.test(src+id))return 'park';if(/rail/.test(id))return 'rail';if(/transportation/.test(src)||/road|bridge|tunnel/.test(id))return 'road';return 'land';}
@@ -122,7 +145,7 @@ function paint(){if(!base)return;
  for(const m of markers){m.getElement().style.setProperty('--point-size',`${theme.poiSize}px`);m.getElement().classList.toggle('no-label',!theme.poiLabels);}
 }
 function renderPoints(){markers.forEach(m=>m.remove());markers=[];
- for(const p of points){const el=document.createElement('button');el.type='button';el.className='poi';el.style.setProperty('--point',p.color);el.style.setProperty('--point-size',`${theme.poiSize}px`);el.classList.toggle('no-label',!theme.poiLabels);el.setAttribute('aria-label',p.name);el.innerHTML=`<span class="poi-symbol">${icon(types[p.type].icon)}</span><span class="poi-name">${esc(p.name)}</span>`;el.addEventListener('click',e=>{e.stopPropagation();selected=p.id;editor();});const m=new maplibregl.Marker({element:el,draggable:true}).setLngLat([p.lng,p.lat]).addTo(map);m.on('dragend',()=>{const c=m.getLngLat();p.lng=c.lng;p.lat=c.lat;save();if(selected===p.id)editor();});markers.push(m);}
+ for(const p of points){const el=document.createElement('button');el.type='button';el.className='poi';el.dataset.pointType=p.type;el.style.setProperty('--point',p.color);el.style.setProperty('--point-size',`${theme.poiSize}px`);el.classList.toggle('no-label',!theme.poiLabels);el.setAttribute('aria-label',p.name);el.innerHTML=`<span class="poi-symbol">${icon(types[p.type].icon)}</span><span class="poi-name">${esc(p.name)}</span>`;el.addEventListener('click',e=>{e.stopPropagation();selected=p.id;editor();});const m=new maplibregl.Marker({element:el,draggable:true}).setLngLat([p.lng,p.lat]).addTo(map);m.on('dragend',()=>{const c=m.getLngLat();p.lng=c.lng;p.lat=c.lat;save();if(selected===p.id)editor();});markers.push(m);}
  $('count').textContent=String(points.length);
  $('point-list').innerHTML=points.map(p=>`<button data-select="${p.id}" class="point-row"><span style="color:${p.color}">${icon(types[p.type].icon)}</span><span>${esc(p.name)}<small>${types[p.type].label}</small></span></button>`).join('');
 }
@@ -227,29 +250,31 @@ function download(name:string,data:unknown){const url=URL.createObjectURL(new Bl
 controls();
 try{map=new maplibregl.Map({container:'map',style:STYLE,center:savedCamera?.center||[-73.579,45.519],...readPose(savedCamera),attributionControl:{compact:true}});
  map.addControl(new maplibregl.NavigationControl(),'bottom-right');map.addControl(new maplibregl.ScaleControl(),'bottom-left');cameraPolicy=createCameraPolicy(map);applyCamera();
+ if(zoomBounds.min!==undefined&&!movement.frame){const current={center:map.getCenter(),zoom:map.getZoom()};map.jumpTo({zoom:zoomBounds.min});movement.frame=captureFrame(map);map.jumpTo(current);}
+ setMovement();
  map.on('load',()=>{base=map.getStyle();const building=base.layers.find(l=>'source-layer'in l&&l['source-layer']==='building');if(building&&'source'in building&&!base.layers.some(l=>group(l)==='building'&&l.type==='fill-extrusion')){map.addLayer({id:'gym-buildings-3d',type:'fill-extrusion',source:building.source,'source-layer':'building',minzoom:13,paint:{'fill-extrusion-height':8,'fill-extrusion-base':0}},base.layers.find(l=>l.type==='symbol')?.id);}
- paint();renderPoints();layerList();status(cameraLocked?'Carte prête · angle verrouillé, zoom disponible.':'Carte prête · glisser pour déplacer, pincer pour zoomer.');});
+ paint();renderPoints();layerList();sceneTools=createScene(map,sceneState,save,status);status(cameraLocked?'Carte prête · angle verrouillé, zoom disponible.':'Carte prête · glisser pour déplacer, pincer pour zoomer.');});
  let lastError=0;map.on('error',()=>{if(Date.now()-lastError>5000){lastError=Date.now();status('Une ressource cartographique ne charge pas. Vérifie la connexion ou recharge la page.');}});
- map.on('click',e=>{if(placing)add(e.lngLat.lng,e.lngLat.lat);});
+ map.on('click',e=>{if(placing&&!sceneTools?.active())add(e.lngLat.lng,e.lngLat.lat);});
  map.on('moveend',()=>{theme.pitch=map.getPitch();theme.bearing=map.getBearing();cameraUI();const c=map.getCenter();$<HTMLInputElement>('lat').value=c.lat.toFixed(5);$<HTMLInputElement>('lng').value=c.lng.toFixed(5);$('coords').textContent=`${c.lat.toFixed(3)} / ${c.lng.toFixed(3)} · Z${map.getZoom().toFixed(1)}`;save();});
  const c=map.getCenter();$<HTMLInputElement>('lat').value=String(c.lat);$<HTMLInputElement>('lng').value=String(c.lng);
 }catch(error){console.error('Initialisation de la carte',error);status(error instanceof maplibregl.GPUInitializationError?'La carte requiert WebGL. Essaie un navigateur avec accélération graphique.':`Initialisation de la carte impossible : ${error instanceof Error?error.message:'erreur inconnue'}`);}
 $('atelier').onclick=()=>{$('workshop').classList.toggle('open');setTimeout(()=>map?.resize(),220);};$('close').onclick=()=>{$('workshop').classList.remove('open');map?.resize();};
-$('mode').onclick=()=>{placing=!placing;mode();status(placing?'Touche un lieu pour ajouter ton point.':'Placement désactivé.');};$('center').onclick=()=>{if(map){const c=map.getCenter();add(c.lng,c.lat);}};
+$('mode').onclick=()=>{sceneTools?.cancelPlacement();placing=!placing;mode();status(placing?'Touche un lieu pour ajouter ton point.':'Placement désactivé.');};$('center').onclick=()=>{if(map){const c=map.getCenter();add(c.lng,c.lat);}};
 $('point-type').onchange=()=>{$<HTMLInputElement>('point-color').value=types[$<HTMLSelectElement>('point-type').value].color;};
 $('city').onchange=()=>{const coords:Record<string,[number,number]>={montreal:[-73.579,45.519],quebec:[-71.222,46.815],paris:[2.347,48.862]};const c=coords[$<HTMLSelectElement>('city').value];if(c)cameraPolicy?.go(c,15);};
 $('go').onclick=()=>{const lat=Number($<HTMLInputElement>('lat').value),lng=Number($<HTMLInputElement>('lng').value);if(Number.isFinite(lat)&&Math.abs(lat)<=85&&Number.isFinite(lng)&&Math.abs(lng)<=180)cameraPolicy?.go([lng,lat]);else status('Coordonnées invalides. Latitude −85 à 85, longitude −180 à 180.');};
-$('workshop').addEventListener('input',e=>{const input=e.target as HTMLInputElement,key=input.dataset.theme as keyof Theme;if(!key)return;(theme as unknown as Record<string,unknown>)[key]=input.type==='checkbox'?input.checked:input.type==='range'?Number(input.value):input.value;const out=document.getElementById(`out-${key}`);if(out)out.textContent=String(theme[key]);if(key==='pitch'||key==='bearing'){if(cameraLocked)return;applyCamera({pitch:theme.pitch,bearing:theme.bearing,zoom:map.getZoom()});}paint();layerList();save();});
-$('workshop').addEventListener('click',e=>{const b=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-preset],[data-select]');if(!b)return;if(b.dataset.select){selected=b.dataset.select;const p=points.find(p=>p.id===selected)!;map?.easeTo({center:[p.lng,p.lat]});editor();return;}const preset=b.dataset.preset;const v=preset==='bulletin'?{background:'#ded5bf',land:'#c9c1ac',water:'#476578',park:'#87997e',building:'#aea18b',buildingEdge:'#796c5c',road:'#eee6d4',major:'#9d6950',label:'#343638',halo:'#dcd2bc',accent:'#cc604e',grain:.12}:preset==='neon'?{water:'#082f45',park:'#172f35',building:'#26304c',buildingEdge:'#5a5384',road:'#395b6c',major:'#ad668f',label:'#a8cede',accent:'#78dcde',grain:.03}:{};theme={...theme,...defaults,...v,threeD:theme.threeD,height:theme.height,pitch:map.getPitch(),bearing:map.getBearing()};overrides={};controls();layerList();paint();save();});
+$('workshop').addEventListener('input',e=>{const input=e.target as HTMLInputElement,key=input.dataset.theme as keyof Theme;if(!key)return;(theme as unknown as Record<string,unknown>)[key]=input.type==='checkbox'?input.checked:input.type==='range'?Number(input.value):input.value;const out=document.getElementById(`out-${key}`);if(out)out.textContent=String(theme[key]);if(key==='pitch'||key==='bearing'){if(cameraLocked)return;applyCamera({pitch:theme.pitch,bearing:theme.bearing,zoom:map.getZoom()});}paint();sceneTools?.effects();layerList();save();});
+$('workshop').addEventListener('click',e=>{const b=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-preset],[data-select]');if(!b)return;if(b.dataset.select){selected=b.dataset.select;const p=points.find(p=>p.id===selected)!;map?.easeTo({center:[p.lng,p.lat]});editor();return;}const preset=b.dataset.preset;const v=preset==='bulletin'?{background:'#ded5bf',land:'#c9c1ac',water:'#476578',park:'#87997e',building:'#aea18b',buildingEdge:'#796c5c',road:'#eee6d4',major:'#9d6950',label:'#343638',halo:'#dcd2bc',accent:'#cc604e',grain:.12}:preset==='neon'?{water:'#082f45',park:'#172f35',building:'#26304c',buildingEdge:'#5a5384',road:'#395b6c',major:'#ad668f',label:'#a8cede',accent:'#78dcde',grain:.03}:{};theme={...theme,...defaults,...v,threeD:theme.threeD,height:theme.height,pitch:map.getPitch(),bearing:map.getBearing()};overrides={};controls();layerList();paint();sceneTools?.effects();save();});
 $('export').onclick=()=>download('vigilante-map-atelier.json',snapshot());$('style-export').onclick=()=>{if(base)download('vigilante-map-style.json',map.getStyle());else status('Attends le chargement de la carte avant l’export.');};
 $('reference').onclick=()=>{
  if(!confirm('Restaurer la carte de référence ? Les réglages et points actuels seront remplacés.'))return;
  const saved=structuredClone(reference);
  theme={...defaults,...saved.theme};points=saved.points;overrides=saved.overrides;selected=undefined;placing=false;
- cameraLocked=saved.camera.locked;zoomBounds=readBounds(saved.camera.zoomBounds);savedCamera=saved.camera;
- controls();layerList();applyCamera(readPose(saved.camera));map?.jumpTo({center:saved.camera.center});
+ cameraLocked=saved.camera.locked;zoomBounds=readBounds(saved.camera.zoomBounds);savedCamera=saved.camera;movement=readMovement((saved.camera as unknown as {movement?:MovementLimits}).movement);sceneState=emptyScene();sceneTools?.replace(sceneState);cameraPolicy?.movement({});
+ controls();layerList();applyCamera(readPose(saved.camera));map?.jumpTo({center:saved.camera.center});if(zoomBounds.min!==undefined&&!movement.frame)movement.frame=captureFrame(map);setMovement();
  paint();renderPoints();editor();mode();save();status('Carte de référence restaurée.');
 };
-$('reset').onclick=()=>{if(!confirm('Réinitialiser la palette, la caméra et supprimer les points de cet atelier ?'))return;cameraLocked=false;zoomBounds={};theme={...defaults};points=[];overrides={};selected=undefined;controls();layerList();applyCamera({pitch:0,bearing:0,zoom:15});map?.jumpTo({center:[-73.579,45.519]});paint();renderPoints();editor();save();};
+$('reset').onclick=()=>{if(!confirm('Réinitialiser la palette, la caméra et supprimer les points de cet atelier ?'))return;cameraLocked=false;zoomBounds={};movement={};cameraPolicy?.movement({});sceneState=emptyScene();sceneTools?.replace(sceneState);theme={...defaults};points=[];overrides={};selected=undefined;controls();layerList();applyCamera({pitch:0,bearing:0,zoom:15});map?.jumpTo({center:[-73.579,45.519]});paint();sceneTools?.effects();renderPoints();editor();save();};
 $('import').onchange=async()=>{try{const f=$<HTMLInputElement>('import').files?.[0];if(!f)return;if(f.size>1000000)throw Error();const s=JSON.parse(await f.text());if(s.version!==1||!Array.isArray(s.points)||s.points.length>500)throw Error();for(const p of s.points)if(!types[p.type]||typeof p.id!=='string'||typeof p.name!=='string'||p.name.length>80||!Number.isFinite(p.lng)||Math.abs(p.lng)>180||!Number.isFinite(p.lat)||Math.abs(p.lat)>85||!/^#[0-9a-f]{6}$/i.test(p.color))throw Error();const next={...defaults};for(const k of Object.keys(defaults) as (keyof Theme)[]){const v=s.theme?.[k];if(v===undefined&&(k==='solidRoads'||k==='roadNumbers'))continue;if(typeof v!==typeof defaults[k])throw Error();if(typeof v==='string'&&!/^#[0-9a-f]{6}$/i.test(v))throw Error();if(typeof v==='number'&&(!Number.isFinite(v)||v<0&&k!=='bearing'))throw Error();(next as unknown as Record<string,unknown>)[k]=v;}
- const nextBounds=readBounds(s.camera?.zoomBounds);theme=next;points=s.points;overrides=s.overrides||{};selected=undefined;cameraLocked=s.camera?.locked??s.camera?.mode==='game';zoomBounds=nextBounds;controls();layerList();applyCamera(readPose(s.camera));if(s.camera&&Array.isArray(s.camera.center)&&s.camera.center.length===2&&s.camera.center.every(Number.isFinite))map.jumpTo({center:s.camera.center});paint();renderPoints();editor();save();status('Atelier importé.');}catch{status('Import refusé : fichier atelier invalide.');}};
+ const nextBounds=readBounds(s.camera?.zoomBounds),nextMovement=readMovement(s.camera?.movement),nextScene=readScene(s.scene);theme=next;points=s.points;overrides=s.overrides||{};selected=undefined;cameraLocked=s.camera?.locked??s.camera?.mode==='game';zoomBounds=nextBounds;movement=nextMovement;cameraPolicy?.movement({});sceneState=nextScene;controls();layerList();applyCamera(readPose(s.camera));if(s.camera&&Array.isArray(s.camera.center)&&s.camera.center.length===2&&s.camera.center.every(Number.isFinite))map.jumpTo({center:s.camera.center});if(zoomBounds.min!==undefined&&!movement.frame){const current={center:map.getCenter(),zoom:map.getZoom()};map.jumpTo({zoom:zoomBounds.min});movement.frame=captureFrame(map);map.jumpTo(current);}setMovement();sceneTools?.replace(nextScene);paint();renderPoints();editor();save();status('Atelier importé.');}catch{status('Import refusé : fichier atelier invalide.');}};

@@ -1,12 +1,16 @@
 import type {Map} from 'maplibre-gl';
+import {constrainCenter,type MovementLimits} from './map-limits';
 
 export type CameraPose={pitch:number;bearing:number;zoom:number};
 export type ZoomBounds={min?:number;max?:number};
 /** Lock only orientation; zoom has independent, optional near/far limits. */
 export function createCameraPolicy(map:Map){
  let locked=false,pose:CameraPose,bounds:ZoomBounds={};
+ let movement:MovementLimits={};
+ map.setTransformCameraUpdate(next=>({center:constrainCenter(next.center,next.zoom,movement),...(locked?{pitch:pose.pitch,bearing:pose.bearing,roll:0}:{})}));
  const clamp=(zoom:number)=>Math.max(bounds.min??0,Math.min(bounds.max??22,zoom));
  return {
+  movement(limits:MovementLimits){movement=structuredClone(limits);map.jumpTo({center:map.getCenter()});},
   apply(next:boolean,limits:ZoomBounds,restore?:CameraPose){
    map.stop();
    pose=restore??{pitch:map.getPitch(),bearing:map.getBearing(),zoom:map.getZoom()};
