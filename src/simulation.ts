@@ -1,3 +1,4 @@
+import {shortestPath} from './pathfinding';
 export type Stat = 'Corps' | 'Esprit' | 'Âme';
 export type IdleTask = 'rest' | 'patrol';
 export type Phase = 'signal' | 'decision' | 'working' | 'resolved' | 'missed';
@@ -10,7 +11,7 @@ export function neighbours(n:number):number[]{
  const x=n%5,y=Math.floor(n/5); const out:number[]=[];
  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const a=x+dx,b=y+dy;if(a<0||a>4||b<0||b>3)continue;if(((x===3&&a===4)||(x===4&&a===3))&&y!==1&&y!==3)continue;out.push(node(a,b));}return out;
 }
-export function route(from:number,to:number){const queue=[from],prev=new Map<number,number>();prev.set(from,-1);for(let i=0;i<queue.length;i++){const n=queue[i];if(n===to)break;for(const next of neighbours(n))if(!prev.has(next)){prev.set(next,n);queue.push(next);}}if(!prev.has(to))return [];const path=[to];while(path[0]!==from)path.unshift(prev.get(path[0])!);return path.slice(1);}
+export function route(from:number,to:number){return shortestPath(from,to,n=>neighbours(n).map(k=>[k,1] as [number,number])).slice(1);}
 export interface Agent {id:string;name:string;role:string;stats:Record<Stat,number>;tags:string[];energy:number;hp:number;maxHp:number;sanity:number;maxSanity:number;injured:boolean;node:number;path:number[];move:number;task:'idle'|'travel'|'patrol'|'investigate'|'mission'|'return';target?:string;intent?:'observe'|'intervene';timer:number;idleTask:IdleTask;patrolStop:number;lastEncounter?:{id:string;node:number};}
 export interface Choice {id:string;label:string;stat:Stat;tag:string;duration:number;bonus:number;risk:boolean;}
 export interface Incident {history:{time:number;text:string}[];report?:{names:string[];chance:number;roll:number;civils:number;trust:number;injured:string[]};requirements:Record<Stat,number>;id:string;title:string;place:string;node:number;at:number;deadline:number;brief:string;reveal:string;phase:Phase;known:boolean;agents:string[];decisionAt:number;finishAt:number;choice?:Choice;outcome?:string;success?:boolean;police:boolean;type:'conflict'|'rescue'|'tech'|'media';}

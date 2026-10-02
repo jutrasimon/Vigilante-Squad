@@ -78,13 +78,13 @@ Dans **Direction artistique → Ambiance & effets** : éclairage des volumes, di
 
 **Héros & véhicules** utilise les portraits existants du Hero Gym. Placer au centre ou activer le placement puis toucher la map; les tokens sont déplaçables par glisser. Les portraits restent lisibles face à l'écran, avec un socle suivant inclinaison/rotation; les véhicules sont alignés sur le plan de la map et disposent d'une orientation réglable.
 
-Un clic sur un héros ouvre la **vraie fiche du Hero Gym**, intégrée en mode `?embed=1&hero=...`. La fenêtre flotte sur la map : barre pour déplacer, boutons −/+ et poignée du coin pour redimensionner, bouton × pour fermer. Son canevas reste de 520 × 920, incluant la barre; le contenu défile indépendamment. Un nouveau clic rouvre la fiche. Position, taille, ouverture et héros sélectionné sont sauvegardés. HP, Mental et Énergie sont transmis par messages strictement entre la fiche et son parent de même origine; l'ordre de zone apparaît aussi dans la fiche. Le gym complet conserve son affichage habituel.
+Un clic sur un héros ouvre la **vraie fiche du Hero Gym**, intégrée en mode `?embed=1&hero=...`. La fenêtre flotte sur la map : barre pour déplacer, boutons −/+ et poignée du coin pour redimensionner, bouton × pour fermer. Son canevas conserve une largeur de 520 pixels mise à l’échelle; largeur et hauteur de la fenêtre se règlent indépendamment, avec défilement interne. Un nouveau clic rouvre la fiche. Position, taille, ouverture et héros sélectionné sont sauvegardés. HP, Mental et Énergie sont transmis par messages strictement entre la fiche et son parent de même origine; l'ordre de zone apparaît aussi dans la fiche. Le gym complet conserve son affichage habituel.
 
 ### Crayon et zones
 
 Le **Crayon** sur la map et **Encercler un secteur** dans l'atelier activent le dessin. Garder le bouton ou le doigt appuyé, tracer un contour et relâcher : il se ferme en polygone géographique. La map ne se déplace pas pendant le dessin. Échap ou Annuler sort du mode; un trait trop court laisse le crayon actif pour recommencer. Les zones demeurent attachées au terrain pendant déplacement et zoom.
 
-Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un héros et choisir **Surveiller cette zone** ou **Patrouiller dans cette zone**. Un héros a une zone active; le réassigner libère la précédente. Supprimer une zone libère son héros. Ce sont des ordres d'atelier : les tokens restent immobiles, sans trajet ni résolution d'intervention. Les flèches de déplacement ne sont pas encore ajoutées.
+Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un héros et choisir **Surveiller cette zone** ou **Patrouiller dans cette zone**. Un héros a une zone active; le réassigner libère la précédente. Supprimer une zone libère son héros. Le héros rejoint automatiquement le secteur par les rues, puis se déplace à l’intérieur. La surveillance marque des pauses plus longues que la patrouille. La résolution des interventions n’est pas simulée.
 
 ### Persistance et vérification
 
@@ -98,7 +98,7 @@ Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un 
 - Surveillance et Patrouille ont chacune une couleur réglable dans Crayon & zones, sauvegardée dans `scene.zoneColors`. Changer l'ordre actualise la couleur. Le portrait du héros assigné apparaît dans la liste et le libellé sur la carte.
 - Un secteur ouvre sa propre fenêtre de réglages sur la carte (nom, héros, ordre, recentrage, suppression). Le bouton cible dans la liste recentre la caméra sur le secteur, dans les limites de déplacement configurées.
 - La fiche est toujours le vrai `hero-gym.html` embarqué. Les activités hors mission partagent `hero-activities.ts` (QG, Surveillance, Patrouille). Le choix Surveillance est aussi présent dans le Hero Gym indépendant.
-- Le bouton de déplacement dans la liste d'un héros/véhicule, ou dans la barre de la fiche, demande une destination sur la carte. Le trajet de test est animé en ligne droite, sans navigation routière. Le glisser-déposer reste disponible. Les positions finales sont sauvegardées.
+- Sélectionner un héros ou un véhicule puis cliquer une destination sur la carte déclenche un trajet routier visible. Les boutons cible recentrent uniquement la caméra. Le glisser-déposer reste un outil de placement.
 - La poignée de la fiche règle maintenant largeur et hauteur indépendamment, avec défilement interne. La hauteur facultative `scene.window.height` conserve la compatibilité avec les exports précédents.
 - Le socle du héros est centré exactement sur l'ancrage géographique; le survol des points anime uniquement leur symbole. Les types de points gardent leurs couleurs initiales distinctes, également appliquées lorsqu'on change leur type.
 - La référence publique reprend l'export fourni le 2 octobre : caméra, couleurs, trois points et Béton. Les sauvegardes locales restent prioritaires; utiliser Restaurer la référence pour la charger.
@@ -108,3 +108,22 @@ Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un 
 Le halo reste bleu (`#78dcde`) indépendamment de l'activité. Chaque héros possède un sélecteur dans Héros & véhicules; sa couleur facultative `scene.agents[].color` est enregistrée dans l'atelier. Une ancienne sauvegarde sans couleur retrouve le bleu. L'ouverture de sa fiche sélectionne le token : bordure plus épaisse et pulsation sans déplacement de son ancrage. Fermer la fiche retire l'effet; la préférence système de réduction des animations est respectée.
 
 L'export **Atelier complet (JSON)** inclut les paramètres de caméra, le thème, les couches, les points et toute la scène, notamment couleurs des secteurs, halos, ambiance, positions, affectations et dimensions de la fenêtre. **Style seul (MapLibre)** reste un export du fond de carte. Les tests modifient tous les paramètres d'ambiance et les nouvelles couleurs avant export, puis comparent la scène entière après import et rechargement.
+
+
+## Navigation routière et atelier Juice
+
+### Déplacements
+
+Ouvrir la fiche d’un héros puis cliquer un point ou le terrain. Le héros rejoint la rue la plus proche de la destination, avec un trajet en pointillés de la couleur de son halo. La fiche reste ouverte. Son bouton cible recentre la caméra sur sa position actuelle. Sélectionner un véhicule, dans la liste ou sur la carte, utilise le même geste. La vitesse de simulation (×1 à ×30) accélère les essais.
+
+Dans la fiche commune, Surveillance et Patrouille affichent un menu **Secteur**. L’affectation fonctionne aussi depuis la fenêtre du secteur. Le héros rejoint le secteur puis choisit des parcours routiers qui restent dedans. QG choisit le point QG le plus proche, le rejoint et y reste. Sans QG, secteur accessible ou trajet continu, un message explique le blocage; aucun trajet direct à travers les bâtiments n’est créé.
+
+Le réseau est construit depuis les rues chargées par MapLibre, sans nouveau service de routage : intersections, connexions de ponts/tunnels et distinction rues/sentiers. Les véhicules évitent les sentiers. C’est une simulation de jeu bidirectionnelle, sans feux ni règles de sens unique. La couverture dépend des tuiles chargées : charger la zone en déplaçant/dézoomant la caméra si un trajet manque. Les trajets en cours, destinations, vitesses et affectations sont sauvegardés; un trajet importé reprend là où il était.
+
+`pathfinding.ts` est le moteur de recherche partagé avec le premier gym. `map-roads.ts` construit le graphe géographique; `map-travel.ts` anime les acteurs. La fiche est construite une seule fois par `mountHeroSheet` dans `hero-sheet.ts`, utilisée par l’entrée `hero-gym.ts`; `hero-sheet-bridge.ts` transmet le contexte de la map. Le contexte embarqué masque l’atelier et ajoute le choix de secteur, sans dupliquer la fiche. Les styles de titre, statut et bouton de comparaison sont communs.
+
+### Effets
+
+L’onglet **Juice** permet de choisir la carte, un héros, un véhicule, un point ou un secteur (liste ou clic sur la map). Cocher Pop, Squash & stretch, Flash, Secousse écran, Zoom caméra, Travelling, Explosion ou Pluie de particules. Régler intensité, durée et couleur puis **Tester**; **Arrêter** coupe les effets. Un déclenchement au clic ou à l’arrivée d’un acteur peut être mémorisé. Les animations respectent la réduction des mouvements et les limites de caméra.
+
+`scene.juice` sauvegarde chaque configuration par cible dans l’export **Atelier complet**, avec `scene.travelSpeed` et `journey` sur les acteurs. Les anciens exports restent acceptés. `tests/map-routing.spec.ts` couvre les routes, le retour au QG, les affectations, véhicules, effets et export/import; `tests/map-roads.test.ts` vérifie notamment ponts, intersections, réseau discontinu et confinement dans les contours concaves.

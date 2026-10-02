@@ -1,0 +1,13 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {RoadNetwork,insideZone,type RoadCoord} from '../src/map-roads';
+import type {Feature,LineString} from 'geojson';
+const road=(coordinates:RoadCoord[],properties={}):Feature<LineString>=>({type:'Feature',properties:{class:'street',...properties},geometry:{type:'LineString',coordinates}});
+const close=(a:RoadCoord,b:RoadCoord)=>Math.hypot(a[0]-b[0],a[1]-b[1])<1e-8;
+test('Routes follow corners and split street intersections',()=>{const n=new RoadNetwork([road([[0,0],[.002,0],[.002,.002]]),road([[.001,-.001],[.001,.001]])]);const path=n.route([0,0],[.002,.002]);assert.ok(path.some(p=>close(p,[.002,0])));assert.ok(n.route([.001,-.001],[.002,.002]).some(p=>close(p,[.001,0])));});
+test('Disconnected streets do not produce straight-line fallback',()=>{const n=new RoadNetwork([road([[0,0],[.001,0]]),road([[.002,0],[.003,0]])]);assert.deepEqual(n.route([0,0],[.003,0]),[]);});
+test('Bridge joins at its ends, not at a ground crossing',()=>{const n=new RoadNetwork([road([[0,0],[.001,0]]),road([[.001,0],[.002,0],[.003,0]],{brunnel:'bridge'}),road([[.003,0],[.004,0]]),road([[.002,-.001],[.002,.001]])]);assert.ok(n.route([0,0],[.004,0]).length>=4);assert.deepEqual(n.route([0,0],[.002,.001]),[]);});
+test('Footpaths are available to heroes but not vehicles',()=>{const n=new RoadNetwork([road([[0,0],[.001,0]]),road([[.001,0],[.002,0]],{class:'path'}),road([[.002,0],[.003,0]])]);assert.ok(n.route([0,0],[.003,0]).length>2);assert.deepEqual(n.route([0,0],[.003,0],true),[]);});
+test('Snapping keeps endpoints on roads and rejects remote destinations',()=>{const n=new RoadNetwork([road([[0,0],[.002,0]])]);const p=n.route([.0003,.0001],[.0014,.0002]);assert.ok(close(p[0],[.0003,0]));assert.ok(close(p.at(-1)!,[.0014,0]));assert.deepEqual(n.route([0,0],[1,1]),[]);});
+test('Patrol rejects a road crossing a narrow concave notch',()=>{const ring:RoadCoord[]=[[-.001,-.001],[.005,-.001],[.005,.001],[.0013,.001],[.0013,-.0001],[.0012,-.0001],[.0012,.001],[-.001,.001],[-.001,-.001]];const n=new RoadNetwork([road([[0,0],[.004,0]])]);assert.ok(insideZone([0,0],ring));assert.ok(insideZone([.004,0],ring));assert.deepEqual(n.route([0,0],[.004,0],false,ring),[]);});
+test('Small sectors can patrol within one street without an intersection',()=>{const ring:RoadCoord[]=[[.0004,-.0002],[.0016,-.0002],[.0016,.0002],[.0004,.0002],[.0004,-.0002]];const n=new RoadNetwork([road([[0,0],[.002,0]])]);assert.ok(n.candidates(ring).length);assert.equal(n.route([.0006,0],[.0014,0],false,ring).length,2);});
