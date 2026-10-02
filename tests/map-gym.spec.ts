@@ -1,5 +1,12 @@
 import {test,expect} from '@playwright/test';
 test.use({launchOptions:{args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}});
+// Keep covering existing local workshops alongside the new approved cold-start map.
+test.beforeEach(async({page},info)=>{
+ if(info.title.startsWith('Approved map reference'))return;
+ await page.addInitScript(()=>{
+  const key='vigilante-map-gym-v1';if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({version:1,theme:{},points:[],overrides:{},camera:{center:[-73.579,45.519],zoom:15,pitch:0,bearing:0,locked:false}}));
+ });
+});
 for(const width of [320,390,1280])test(`Map workshop and points at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844});
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
@@ -215,4 +222,30 @@ for(const width of [390,1280])test(`3D buildings survive palettes and camera loc
  await page.getByText('Sauvegarde & export',{exact:true}).click();
  await volumes.uncheck();expect((await style()).layers.find((l:{id:string})=>l.id==='building-volumes').paint['fill-extrusion-height']).toBe(0);
  await page.locator('[data-preset=bulletin]').click();await expect(volumes).not.toBeChecked();
+});
+
+for(const width of [390,1280])test(`Approved map reference loads and restores at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:844});
+ await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{},layers:[{id:'background',type:'background'}]}}));
+ const response=await page.request.get('/config/map-reference.json'),reference=await response.json();expect(response.ok()).toBe(true);
+ await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
+ await expect(page.locator('.poi')).toHaveCount(1);await expect(page.locator('.poi-name')).toHaveText('QG');
+ if(width<760)await page.locator('#atelier').click();
+ await expect(page.locator('[data-theme=threeD]')).toBeChecked();await expect(page.locator('[data-theme=roadNumbers]')).not.toBeChecked();
+ await page.getByText('Lieu & caméra',{exact:true}).click();await expect(page.locator('#camera-lock')).toBeChecked();await expect(page.locator('#camera-zoom')).toBeEnabled();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ async function exportMap(){const pending=page.waitForEvent('download');await page.locator('#export').click();const stream=await(await pending).createReadStream();const chunks:Buffer[]=[];for await(const c of stream!)chunks.push(c);return JSON.parse(Buffer.concat(chunks).toString());}
+ function matches(saved:any){
+  expect(saved.theme).toEqual(reference.theme);expect(saved.points).toEqual(reference.points);expect(saved.overrides).toEqual(reference.overrides);
+  expect(saved.camera.locked).toBe(true);expect(saved.camera.zoomBounds).toEqual(reference.camera.zoomBounds);
+  for(const key of ['pitch','bearing','zoom'])expect(saved.camera[key]).toBeCloseTo(reference.camera[key],10);
+  expect(saved.camera.center[0]).toBeCloseTo(reference.camera.center[0],10);expect(saved.camera.center[1]).toBeCloseTo(reference.camera.center[1],10);
+ }
+ matches(await exportMap());
+ await page.getByText('Direction artistique',{exact:true}).click();await page.locator('[data-preset=bulletin]').click();
+ page.once('dialog',dialog=>dialog.dismiss());await page.locator('#reference').click();expect((await exportMap()).theme.land).toBe('#c9c1ac');
+ page.once('dialog',dialog=>dialog.accept());await page.locator('#reference').click();await expect(page.locator('#status')).toHaveText('Carte de référence restaurée.');matches(await exportMap());
+ expect(await(await page.request.get('/config/map-reference.json')).json()).toEqual(reference);
+ await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');if(width<760)await page.locator('#atelier').click();await page.getByText('Sauvegarde & export',{exact:true}).click();matches(await exportMap());
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

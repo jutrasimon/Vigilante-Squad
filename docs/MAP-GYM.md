@@ -43,3 +43,19 @@ Compilation TypeScript et build Vite; tests du moteur principal. Tests navigateu
 ## Règle de caméra du jeu
 
 La politique réutilisable est dans `src/map-camera.ts`. La carte réelle reste dans ce gym : le jeu principal emploie encore la carte SVG du prototype. Lors de l’intégration de la carte réelle, la politique permettra de verrouiller la vue configurée dans les options et de conserver le déplacement et le zoom dans des limites réglables indépendamment. Aucun angle à 45° n’est imposé par le module.
+
+
+## Référence validée — 1er octobre 2026
+
+Le fichier `public/config/map-reference.json` conserve exactement l’export fourni par Simon. Les manipulations dans le gym modifient uniquement l’atelier local; elles ne réécrivent jamais cette référence versionnée. Sur un appareil sans atelier sauvegardé, le gym démarre avec cette configuration. Les ateliers déjà sauvegardés restent prioritaires.
+
+Dans **Sauvegarde & export**, **Restaurer la référence** remet tous les réglages, les overrides de couches, le QG et la caméra à ces valeurs, après confirmation du remplacement de l’atelier courant. L’export original reste téléchargeable à `config/map-reference.json`.
+
+- Palette sombre bleu/violet, routes principales mauves, accent cyan.
+- Bâtiments 3D actifs, hauteur ×1,6; opacité de catégorie 95 %.
+- Routes pleines, numéros de routes masqués, commerces masqués.
+- Inclinaison 52,741931579895486°, rotation −94,16823827544492°, angle verrouillé.
+- Zoom initial/minimum 15,080196839933233; maximum 18,379892533720255. Le zoom reste disponible dans cet intervalle.
+- Centre et point QG conservés aux coordonnées exactes de l’export.
+
+Cette référence concerne la carte réelle du gym; la carte SVG du jeu principal reste distincte jusqu’à son intégration.

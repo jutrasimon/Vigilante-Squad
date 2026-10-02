@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "theme": {
+    "background": "#101a22",
+    "land": "#17252d",
+    "water": "#082f45",
+    "park": "#172f35",
+    "building": "#26304c",
+    "buildingEdge": "#5a5384",
+    "road": "#395b6c",
+    "major": "#ad668f",
+    "rail": "#9c7270",
+    "label": "#a8cede",
+    "halo": "#142129",
+    "accent": "#78dcde",
+    "roadWidth": 2.2,
+    "buildingOpacity": 0.9,
+    "labelSize": 0.8,
+    "labels": true,
+    "solidRoads": true,
+    "roadNumbers": false,
+    "buildings": true,
+    "parks": true,
+    "threeD": true,
+    "height": 1.6,
+    "grain": 0.17,
+    "vignette": 0.6,
+    "poiSize": 38,
+    "poiLabels": true,
+    "pitch": 52.741931579895486,
+    "bearing": -94.16823827544492
+  },
+  "points": [
+    {
+      "id": "2e17fa76-ab93-427f-933c-8d0ae7525819",
+      "type": "hq",
+      "name": "QG",
+      "lng": -73.57850768193227,
+      "lat": 45.53826223599151,
+      "color": "#edc25d"
+    }
+  ],
+  "overrides": {
+    "road_one_way_arrow": {
+      "visible": true
+    },
+    "@group:building": {
+      "visible": true,
+      "opacity": 0.95
+    },
+    "@group:road": {
+      "visible": true
+    },
+    "@group:places": {
+      "visible": false
+    }
+  },
+  "camera": {
+    "center": [
+      -73.57474409810834,
+      45.536720263619145
+    ],
+    "zoom": 15.080196839933233,
+    "pitch": 52.741931579895486,
+    "bearing": -94.16823827544492,
+    "locked": true,
+    "zoomBounds": {
+      "min": 15.080196839933233,
+      "max": 18.379892533720255
+    }
+  }
+}
