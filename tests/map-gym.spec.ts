@@ -132,3 +132,37 @@ for(const width of [390,1280])test(`Map road cleanup at ${width}px`,async({page}
  await page.locator('#import').setInputFiles({name:'old-atelier.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(old))});await expect(page.locator('#status')).toHaveText('Atelier importé.');
  await expect(page.locator('[data-theme=solidRoads]')).toBeChecked();await expect(page.locator('[data-theme=roadNumbers]')).not.toBeChecked();expect(errors).toEqual([]);
 });
+
+for(const width of [390,1280])test(`Game camera pans only at ${width}px`,async({page,context})=>{
+ await page.setViewportSize({width,height:844});
+ await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{},layers:[{id:'background',type:'background'}]}}));
+ await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
+ await page.locator('#camera-game').click();await expect(page.locator('#map')).toHaveAttribute('data-camera-mode','game');
+ if(width<760)await page.locator('#atelier').click();await page.getByText('Sauvegarde & export',{exact:true}).click();
+ async function camera(){const p=page.waitForEvent('download');await page.locator('#export').click();const stream=await(await p).createReadStream();const chunks:Buffer[]=[];for await(const c of stream!)chunks.push(c);return JSON.parse(Buffer.concat(chunks).toString()).camera;}
+ const initial=await camera();expect(initial.mode).toBe('game');expect(initial.pitch).toBe(45);expect(initial.bearing).toBe(45);
+ if(width<760)await page.locator('#close').click();
+ const canvas=page.locator('.maplibregl-canvas'),box=(await canvas.boundingBox())!;
+ const x=box.x+box.width*.5,y=box.y+box.height*.55;
+ await page.mouse.move(x,y);await page.mouse.wheel(0,-800);await page.mouse.dblclick(x,y);
+ await page.mouse.move(x,y);await page.mouse.down({button:'right'});await page.mouse.move(x+50,y+30,{steps:8});await page.mouse.up({button:'right'});
+ await canvas.focus();await page.keyboard.press('Shift+ArrowLeft');await page.keyboard.press('+');await page.waitForTimeout(250);
+ if(width<760)await page.locator('#atelier').click();let pose=await camera();expect(pose.pitch).toBe(45);expect(pose.bearing).toBe(45);expect(pose.zoom).toBe(initial.zoom);expect(pose.center).not.toEqual(initial.center);
+ if(width<760)await page.locator('#close').click();
+ await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+80,y+40,{steps:8});await page.mouse.up();await page.waitForTimeout(500);
+ if(width<760)await page.locator('#atelier').click();const panned=await camera();expect(panned.center).not.toEqual(pose.center);expect(panned.zoom).toBe(initial.zoom);expect(panned.bearing).toBe(45);
+ if(width<760)await page.locator('#close').click();
+ const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
+ for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+i*6,y:y+i*3,id:1}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(500);
+ if(width<760)await page.locator('#atelier').click();const fingerPan=await camera();expect(fingerPan.center).not.toEqual(panned.center);expect(fingerPan.pitch).toBe(45);expect(fingerPan.zoom).toBe(initial.zoom);if(width<760)await page.locator('#close').click();
+ const points=(spread:number,dy=0)=>[{x:x-spread,y:y+dy,id:1},{x:x+spread,y:y+dy,id:2}];
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points(20)});
+ for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:points(20+i*5,i*3)});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(500);
+ if(width<760)await page.locator('#atelier').click();pose=await camera();expect(pose.zoom).toBe(initial.zoom);expect(pose.pitch).toBe(45);expect(pose.bearing).toBe(45);
+ await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await expect(page.locator('#camera-game')).toHaveAttribute('aria-pressed','true');
+ if(width<760)await page.locator('#atelier').click();await page.getByText('Lieu & caméra',{exact:true}).click();await expect(page.locator('[data-theme=pitch]')).toBeDisabled();
+ if(width<760)await page.locator('#close').click();await page.locator('#camera-workshop').click();if(width<760)await page.locator('#atelier').click();await expect(page.locator('[data-theme=pitch]')).toBeEnabled();
+});

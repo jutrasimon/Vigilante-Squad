@@ -28,10 +28,14 @@ Toucher un point ouvre son éditeur : nom, type, couleur, coordonnées et suppre
 
 ## Mobile et sauvegarde
 
-Carte plein écran, glissement au doigt et zoom par pincement; rotation à deux doigts désactivée pour limiter les gestes involontaires. L’atelier s’ouvre par un bouton et défile indépendamment. Les points peuvent être ajoutés au centre avec l’atelier fermé.
+Deux modes : **Atelier**, avec glissement/zoom et réglages libres, et **Caméra de jeu**, avec vue isométrique fixe (inclinaison 45°, orientation 45°) et déplacement seulement. Le niveau de zoom courant est conservé à l’entrée puis verrouillé. Souris, tactile et flèches du clavier déplacent la caméra; molette, pincement, double clic, zoom par rectangle, rotation, inclinaison et raccourcis de zoom sont bloqués. Les boutons de zoom/boussole sont retirés et les réglages d’angle désactivés en mode jeu. Changer de ville ou recentrer un point garde le cadrage verrouillé. Le retour à l’Atelier restaure les angles de travail. Mode sauvegardé/exporté avec la caméra, imports anciens compatibles. L’atelier s’ouvre par un bouton et défile indépendamment. Les points peuvent être ajoutés au centre avec l’atelier fermé.
 
 Palette, réglages par couche, points et caméra enregistrés dans localStorage sur l’appareil. Export/import d’un atelier JSON version 1; export séparé du style MapLibre effectif pour réutiliser la DA (ne contient pas les points DOM, ceux-ci sont dans l’atelier). L’import d’atelier limite les points à 500 et refuse les données de points invalides. Réinitialisation confirmée avant suppression.
 
 ## Validation
 
 Compilation TypeScript et build Vite; tests du moteur principal. Tests navigateur sur mobile/ordinateur avec une petite source géographique locale interceptée : chargement WebGL, presets, création/édition/suppression de points, persistance, export et absence de débordement. Cette fixture teste l’atelier sans dépendre de la disponibilité d’OpenFreeMap. Un test supplémentaire charge le fournisseur réel et conserve les captures Dossier/Bulletin dans les artifacts navigateur. Le worker MapLibre est compilé explicitement par Vite pour fonctionner en développement et sur GitHub Pages.
+
+## Règle de caméra du jeu
+
+La politique réutilisable est dans `src/map-camera.ts`. La carte réelle reste dans ce gym : le jeu principal emploie encore la carte SVG du prototype. Lors de l’intégration de la carte réelle, le joueur utilisera exclusivement la politique « game », sans commandes de rotation, d’inclinaison ou de zoom. Le mode Atelier appartient aux outils de création.
