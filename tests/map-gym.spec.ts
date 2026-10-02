@@ -133,36 +133,59 @@ for(const width of [390,1280])test(`Map road cleanup at ${width}px`,async({page}
  await expect(page.locator('[data-theme=solidRoads]')).toBeChecked();await expect(page.locator('[data-theme=roadNumbers]')).not.toBeChecked();expect(errors).toEqual([]);
 });
 
-for(const width of [390,1280])test(`Game camera pans only at ${width}px`,async({page,context})=>{
+for(const width of [390,1280])test(`Chosen camera locks without moving at ${width}px`,async({page,context})=>{
  await page.setViewportSize({width,height:844});
  await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{},layers:[{id:'background',type:'background'}]}}));
  await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
- await page.locator('#camera-game').click();await expect(page.locator('#map')).toHaveAttribute('data-camera-mode','game');
- if(width<760)await page.locator('#atelier').click();await page.getByText('Sauvegarde & export',{exact:true}).click();
+ if(width<760)await page.locator('#atelier').click();
+ await page.getByText('Lieu & caméra',{exact:true}).click();
+ for(const [selector,value] of [['[data-theme=pitch]','37'],['[data-theme=bearing]','-28'],['#camera-zoom','16.4']]){
+  await page.locator(selector).evaluate((node,value)=>{(node as HTMLInputElement).value=value;node.dispatchEvent(new Event('input',{bubbles:true}));},value);
+ }
+ const beforeLock=await page.evaluate(()=>JSON.parse(localStorage.getItem('vigilante-map-gym-v1')!).camera);
+ await page.locator('#camera-lock').check();await expect(page.locator('#map')).toHaveAttribute('data-camera-locked','true');
+ const locked=await page.evaluate(()=>JSON.parse(localStorage.getItem('vigilante-map-gym-v1')!).camera);
+ expect({...locked,locked:false}).toEqual(beforeLock);
+ await expect(page.locator('[data-theme=pitch]')).toBeDisabled();await expect(page.locator('#camera-zoom')).toBeDisabled();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
  async function camera(){const p=page.waitForEvent('download');await page.locator('#export').click();const stream=await(await p).createReadStream();const chunks:Buffer[]=[];for await(const c of stream!)chunks.push(c);return JSON.parse(Buffer.concat(chunks).toString()).camera;}
- const initial=await camera();expect(initial.mode).toBe('game');expect(initial.pitch).toBe(45);expect(initial.bearing).toBe(45);
+ const initial=await camera();expect(initial.locked).toBe(true);expect(initial.pitch).toBe(37);expect(initial.bearing).toBe(-28);expect(initial.zoom).toBe(16.4);
  if(width<760)await page.locator('#close').click();
  const canvas=page.locator('.maplibregl-canvas'),box=(await canvas.boundingBox())!;
  const x=box.x+box.width*.5,y=box.y+box.height*.55;
  await page.mouse.move(x,y);await page.mouse.wheel(0,-800);await page.mouse.dblclick(x,y);
  await page.mouse.move(x,y);await page.mouse.down({button:'right'});await page.mouse.move(x+50,y+30,{steps:8});await page.mouse.up({button:'right'});
  await canvas.focus();await page.keyboard.press('Shift+ArrowLeft');await page.keyboard.press('+');await page.waitForTimeout(250);
- if(width<760)await page.locator('#atelier').click();let pose=await camera();expect(pose.pitch).toBe(45);expect(pose.bearing).toBe(45);expect(pose.zoom).toBe(initial.zoom);expect(pose.center).not.toEqual(initial.center);
+ if(width<760)await page.locator('#atelier').click();let pose=await camera();expect(pose.pitch).toBe(37);expect(pose.bearing).toBe(-28);expect(pose.zoom).toBe(initial.zoom);expect(pose.center).not.toEqual(initial.center);
  if(width<760)await page.locator('#close').click();
  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+80,y+40,{steps:8});await page.mouse.up();await page.waitForTimeout(500);
- if(width<760)await page.locator('#atelier').click();const panned=await camera();expect(panned.center).not.toEqual(pose.center);expect(panned.zoom).toBe(initial.zoom);expect(panned.bearing).toBe(45);
+ if(width<760)await page.locator('#atelier').click();const panned=await camera();expect(panned.center).not.toEqual(pose.center);expect(panned.zoom).toBe(initial.zoom);expect(panned.bearing).toBe(-28);
  if(width<760)await page.locator('#close').click();
  const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
  for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+i*6,y:y+i*3,id:1}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(500);
- if(width<760)await page.locator('#atelier').click();const fingerPan=await camera();expect(fingerPan.center).not.toEqual(panned.center);expect(fingerPan.pitch).toBe(45);expect(fingerPan.zoom).toBe(initial.zoom);if(width<760)await page.locator('#close').click();
+ if(width<760)await page.locator('#atelier').click();const fingerPan=await camera();expect(fingerPan.center).not.toEqual(panned.center);expect(fingerPan.pitch).toBe(37);expect(fingerPan.zoom).toBe(initial.zoom);if(width<760)await page.locator('#close').click();
  const points=(spread:number,dy=0)=>[{x:x-spread,y:y+dy,id:1},{x:x+spread,y:y+dy,id:2}];
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points(20)});
  for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:points(20+i*5,i*3)});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(500);
- if(width<760)await page.locator('#atelier').click();pose=await camera();expect(pose.zoom).toBe(initial.zoom);expect(pose.pitch).toBe(45);expect(pose.bearing).toBe(45);
- await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await expect(page.locator('#camera-game')).toHaveAttribute('aria-pressed','true');
+ if(width<760)await page.locator('#atelier').click();pose=await camera();expect(pose.zoom).toBe(initial.zoom);expect(pose.pitch).toBe(37);expect(pose.bearing).toBe(-28);
+ await page.getByText('Direction artistique',{exact:true}).click();await page.locator('[data-preset=bulletin]').click();
+ const afterPalette=await camera();expect(afterPalette.pitch).toBe(37);expect(afterPalette.bearing).toBe(-28);expect(afterPalette.zoom).toBe(16.4);
+ await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await expect(page.locator('#map')).toHaveAttribute('data-camera-locked','true');
  if(width<760)await page.locator('#atelier').click();await page.getByText('Lieu & caméra',{exact:true}).click();await expect(page.locator('[data-theme=pitch]')).toBeDisabled();
- if(width<760)await page.locator('#close').click();await page.locator('#camera-workshop').click();if(width<760)await page.locator('#atelier').click();await expect(page.locator('[data-theme=pitch]')).toBeEnabled();
+ await expect(page.locator('#camera-lock')).toBeChecked();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();const restored=await camera();expect(restored).toEqual(afterPalette);
+ await page.locator('#camera-lock').uncheck();await expect(page.locator('[data-theme=pitch]')).toBeEnabled();await expect(page.locator('#camera-zoom')).toBeEnabled();
+ const unlocked=await camera();expect({...unlocked,locked:true}).toEqual(restored);
+ const exported=await page.evaluate(()=>JSON.parse(localStorage.getItem('vigilante-map-gym-v1')!));
+ exported.camera={...restored,pitch:52,bearing:19,zoom:14.7,locked:true};
+ await page.locator('#import').setInputFiles({name:'camera.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});
+ await expect(page.locator('#status')).toContainText('Atelier importé');const imported=await camera();expect(imported.pitch).toBeCloseTo(52,8);expect(imported.bearing).toBeCloseTo(19,8);expect(imported.zoom).toBeCloseTo(14.7,8);expect(imported.center).toEqual(exported.camera.center);expect(imported.locked).toBe(true);await expect(page.locator('#camera-lock')).toBeChecked();
+ // Legacy workshops restore their saved angles instead of forcing 45 degrees.
+ delete exported.camera.locked;exported.camera.mode='game';
+ await page.locator('#import').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});
+ await expect(page.locator('#status')).toContainText('Atelier importé');expect(await camera()).toEqual(imported);
+
 });
