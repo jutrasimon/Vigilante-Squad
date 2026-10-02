@@ -164,3 +164,11 @@ Tous les paramètres sont validés dans le JSON **Atelier complet**. Les tests v
 - La pluie masque les éclaboussures devant les bâtiments visibles, avec cache spatial invalidé aux mouvements et modifications. Les éclairs produisent deux flashs successifs.
 - Le double-clic ne zoome plus. Les commandes de navigation, l’échelle et la bannière de statut visuelle sont retirées; une attribution discrète reste présente. Ville et pays sont modifiables dans Lieu & caméra et enregistrés dans `place`.
 - L’export complet inclut ces réglages et les bâtiments détruits. L’export « style seul » demeure un style MapLibre, pas une sauvegarde du jeu.
+
+### Bords de carte et vignette
+
+Direction artistique propose une vignette réglable : intensité, couleur, ouverture centrale, douceur, rondeur et centre horizontal/vertical. Les anciens exports conservent leur intensité de vignette.
+
+Le signal des limites dessine une brume lumineuse sur le côté bloqué lors d’un déplacement à la souris, au clavier ou au toucher. Le zoom à sa limite produit une pulsation périphérique. Les mouvements programmatiques ne déclenchent pas le signal. Activation, couleur, intensité, largeur et durée sont réglables en DA, avec un bouton de prévisualisation; les animations respectent la préférence de mouvement réduit et ne capturent aucun clic.
+
+Juice inclut « Vignette écran ». Sa forme suit la DA, avec la couleur/intensité/durée propres à la règle. Sur `focus`, elle reste active pendant la sélection; autrement elle apparaît puis disparaît. Elle ne modifie pas la vignette permanente. Tous ces paramètres sont enregistrés dans l’atelier JSON.
