@@ -91,3 +91,14 @@ Dans **Crayon & zones**, choisir une zone pour changer nom/couleur, assigner un 
 `scene` conserve ambiance, agents, véhicules, zones et fenêtre dans le même JSON version 1. Ancien export sans scène : scène vide. Import invalide : les nouveaux champs sont validés avant le remplacement de l'atelier. Plafonds : 100 agents, 100 véhicules, 100 zones, 1 500 sommets par contour et 1 Mo par fichier importé. Pas de génération automatique d'événements, pas de maillage 3D supplémentaire ni de service externe ajouté.
 
 `tests/map-scene.spec.ts` vérifie la fiche réelle, ratio/déplacement/fermeture, dessin, affectations, suppression, effets, positions, sauvegarde/rechargement, export/import, rejet de données invalides et caméra bloquée au zoom loin. Les essais navigateur utilisent une source cartographique locale pour vérifier ces interactions indépendamment du fournisseur.
+
+## Raffinements du 2 octobre
+
+- Le crayon conserve le contour libre, retire les boucles de fermeture accidentelles et arrondit les angles. Les contours ne sont pas remplacés par des cercles. Les lignes ont des jointures arrondies.
+- Surveillance et Patrouille ont chacune une couleur réglable dans Crayon & zones, sauvegardée dans `scene.zoneColors`. Changer l'ordre actualise la couleur. Le portrait du héros assigné apparaît dans la liste et le libellé sur la carte.
+- Un secteur ouvre sa propre fenêtre de réglages sur la carte (nom, héros, ordre, recentrage, suppression). Le bouton cible dans la liste recentre la caméra sur le secteur, dans les limites de déplacement configurées.
+- La fiche est toujours le vrai `hero-gym.html` embarqué. Les activités hors mission partagent `hero-activities.ts` (QG, Surveillance, Patrouille). Le choix Surveillance est aussi présent dans le Hero Gym indépendant.
+- Le bouton de déplacement dans la liste d'un héros/véhicule, ou dans la barre de la fiche, demande une destination sur la carte. Le trajet de test est animé en ligne droite, sans navigation routière. Le glisser-déposer reste disponible. Les positions finales sont sauvegardées.
+- La poignée de la fiche règle maintenant largeur et hauteur indépendamment, avec défilement interne. La hauteur facultative `scene.window.height` conserve la compatibilité avec les exports précédents.
+- Le socle du héros est centré exactement sur l'ancrage géographique; le survol des points anime uniquement leur symbole. Les types de points gardent leurs couleurs initiales distinctes, également appliquées lorsqu'on change leur type.
+- La référence publique reprend l'export fourni le 2 octobre : caméra, couleurs, trois points et Béton. Les sauvegardes locales restent prioritaires; utiliser Restaurer la référence pour la charger.

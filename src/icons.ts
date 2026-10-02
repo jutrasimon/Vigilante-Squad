@@ -1,3 +1,4 @@
+import moveSvg from '@tabler/icons/outline/arrows-move.svg?raw';
 import lockOpenSvg from '@tabler/icons/outline/lock-open.svg?raw';
 import lockSvg from '@tabler/icons/outline/lock.svg?raw';
 import handClickSvg from '@tabler/icons/outline/hand-click.svg?raw';
@@ -35,7 +36,7 @@ import svg27 from '@tabler/icons/outline/list-check.svg?raw';
 import svg28 from '@tabler/icons/outline/player-play.svg?raw';
 import svg29 from '@tabler/icons/outline/flag.svg?raw';
 import svg30 from '@tabler/icons/outline/info-circle.svg?raw';
-const icons={'lock-open':lockOpenSvg,'lock':lockSvg,'hand-click':handClickSvg,'bike':bikeSvg,'motorbike':motorbikeSvg,'barbell':svg0,'brain':svg1,'heart':svg2,'clock':svg3,'map-pin':svg4,'route':svg5,'target':svg6,'shield':svg7,'shield-check':svg8,'alert-triangle':svg9,'users':svg10,'search':svg11,'check':svg12,'x':svg13,'arrow-left':svg14,'arrow-right':svg15,'battery':svg16,'first-aid-kit':svg17,'home':svg18,'walk':svg19,'eye':svg20,'eye-off':svg21,'bolt':svg22,'message-circle':svg23,'lifebuoy':svg24,'tools':svg25,'speakerphone':svg26,'list-check':svg27,'player-play':svg28,'flag':svg29,'info-circle':svg30};
+const icons={'arrows-move':moveSvg,'lock-open':lockOpenSvg,'lock':lockSvg,'hand-click':handClickSvg,'bike':bikeSvg,'motorbike':motorbikeSvg,'barbell':svg0,'brain':svg1,'heart':svg2,'clock':svg3,'map-pin':svg4,'route':svg5,'target':svg6,'shield':svg7,'shield-check':svg8,'alert-triangle':svg9,'users':svg10,'search':svg11,'check':svg12,'x':svg13,'arrow-left':svg14,'arrow-right':svg15,'battery':svg16,'first-aid-kit':svg17,'home':svg18,'walk':svg19,'eye':svg20,'eye-off':svg21,'bolt':svg22,'message-circle':svg23,'lifebuoy':svg24,'tools':svg25,'speakerphone':svg26,'list-check':svg27,'player-play':svg28,'flag':svg29,'info-circle':svg30};
 export type IconName=keyof typeof icons;
 export function icon(name:IconName){return icons[name].replace('<svg','<svg aria-hidden="true" focusable="false"');}
 export const statIcon={Corps:'barbell',Esprit:'brain','Âme':'heart'} as const;
