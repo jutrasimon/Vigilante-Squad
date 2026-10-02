@@ -3,7 +3,7 @@ import type {Map as MapLibreMap} from 'maplibre-gl';
 export function placeMapPopover(map:MapLibreMap,panel:HTMLElement,position:[number,number]){
  if(panel.hidden)return;const viewport=panel.parentElement!,v=viewport.getBoundingClientRect(),p=map.project(position),hero=viewport.querySelector<HTMLElement>('#hero-window:not([hidden])'),r=hero?.getBoundingClientRect();
  const obstacle=r?{x:r.left-v.left,y:r.top-v.top,w:r.width,h:r.height}:undefined;
- const usableHeight=v.height-(viewport.querySelector('#hero-dock:not([hidden])')?132:0);
+ const usableHeight=v.height-(viewport.querySelector('#hero-dock:not([hidden])')?180:0);
  const w=Math.min(270,v.width-16);panel.style.width=`${w}px`;panel.style.maxHeight=`${Math.max(140,usableHeight-20)}px`;const h=Math.min(panel.scrollHeight,usableHeight-20);
  const candidates=[{x:p.x+34,y:p.y-h/2},{x:p.x-w-34,y:p.y-h/2},{x:p.x-w/2,y:p.y+42},{x:p.x-w/2,y:p.y-h-42}];
  if(obstacle)candidates.push({x:obstacle.x+obstacle.w+12,y:p.y-h/2},{x:obstacle.x-w-12,y:p.y-h/2},{x:p.x-w/2,y:obstacle.y+obstacle.h+12});

@@ -20,9 +20,9 @@ export class RoadNetwork{
  constructor(features:Feature<Geometry>[]){
   const raw:Segment[]=[],seen=new Set<string>(),portals=new Map<string,Set<string>>();
   const coordKey=(p:RoadCoord)=>p.map(n=>Math.round(n*5)).join(',');
-  for(const f of features){const p=f.properties||{},kind=String(p.class||p.highway||'street');if(/rail|ferry|aerial|motorway|construction/.test(kind))continue;if(p.access==='no'||p.access==='private')continue;
+  for(const f of features){const p=f.properties||{},kind=String(p.class||p.highway||'street');if(/rail|ferry|aerial|motorway|construction/.test(kind))continue;if(p.access==='no')continue;
    const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.type==='MultiLineString'?f.geometry.coordinates:[];
-   const level=String(p.layer??(p.brunnel==='bridge'?1:p.brunnel==='tunnel'?-1:0)),car=!/path|footway|pedestrian|steps|cycleway/.test(kind);
+   const level=String(p.layer??(p.brunnel==='bridge'?1:p.brunnel==='tunnel'?-1:0)),car=p.access!=='private'&&!/path|footway|pedestrian|steps|cycleway/.test(kind);
    for(const line of lines){for(const p of [line[0],line.at(-1)])if(p){const k=coordKey(xy(p as RoadCoord)),levels=portals.get(k)||new Set<string>();levels.add(level);portals.set(k,levels);} }
    for(const line of lines)for(let i=1;i<line.length;i++){const a=xy(line[i-1] as RoadCoord),b=xy(line[i] as RoadCoord);if(dist(a,b)<.05)continue;const key=[a,b].map(v=>v.map(n=>Math.round(n*10)).join(',')).sort().join(':')+':'+level;if(seen.has(key))continue;seen.add(key);raw.push({a,b,level,car,cuts:[0,1]});}
   }
@@ -46,29 +46,24 @@ export class RoadNetwork{
   return shortestPath(start,end,n=>[...[...(this.edges.get(n)||[])].filter(([k,e])=>(!vehicle||e.car)&&allowed(points[n],points[k])).map(([k,e])=>[k,e.cost] as [number,number]),...(extra.get(n)||[])]).map(n=>points[n]);
  }
  /** A drawn sector selects nearby street sections, completing short ends to junctions. */
- sector(ring:RoadCoord[],margin=35):RoadNetwork{
+ sector(ring:RoadCoord[],margin=12):RoadNetwork{
   const cached=this.sectorCache.get(ring)?.get(margin);if(cached)return cached;
   const remember=(net:RoadNetwork)=>{let entries=this.sectorCache.get(ring);if(!entries){entries=new Map();this.sectorCache.set(ring,entries);}entries.set(margin,net);return net;};
-  if(this.segments.some(e=>roadDistance(this.nodes[e.a],this.nodes[e.b])>200)){const fine=new RoadNetwork([]);fine.nodes=[...this.nodes];for(const e of this.segments){const a=this.nodes[e.a],b=this.nodes[e.b],n=Math.max(1,Math.ceil(roadDistance(a,b)/150));let previous=e.a;for(let k=1;k<=n;k++){const next=k===n?e.b:fine.nodes.push(lerp(a,b,k/n))-1;const edge={cost:roadDistance(fine.nodes[previous],fine.nodes[next]),car:e.car};for(const [x,y] of [[previous,next],[next,previous]]){if(!fine.edges.has(x))fine.edges.set(x,new Map());fine.edges.get(x)!.set(y,edge);}fine.segments.push({a:previous,b:next,car:e.car});previous=next;}}return remember(fine.sector(ring,margin));}
-
-  const contour=calculationContour(ring,Math.min(1,margin/4)),projected=contour.map(xy),cos=Math.cos(ring[0][1]*Math.PI/180),padding=(margin+65)/cos;
-  const xs=projected.map(p=>p[0]),ys=projected.map(p=>p[1]),bounds=[Math.min(...xs)-padding,Math.min(...ys)-padding,Math.max(...xs)+padding,Math.max(...ys)+padding];
-  const near=(p:RoadCoord,extra=0)=>{const q=xy(p);if(q[0]<bounds[0]||q[0]>bounds[2]||q[1]<bounds[1]||q[1]>bounds[3])return false;if(insideZone(p,contour))return true;for(let i=1;i<projected.length;i++)if(dist(q,project(q,projected[i-1],projected[i]).point)*cos<=margin+extra)return true;return false;};
-  const chosen=new Set<number>();
-  this.segments.forEach((e,i)=>{const a=this.nodes[e.a],b=this.nodes[e.b],length=roadDistance(a,b),n=Math.max(2,Math.ceil(length/12));let touches=false,bounded=true;for(let k=0;k<=n;k++){const p=lerp(a,b,k/n);touches ||= near(p);bounded &&= near(p,65);}if(touches&&bounded)chosen.add(i);});
-  const links=new Map<number,number[]>();this.segments.forEach((e,i)=>{for(const n of [e.a,e.b])links.set(n,[...(links.get(n)||[]),i]);});
-  for(const i of [...chosen]){const e=this.segments[i];for(const end of [e.a,e.b]){let n=end,previous=i,distance=0;const visited=new Set<number>();while((links.get(n)?.length??0)===2){const next=links.get(n)!.find(k=>k!==previous)!;if(visited.has(next)||chosen.has(next))break;visited.add(next);const edge=this.segments[next],other=edge.a===n?edge.b:edge.a;distance+=roadDistance(this.nodes[n],this.nodes[other]);if(distance>65||!near(this.nodes[other],65))break;chosen.add(next);previous=next;n=other;}}}
-  const net=new RoadNetwork([]),ids=new Map<number,number>();const local=(id:number)=>{if(!ids.has(id)){ids.set(id,net.nodes.length);net.nodes.push(this.nodes[id]);}return ids.get(id)!;};for(const i of chosen){const e=this.segments[i],a=local(e.a),b=local(e.b);net.segments.push({a,b,car:e.car});for(const [x,y] of [[a,b],[b,a]]){if(!net.edges.has(x))net.edges.set(x,new Map());net.edges.get(x)!.set(y,this.edges.get(e.a)!.get(e.b)!);}}return remember(net);
+  const contour=calculationContour(ring,Math.min(1,margin/4)),projected=contour.map(xy),cos=Math.cos(ring[0][1]*Math.PI/180);
+  const near=(p:RoadCoord)=>{if(insideZone(p,contour))return true;const q=xy(p);return projected.slice(1).some((b,i)=>dist(q,project(q,projected[i],b).point)*cos<=margin);};
+  const pad=margin/(111320*cos),minX=Math.min(...ring.map(p=>p[0]))-pad,maxX=Math.max(...ring.map(p=>p[0]))+pad,minY=Math.min(...ring.map(p=>p[1]))-pad,maxY=Math.max(...ring.map(p=>p[1]))+pad;
+  const net=new RoadNetwork([]),ids=new Map<string,number>();const local=(key:string,p:RoadCoord)=>{if(!ids.has(key)){ids.set(key,net.nodes.length);net.nodes.push(p);}return ids.get(key)!;};
+  this.segments.forEach((e,index)=>{const a=this.nodes[e.a],b=this.nodes[e.b];if(Math.max(a[0],b[0])<minX||Math.min(a[0],b[0])>maxX||Math.max(a[1],b[1])<minY||Math.min(a[1],b[1])>maxY)return;const steps=Math.max(1,Math.ceil(roadDistance(a,b)/6));let start=-1;const add=(end:number)=>{if(start<0)return;const p=lerp(a,b,start/steps),q=lerp(a,b,end/steps),u=local(start===0?`node:${e.a}`:`${index}:${start}`,p),v=local(end===steps?`node:${e.b}`:`${index}:${end}`,q),edge={cost:roadDistance(p,q),car:e.car};if(u!==v){net.segments.push({a:u,b:v,car:e.car});for(const [x,y] of [[u,v],[v,u]]){if(!net.edges.has(x))net.edges.set(x,new Map());net.edges.get(x)!.set(y,edge);}}start=-1;};for(let k=0;k<steps;k++){const p=lerp(a,b,k/steps),q=lerp(a,b,(k+1)/steps),allowed=near(p)&&near(q)&&near(lerp(p,q,.5));if(allowed&&start<0)start=k;if(!allowed)add(k);}add(steps);});return remember(net);
  }
- /** One fixed road traversal, returned along the same streets when no circuit exists. */
+ /** Compute one closed coverage walk once; visit every reachable street/alley without leaving the clipped sector. */
  patrolPath(from:RoadCoord):RoadCoord[]{
-  if(!this.segments.length)return [];let start=this.segments[0].a;
-  for(const id of this.edges.keys())if(roadDistance(from,this.nodes[id])<roadDistance(from,this.nodes[start]))start=id;
-  const seen=new Set([start]),queue=[start];for(let i=0;i<queue.length;i++)for(const id of this.edges.get(queue[i])!.keys())if(!seen.has(id)){seen.add(id);queue.push(id);}
-  const farthest=(origin:number)=>queue.reduce((best,id)=>roadDistance(this.nodes[origin],this.nodes[id])>roadDistance(this.nodes[origin],this.nodes[best])?id:best,origin);
-  const a=farthest(start),b=farthest(a),path=shortestPath(a,b,id=>[...(this.edges.get(id)||[])].map(([next,e])=>[next,e.cost] as [number,number])).map(id=>this.nodes[id]);
-  if(path.length<2||path.length>10000)return [];if(roadDistance(from,path.at(-1)!)<roadDistance(from,path[0]))path.reverse();return [...path,...path.slice(0,-1).reverse()];
+  if(!this.segments.length)return [];const remaining=new Set(this.edges.keys()),components:number[][]=[];while(remaining.size){const queue=[remaining.values().next().value!];remaining.delete(queue[0]);for(let i=0;i<queue.length;i++)for(const n of this.edges.get(queue[i])!.keys())if(remaining.delete(n))queue.push(n);components.push(queue);}
+  const component=components.sort((a,b)=>b.length-a.length)[0];let start=component[0];for(const n of component)if(roadDistance(from,this.nodes[n])<roadDistance(from,this.nodes[start]))start=n;
+  const visited=new Set<string>(),path=[this.nodes[start]],stack=[{node:start,neighbors:[...this.edges.get(start)!.keys()],index:0}];
+  while(stack.length){const top=stack.at(-1)!;if(top.index>=top.neighbors.length){stack.pop();if(stack.length)path.push(this.nodes[stack.at(-1)!.node]);continue;}const next=top.neighbors[top.index++],key=[top.node,next].sort((a,b)=>a-b).join(':');if(visited.has(key))continue;visited.add(key);path.push(this.nodes[next]);stack.push({node:next,neighbors:[...this.edges.get(next)!.keys()],index:0});if(path.length>19900)return [];}
+  return path.length>2?path:[];
  }
+
  streetCandidates(){return this.candidateCache??=this.segments.flatMap(e=>[.15,.5,.85].map(t=>lerp(this.nodes[e.a],this.nodes[e.b],t)));}
  containsPosition(p:RoadCoord){return this.segments.some(e=>roadDistance(p,ll(project(xy(p),xy(this.nodes[e.a]),xy(this.nodes[e.b])).point))<5);}
  candidates(ring:RoadCoord[]){const points=this.nodes.filter(p=>insideZone(p,ring));for(const e of this.segments){const a=this.nodes[e.a],b=this.nodes[e.b],cuts=zoneCuts(a,b,ring);for(let i=1;i<cuts.length;i++){for(const t of [.15,.5,.85]){const p=lerp(a,b,cuts[i-1]+(cuts[i]-cuts[i-1])*t);if(insideZone(p,ring))points.push(p);}}}return points;}
