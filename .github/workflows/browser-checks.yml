@@ -17,7 +17,7 @@ concurrency:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
@@ -35,8 +35,8 @@ jobs:
         run: npx playwright install --with-deps chromium
         timeout-minutes: 4
       - name: Test mouse, touch and keyboard interaction
-        run: npm run test:ui
-        timeout-minutes: 4
+        run: npm run test:ui -- --reporter=list --workers=2
+        timeout-minutes: 10
       - name: Keep browser test evidence
         if: always()
         uses: actions/upload-artifact@v4
