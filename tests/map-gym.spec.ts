@@ -109,7 +109,10 @@ for(const width of [390,1280])test(`Map road cleanup at ${width}px`,async({page}
  {id:'rail',type:'line',source:'terrain',paint:{'line-dasharray':[2,2]}},
  {id:'road_label',type:'symbol',source:'terrain'},
  {id:'road_shield',type:'symbol',source:'terrain'},
- {id:'road_shield_us',type:'symbol',source:'terrain'}
+ {id:'road_shield_us',type:'symbol',source:'terrain'},
+ {id:'highway-shield-non-us',type:'symbol',source:'terrain'},
+ {id:'highway-shield-us-interstate',type:'symbol',source:'terrain'},
+ {id:'highway-name-major',type:'symbol',source:'terrain'}
  ]}}));
  await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
  if(width<760)await page.locator('#atelier').click();
@@ -122,6 +125,7 @@ for(const width of [390,1280])test(`Map road cleanup at ${width}px`,async({page}
  expect(style.layers.find((l:any)=>l.id==='rail').paint['line-dasharray']).toEqual([2,2]);
  for(const l of style.layers.filter((l:any)=>/shield/.test(l.id)))expect(l.layout.visibility).toBe('none');
  expect(style.layers.find((l:any)=>l.id==='road_label').layout.visibility).toBe('visible');
+ expect(style.layers.find((l:any)=>l.id==='highway-name-major').layout.visibility).toBe('visible');
  await page.locator('[data-theme=solidRoads]').uncheck();await page.locator('[data-theme=roadNumbers]').check();
  style=await exportedStyle();expect(style.layers.find((l:any)=>l.id==='road_path_pedestrian').paint['line-dasharray']).toEqual([1,1.5]);
  for(const l of style.layers.filter((l:any)=>/shield/.test(l.id)))expect(l.layout.visibility).toBe('visible');

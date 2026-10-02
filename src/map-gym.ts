@@ -81,7 +81,14 @@ function status(s:string){$('status').textContent=s;}
 function group(l:LayerSpecification){const id=l.id.toLowerCase(),src='source-layer'in l?String(l['source-layer']):'';
  if(l.type==='background')return 'background';if(/water/.test(src+id))return 'water';if(/building/.test(src+id))return 'building';if(/park|landcover|landuse/.test(src+id))return 'park';if(/rail/.test(id))return 'rail';if(/transportation/.test(src)||/road|bridge|tunnel/.test(id))return 'road';return 'land';}
 function scale(v:unknown,m:number):any{if(typeof v==='number')return v*m;if(!Array.isArray(v))return undefined;const a=structuredClone(v);if(a[0]==='interpolate'||a[0]==='interpolate-hcl'||a[0]==='interpolate-lab'){for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}if(a[0]==='step'){a[2]=scale(a[2],m)??a[2];for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}return ['*',a,m];}
-function isRoadNumber(l:LayerSpecification){return l.type==='symbol'&&/road.*(shield|ref)/i.test(l.id);}
+function isRoadNumber(l:LayerSpecification){
+ if(l.type!=='symbol')return false;
+ // Liberty uses both road_shield* and highway-shield* names.
+ if(/(?:road|highway).*(?:shield|ref)/i.test(l.id))return true;
+ const readsRef=(value:unknown):boolean=>typeof value==='string'?value.includes('{ref}'):Array.isArray(value)&&((value[0]==='get'&&value[1]==='ref')||value.some(readsRef));
+ const source='source-layer'in l?String(l['source-layer']):'';
+ return source==='transportation_name'&&readsRef(l.layout?.['text-field']);
+}
 function layerState(l:LayerSpecification){
  const g=group(l),ov=overrides[l.id]||{},category=layerCategory(l),shared=overrides['@group:'+category]||{};
  let visible=l.type==='symbol'?theme.labels:true;
