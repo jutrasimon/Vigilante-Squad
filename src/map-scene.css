@@ -26,3 +26,12 @@
 #zone-editor{z-index:8}
 /* Marker elements must stay out of document flow; relative button positioning offsets every following token. */
 .viewport .maplibregl-marker{position:absolute;top:0;left:0}
+.agent-options{border-bottom:1px solid #43546066;padding-bottom:8px;margin-bottom:8px}.hero-token-color{font-size:11px;margin-left:8px}
+.agent-token .token-ground{background:radial-gradient(circle,#122a34cc 42%,color-mix(in srgb,var(--point) 20%,transparent) 43%,#0b172a88 65%);box-shadow:0 0 var(--point-glow,14px) color-mix(in srgb,var(--point) 40%,transparent)}
+.token-shadows .agent-token .token-ground{box-shadow:0 8px 10px #0009,0 0 var(--point-glow,14px) color-mix(in srgb,var(--point) 40%,transparent)}
+.agent-token .token-portrait{box-shadow:0 0 var(--point-glow,14px) color-mix(in srgb,var(--point) 35%,transparent),0 4px 12px #0008}
+.agent-token .token-stem{background:linear-gradient(var(--point),transparent)}
+.agent-token.is-selected .token-portrait,.agent-token.is-selected .token-ground{border-width:3px;animation:hero-selection-pulse 1.8s ease-in-out infinite}
+.agent-token.is-selected .token-caption{border-color:var(--point);color:var(--point)}
+@keyframes hero-selection-pulse{0%,100%{filter:brightness(1);box-shadow:0 0 10px color-mix(in srgb,var(--point) 35%,transparent)}50%{filter:brightness(1.25);box-shadow:0 0 24px color-mix(in srgb,var(--point) 70%,transparent)}}
+@media(prefers-reduced-motion:reduce){.agent-token.is-selected .token-portrait,.agent-token.is-selected .token-ground{animation:none;box-shadow:0 0 16px color-mix(in srgb,var(--point) 50%,transparent)}}
