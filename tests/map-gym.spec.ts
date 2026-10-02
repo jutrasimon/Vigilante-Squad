@@ -11,9 +11,13 @@ for(const width of [320,390,1280])test(`Map workshop and points at ${width}px`,a
  await page.locator('#edit-name').fill('QG de test');await page.locator('#edit-name').blur();
  await expect(page.locator('.poi-name')).toHaveText('QG de test');
  if(width<760)await page.locator('#atelier').click();
+ await page.getByText('Direction artistique',{exact:true}).click();
  await page.locator('[data-preset=bulletin]').click();
  await expect(page.locator('[data-theme=land]')).toHaveValue('#c9c1ac');
- await expect(page.locator('.layer-row')).toHaveCount(2);
+ await expect(page.locator('.category-row')).toHaveCount(2);
+ await expect(page.locator('#advanced-layers')).not.toHaveAttribute('open');
+ await page.locator('#advanced-layers summary').click();
+ await expect(page.locator('#layer-list .layer-row')).toHaveCount(2);
  await expect(page.locator('#layer')).toHaveCount(0);
  const land=page.locator('[data-layer="land"]'),background=page.locator('[data-layer="background"]');
  await expect(land.locator('[data-layer-key=color]')).toHaveValue('#c9c1ac');
@@ -34,6 +38,7 @@ for(const width of [320,390,1280])test(`Map workshop and points at ${width}px`,a
  await page.locator('.poi').last().click();await page.locator('#delete-point').click();await expect(page.locator('.poi')).toHaveCount(1);
  if(width<760)await page.locator('#atelier').click();
  await expect(page.locator('[data-layer=land] [data-layer-key=opacity]')).toHaveValue('0.01');
+ await page.getByText('Direction artistique',{exact:true}).click();
  await page.locator('[data-preset=dossier]').click();
  await expect(page.locator('[data-layer=land] [data-layer-key=opacity]')).toHaveValue('1');
  await expect(page.locator('[data-layer=land] [data-layer-key=color]')).toHaveValue('#17252d');
@@ -49,9 +54,46 @@ test('Live OpenFreeMap style and geographic tiles',async({page})=>{
  await page.locator('#center').click();await expect(page.locator('.poi')).toHaveCount(1);
  await page.getByText('Sauvegarde & export',{exact:true}).click();
  const styleDownload=page.waitForEvent('download');await page.locator('#style-export').click();const downloaded=await styleDownload;const stream=await downloaded.createReadStream();const parts:Buffer[]=[];for await(const part of stream!)parts.push(part);const style=JSON.parse(Buffer.concat(parts).toString());
+ const supplierPlaces=style.layers.filter((l:any)=>l['source-layer']==='poi');expect(supplierPlaces.length).toBeGreaterThan(0);for(const l of supplierPlaces)expect(l.layout.visibility).toBe('none');
  const volumes=style.layers.filter((l:any)=>l.type==='fill-extrusion'&&/building/.test(l.id));expect(volumes.length).toBeGreaterThan(0);for(const l of volumes)expect(l.paint['fill-extrusion-color']).toBe('#34434b');
  await page.screenshot({path:'test-results/map-real-dossier.png'});
+ await page.getByText('Direction artistique',{exact:true}).click();
  await page.locator('[data-preset=bulletin]').click();
  await page.waitForTimeout(800);
  await page.screenshot({path:'test-results/map-real-bulletin.png'});
+});
+
+for(const width of [390,1280])test(`Map categories hide commerces independently at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:844});
+ await page.route('https://tiles.openfreemap.org/styles/liberty',r=>r.fulfill({json:{version:8,sources:{terrain:{type:'geojson',data:{type:'FeatureCollection',features:[]}}},layers:[
+ {id:'background',type:'background'},
+ {id:'land',type:'fill',source:'terrain'},
+ {id:'place-city',type:'symbol',source:'terrain'},
+ {id:'road-label',type:'symbol',source:'terrain'},
+ {id:'poi-shop',type:'symbol',source:'terrain'},
+ {id:'poi-cafe',type:'symbol',source:'terrain'}
+ ]}}));
+ await page.goto('/map-gym.html');await expect(page.locator('#status')).toContainText('Carte prête');
+ await page.locator('#center').click();
+ if(width<760)await page.locator('#atelier').click();
+ await expect(page.locator('.category-row')).toHaveCount(4);
+ await expect(page.locator('#advanced-layers')).not.toHaveAttribute('open');
+ const places=page.locator('[data-category=places] [data-category-key=visible]');
+ await expect(places).not.toBeChecked();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();
+ async function exportedStyle(){
+ const pending=page.waitForEvent('download');await page.locator('#style-export').click();const stream=await(await pending).createReadStream();const parts:Buffer[]=[];for await(const part of stream!)parts.push(part);return JSON.parse(Buffer.concat(parts).toString());
+ }
+ let style=await exportedStyle();
+ for(const l of style.layers)expect(l.layout.visibility).toBe(l.id.startsWith('poi-')?'none':'visible');
+ await places.check();
+ await page.locator('#advanced-layers summary').click();
+ // An advanced exception must not prevent the next bulk hide action.
+ await page.locator('[data-layer=poi-shop] [data-layer-key=visible]').uncheck();
+ await places.check();await places.uncheck();
+ style=await exportedStyle();for(const l of style.layers.filter((l:any)=>l.id.startsWith('poi-')))expect(l.layout.visibility).toBe('none');
+ await expect(page.locator('.poi')).toHaveCount(1);
+ await places.check();await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');
+ if(width<760)await page.locator('#atelier').click();await expect(places).toBeChecked();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
 });

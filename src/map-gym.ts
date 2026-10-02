@@ -18,7 +18,7 @@ try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){theme={...defaul
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const button=(id:string,label:string,i:IconName)=>`<button id="${id}" title="${label}" aria-label="${label}">${icon(i)}<span>${label}</span></button>`;
-$('app').innerHTML=`<header><a href="./gyms.html">${icon('arrow-left')} Gyms</a><b>VIGILANTE <em>SQUAD</em><small>CARTE RÉELLE / ATELIER</small></b>${button('atelier','Atelier','tools')}</header><main><section class="viewport"><div id="map"></div><div class="grain"></div><div class="vignette"></div><div class="map-top"><span class="live">● TERRAIN RÉEL</span><span id="coords"></span></div><div class="map-actions">${button('center','Placer au centre','target')}${button('mode','Placer un point','map-pin')}</div><div id="status" role="status">Chargement de la carte…</div><div id="selection" hidden></div></section><aside id="workshop"><div class="aside-title"><h1>Composer le quartier</h1>${button('close','Fermer','x')}</div><p class="hint">Réglages en direct · sauvegarde sur cet appareil.</p><details open><summary>Lieu & caméra</summary><div class="fields"><label>Ville<select id="city"><option value="montreal">Montréal · Plateau</option><option value="quebec">Québec · Saint-Roch</option><option value="paris">Paris · Les Halles</option><option value="custom">Coordonnées libres</option></select></label><div class="pair"><label>Latitude<input id="lat" type="number" step=".0001" min="-85" max="85"></label><label>Longitude<input id="lng" type="number" step=".0001" min="-180" max="180"></label></div>${button('go','Aller aux coordonnées','route')}<div id="camera-controls"></div></div></details><details open><summary>Direction artistique</summary><div class="fields"><div class="presets"><button data-preset="dossier">Dossier</button><button data-preset="bulletin">Bulletin</button><button data-preset="neon">Nuit électrique</button></div><div id="colors" class="colors"></div><div id="visual-controls"></div></div></details><details open><summary>Points d’intérêt <span id="count">0</span></summary><div class="fields"><label>Type<select id="point-type">${Object.entries(types).map(([k,t])=>`<option value="${k}">${t.label}</option>`).join('')}</select></label><label>Nom<input id="point-name" maxlength="80" placeholder="Nom du point"></label><label class="color-row">Couleur<input id="point-color" type="color" value="${types.hq.color}"></label><p class="hint">Active « Placer un point », puis touche la carte. Glisse un point pour le déplacer. Ou utilise « Placer au centre ».</p><div id="point-list"></div></div></details><details open id="layers-panel"><summary>Couches de la carte <span id="layer-count"></span></summary><div class="fields"><label class="layer-search">Rechercher une couche<input id="layer-search" type="search" placeholder="Rues, eau, bâtiments…"></label><p class="hint">Cocher pour afficher · glisser pour doser · pastille pour recolorer.</p><div id="layer-list"><p class="hint">Chargement des couches…</p></div></div></details><details><summary>Sauvegarde & export</summary><div class="fields">${button('export','Exporter l’atelier JSON','flag')}${button('style-export','Exporter le style MapLibre','tools')}<label class="file">Importer un atelier<input id="import" type="file" accept="application/json,.json"></label>${button('reset','Réinitialiser l’atelier','x')}<p class="hint">Les points sont des essais placés manuellement. Aucun événement du jeu n’est déclenché.</p></div></details></aside></main>`;
+$('app').innerHTML=`<header><a href="./gyms.html">${icon('arrow-left')} Gyms</a><b>VIGILANTE <em>SQUAD</em><small>CARTE RÉELLE / ATELIER</small></b>${button('atelier','Atelier','tools')}</header><main><section class="viewport"><div id="map"></div><div class="grain"></div><div class="vignette"></div><div class="map-top"><span class="live">● TERRAIN RÉEL</span><span id="coords"></span></div><div class="map-actions">${button('center','Placer au centre','target')}${button('mode','Placer un point','map-pin')}</div><div id="status" role="status">Chargement de la carte…</div><div id="selection" hidden></div></section><aside id="workshop"><div class="aside-title"><h1>Composer le quartier</h1>${button('close','Fermer','x')}</div><p class="hint">Réglages en direct · sauvegarde sur cet appareil.</p><details open id="layers-panel"><summary>Affichage de la carte</summary><div class="fields"><div id="category-list"><p class="hint">Chargement de la carte…</p></div><details id="advanced-layers"><summary>Avancé · couches techniques <span id="layer-count"></span></summary><label class="layer-search">Rechercher une couche<input id="layer-search" type="search" placeholder="Rues, eau, bâtiments…"></label><div id="layer-list"></div></details></div></details><details><summary>Lieu & caméra</summary><div class="fields"><label>Ville<select id="city"><option value="montreal">Montréal · Plateau</option><option value="quebec">Québec · Saint-Roch</option><option value="paris">Paris · Les Halles</option><option value="custom">Coordonnées libres</option></select></label><div class="pair"><label>Latitude<input id="lat" type="number" step=".0001" min="-85" max="85"></label><label>Longitude<input id="lng" type="number" step=".0001" min="-180" max="180"></label></div>${button('go','Aller aux coordonnées','route')}<div id="camera-controls"></div></div></details><details><summary>Direction artistique</summary><div class="fields"><div class="presets"><button data-preset="dossier">Dossier</button><button data-preset="bulletin">Bulletin</button><button data-preset="neon">Nuit électrique</button></div><div id="colors" class="colors"></div><div id="visual-controls"></div></div></details><details open><summary>Points d’intérêt <span id="count">0</span></summary><div class="fields"><label>Type<select id="point-type">${Object.entries(types).map(([k,t])=>`<option value="${k}">${t.label}</option>`).join('')}</select></label><label>Nom<input id="point-name" maxlength="80" placeholder="Nom du point"></label><label class="color-row">Couleur<input id="point-color" type="color" value="${types.hq.color}"></label><p class="hint">Active « Placer un point », puis touche la carte. Glisse un point pour le déplacer. Ou utilise « Placer au centre ».</p><div id="point-list"></div></div></details><details><summary>Sauvegarde & export</summary><div class="fields">${button('export','Exporter l’atelier JSON','flag')}${button('style-export','Exporter le style MapLibre','tools')}<label class="file">Importer un atelier<input id="import" type="file" accept="application/json,.json"></label>${button('reset','Réinitialiser l’atelier','x')}<p class="hint">Les points sont des essais placés manuellement. Aucun événement du jeu n’est déclenché.</p></div></details></aside></main>`;
 let map:maplibregl.Map;
 let base:StyleSpecification|undefined, placing=false, selected:string|undefined, markers:maplibregl.Marker[]=[];
 const colors:Record<string,string>={background:'Fond',land:'Sol',water:'Eau',park:'Parcs',building:'Bâtiments',buildingEdge:'Contours bâtiments',road:'Rues',major:'Axes principaux',rail:'Voies ferrées',label:'Libellés',halo:'Halo du texte',accent:'Accent interface'};
@@ -36,28 +36,29 @@ function group(l:LayerSpecification){const id=l.id.toLowerCase(),src='source-lay
  if(l.type==='background')return 'background';if(/water/.test(src+id))return 'water';if(/building/.test(src+id))return 'building';if(/park|landcover|landuse/.test(src+id))return 'park';if(/rail/.test(id))return 'rail';if(/transportation/.test(src)||/road|bridge|tunnel/.test(id))return 'road';return 'land';}
 function scale(v:unknown,m:number):any{if(typeof v==='number')return v*m;if(!Array.isArray(v))return undefined;const a=structuredClone(v);if(a[0]==='interpolate'||a[0]==='interpolate-hcl'||a[0]==='interpolate-lab'){for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}if(a[0]==='step'){a[2]=scale(a[2],m)??a[2];for(let i=4;i<a.length;i+=2)a[i]=scale(a[i],m)??a[i];return a;}return ['*',a,m];}
 function layerState(l:LayerSpecification){
- const g=group(l),ov=overrides[l.id]||{};
+ const g=group(l),ov=overrides[l.id]||{},category=layerCategory(l),shared=overrides['@group:'+category]||{};
  let visible=l.type==='symbol'?theme.labels:true;
  if(g==='building')visible=theme.buildings;
  if(g==='park')visible=theme.parks;
+ if(category==='places')visible=false;
  const major=/motorway|trunk|primary|secondary/.test(l.id),casing=/casing|outline/.test(l.id);
  const color=l.type==='symbol'?theme.label:g==='building'&&l.type==='line'?theme.buildingEdge:g==='road'?(casing?theme.background:major?theme.major:theme.road):theme[g as keyof Theme] as string;
- return {visible:ov.visible??visible,color:ov.color||color,opacity:ov.opacity??(g==='building'&&(l.type==='fill'||l.type==='fill-extrusion')?theme.buildingOpacity:1)};
+ return {visible:ov.visible??shared.visible??visible,color:ov.color||shared.color||color,opacity:ov.opacity??shared.opacity??(g==='building'&&(l.type==='fill'||l.type==='fill-extrusion')?theme.buildingOpacity:1)};
 }
 function paint(){if(!base)return;
  const set=(id:string,key:string,v:unknown)=>{try{(map.setPaintProperty as (id:string,key:string,v:unknown)=>unknown)(id,key,v);}catch{}};
- for(const l of base.layers){const g=group(l),ov=overrides[l.id]||{},state=layerState(l);
+ for(const l of base.layers){const g=group(l),state=layerState(l);
  map.setLayoutProperty(l.id,'visibility',state.visible?'visible':'none');
  const color=state.color;
  if(l.type==='background'){set(l.id,'background-color',color);set(l.id,'background-opacity',state.opacity);}
  if(l.type==='fill-extrusion'){set(l.id,'fill-extrusion-color',color);set(l.id,'fill-extrusion-opacity',state.opacity);set(l.id,'fill-extrusion-height',theme.threeD?['*',['coalesce',['get','render_height'],['get','height'],8],theme.height]:0);set(l.id,'fill-extrusion-base',0);}
  if(l.type==='fill'){set(l.id,'fill-color',color);set(l.id,'fill-opacity',state.opacity);if(g==='building')set(l.id,'fill-outline-color',theme.buildingEdge);}
- if(l.type==='line'){set(l.id,'line-color',g==='building'?(ov.color||theme.buildingEdge):color);set(l.id,'line-opacity',state.opacity);const orig=l.paint?.['line-width'];const w=scale(orig,theme.roadWidth);if(w!==undefined&&(g==='road'||g==='rail'))set(l.id,'line-width',w);}
+ if(l.type==='line'){set(l.id,'line-color',color);set(l.id,'line-opacity',state.opacity);const orig=l.paint?.['line-width'];const w=scale(orig,theme.roadWidth);if(w!==undefined&&(g==='road'||g==='rail'))set(l.id,'line-width',w);}
  if(l.type==='raster')set(l.id,'raster-opacity',state.opacity);
  if(l.type==='circle'){set(l.id,'circle-color',color);set(l.id,'circle-opacity',state.opacity);}
- if(l.type==='symbol'){set(l.id,'text-color',ov.color||theme.label);set(l.id,'text-halo-color',theme.halo);set(l.id,'text-halo-width',1.5);set(l.id,'text-opacity',state.opacity);set(l.id,'icon-opacity',state.opacity);const size=scale(l.layout?.['text-size'],theme.labelSize);if(size!==undefined)map.setLayoutProperty(l.id,'text-size',size);}
+ if(l.type==='symbol'){set(l.id,'text-color',color);set(l.id,'text-halo-color',theme.halo);set(l.id,'text-halo-width',1.5);set(l.id,'text-opacity',state.opacity);set(l.id,'icon-opacity',state.opacity);const size=scale(l.layout?.['text-size'],theme.labelSize);if(size!==undefined)map.setLayoutProperty(l.id,'text-size',size);}
  }
- if(map.getLayer('gym-buildings-3d')){map.setLayoutProperty('gym-buildings-3d','visibility',theme.threeD&&theme.buildings?'visible':'none');set('gym-buildings-3d','fill-extrusion-color',theme.building);set('gym-buildings-3d','fill-extrusion-opacity',theme.buildingOpacity);set('gym-buildings-3d','fill-extrusion-height',['*',['coalesce',['get','render_height'],['get','height'],8],theme.height]);}
+ if(map.getLayer('gym-buildings-3d')){const shared=overrides['@group:building']||{};map.setLayoutProperty('gym-buildings-3d','visibility',theme.threeD&&(shared.visible??theme.buildings)?'visible':'none');set('gym-buildings-3d','fill-extrusion-color',shared.color||theme.building);set('gym-buildings-3d','fill-extrusion-opacity',shared.opacity??theme.buildingOpacity);set('gym-buildings-3d','fill-extrusion-height',['*',['coalesce',['get','render_height'],['get','height'],8],theme.height]);}
  document.documentElement.style.setProperty('--accent',theme.accent);document.documentElement.style.setProperty('--grain',String(theme.grain));document.documentElement.style.setProperty('--shade',String(theme.vignette));
  $('map').style.background=theme.background;
  for(const m of markers){m.getElement().style.setProperty('--point-size',`${theme.poiSize}px`);m.getElement().classList.toggle('no-label',!theme.poiLabels);}
@@ -74,14 +75,56 @@ function editor(){const p=points.find(p=>p.id===selected);$('selection').hidden=
 }
 function add(lng:number,lat:number){const type=$<HTMLSelectElement>('point-type').value;const p={id:crypto.randomUUID(),type,name:$<HTMLInputElement>('point-name').value.trim()||types[type].label,lng,lat,color:$<HTMLInputElement>('point-color').value};points.push(p);selected=p.id;placing=false;mode();renderPoints();editor();save();status(`${p.name} ajouté. Glisse le point pour le déplacer.`);}
 function mode(){$('mode').setAttribute('aria-pressed',String(placing));$('mode').querySelector('span')!.textContent=placing?'Touche la carte…':'Placer un point';$('map').classList.toggle('placing',placing);}
-const layerGroups:Record<string,string>={background:'Fond',land:'Terrain',park:'Parcs & espaces verts',water:'Eau',building:'Bâtiments',road:'Rues & routes',rail:'Voies ferrées',labels:'Noms & icônes'};
+const layerGroups:Record<string,string>={background:'Fond',land:'Terrain',park:'Parcs & espaces verts',water:'Eau',building:'Bâtiments',road:'Rues & routes',rail:'Voies ferrées',labels:'Noms des rues & quartiers',places:'Commerces & lieux'};
+function layerCategory(l:LayerSpecification){
+ if(l.type!=='symbol')return group(l);
+ const source='source-layer'in l?String(l['source-layer']):'';
+ return source==='poi'||/(^|[_-])(poi|poi-level|transit|aerodrome|airport)([_-]|$)/i.test(l.id)?'places':'labels';
+}
+function categoryList(){
+ if(!base)return;
+ $('category-list').innerHTML=Object.entries(layerGroups).map(([key,name])=>{
+ const layers=base!.layers.filter(l=>layerCategory(l)===key);if(!layers.length)return '';
+ const states=layers.map(layerState),shown=states.filter(s=>s.visible).length,state=states[0];
+ const custom=!!overrides['@group:'+key]||layers.some(l=>!!overrides[l.id]);
+ const color=overrides['@group:'+key]?.color||(key==='places'||key==='labels'?theme.label:theme[key as keyof Theme]);
+ return `<div class="layer-row category-row ${shown?'':'is-hidden'}" data-category="${key}">
+ <label class="layer-toggle"><input type="checkbox" data-category-key="visible" ${shown===layers.length?'checked':''} data-mixed="${shown>0&&shown<layers.length}" aria-label="Afficher ${name}"><span>${name}${key==='places'?'<small>Enseignes, restaurants, services…</small>':''}</span></label>
+ <input type="color" data-category-key="color" value="${color}" aria-label="Couleur ${name}">
+ <label class="layer-opacity"><input type="range" data-category-key="opacity" min="0" max="1" step=".01" value="${state.opacity}" aria-label="Opacité ${name}"><output>${Math.round(state.opacity*100)} %</output></label>
+ <button class="layer-reset" data-category-reset title="Suivre la palette" aria-label="Suivre la palette : ${name}" ${custom?'':'disabled'}>${icon('arrow-left')}</button></div>`;
+ }).join('');
+ for(const input of $('category-list').querySelectorAll<HTMLInputElement>('[data-mixed=true]'))input.indeterminate=true;
+}
+$('category-list').addEventListener('input',e=>{
+ const input=e.target as HTMLInputElement,key=input.dataset.categoryKey as keyof Override;
+ const row=input.closest<HTMLElement>('[data-category]'),category=row?.dataset.category;
+ if(!key||!row||!category||!base)return;
+ // A category action applies to every child, including previously edited layers.
+ for(const l of base.layers.filter(l=>layerCategory(l)===category)){
+ const ov=overrides[l.id];if(!ov)continue;delete ov[key];if(!Object.keys(ov).length)delete overrides[l.id];
+ }
+ const id='@group:'+category;
+ overrides[id]={...overrides[id],[key]:key==='visible'?input.checked:key==='opacity'?Number(input.value):input.value};
+ if(key==='visible'){input.indeterminate=false;row.classList.toggle('is-hidden',!input.checked);}
+ if(key==='opacity')row.querySelector('output')!.textContent=`${Math.round(Number(input.value)*100)} %`;
+ row.querySelector<HTMLButtonElement>('[data-category-reset]')!.disabled=false;
+ paint();layerList(false);save();
+});
+$('category-list').addEventListener('click',e=>{
+ const category=(e.target as HTMLElement).closest('[data-category-reset]')?.closest<HTMLElement>('[data-category]')?.dataset.category;
+ if(!category||!base)return;delete overrides['@group:'+category];
+ for(const l of base.layers.filter(l=>layerCategory(l)===category))delete overrides[l.id];
+ paint();layerList();save();
+});
 const layerWords:Record<string,string>={background:'Fond',natural:'Nature',earth:'Relief',park:'Parc',outline:'Contour',landuse:'Zone',landcover:'Sol',residential:'Résidentiel',wood:'Boisé',grass:'Herbe',ice:'Glace',wetland:'Milieu humide',pitch:'Terrain sportif',track:'Piste',cemetery:'Cimetière',hospital:'Hôpital',school:'École',waterway:'Cours d’eau',tunnel:'Tunnel',river:'Rivière',other:'Autres',water:'Eau',sand:'Sable',aeroway:'Aéroport',fill:'Surface',line:'Tracé',building:'Bâtiments',buildings:'Bâtiments',volume:'Volume',road:'Rue',roads:'Rues',bridge:'Pont',casing:'Bordure',motorway:'Autoroute',trunk:'Route principale',primary:'Axe principal',secondary:'Axe secondaire',tertiary:'Axe local',minor:'Rue locale',service:'Voie de service',path:'Sentier',pedestrian:'Piéton',railway:'Rail',rail:'Rail',transportation:'Transport',label:'Nom',place:'Lieu',city:'Ville',town:'Ville',village:'Village',country:'Pays',state:'Région',poi:'Lieu d’intérêt',transit:'Transport',symbol:'Icône',name:'Nom',boundary:'Limite',admin:'Administrative',capital:'Capitale',neighbourhood:'Quartier',suburb:'Quartier',aerodrome:'Aérodrome',ferry:'Traversier'};
 function layerName(l:LayerSpecification){return l.id.split(/[_-]/).map(w=>layerWords[w]||w).join(' · ');}
-function layerList(){
+function layerList(refreshCategories=true){
  if(!base)return;
+ if(refreshCategories)categoryList();
  const list=$('layer-list');
  list.innerHTML=Object.entries(layerGroups).map(([g,label])=>{
- const layers=base!.layers.filter(l=>(l.type==='symbol'?'labels':group(l))===g);
+ const layers=base!.layers.filter(l=>layerCategory(l)===g);
  if(!layers.length)return '';
  return `<section class="layer-group"><h2>${label}<span>${layers.length}</span></h2>${layers.map(l=>{
  const state=layerState(l),id=esc(l.id),name=esc(layerName(l)),custom=!!overrides[l.id];
@@ -114,7 +157,7 @@ $('layer-list').addEventListener('input',e=>{
  row.classList.add('is-custom');row.querySelector<HTMLButtonElement>('[data-layer-reset]')!.disabled=false;
  if(key==='visible')row.classList.toggle('is-hidden',!input.checked);
  if(key==='opacity')row.querySelector('output')!.textContent=`${Math.round(Number(input.value)*100)} %`;
- paint();save();
+ paint();categoryList();save();
 });
 $('layer-list').addEventListener('click',e=>{
  const button=(e.target as HTMLElement).closest('[data-layer-reset]');
