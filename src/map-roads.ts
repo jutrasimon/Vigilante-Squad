@@ -60,6 +60,15 @@ export class RoadNetwork{
   for(const i of [...chosen]){const e=this.segments[i];for(const end of [e.a,e.b]){let n=end,previous=i,distance=0;const visited=new Set<number>();while((links.get(n)?.length??0)===2){const next=links.get(n)!.find(k=>k!==previous)!;if(visited.has(next)||chosen.has(next))break;visited.add(next);const edge=this.segments[next],other=edge.a===n?edge.b:edge.a;distance+=roadDistance(this.nodes[n],this.nodes[other]);if(distance>65||!near(this.nodes[other],65))break;chosen.add(next);previous=next;n=other;}}}
   const net=new RoadNetwork([]),ids=new Map<number,number>();const local=(id:number)=>{if(!ids.has(id)){ids.set(id,net.nodes.length);net.nodes.push(this.nodes[id]);}return ids.get(id)!;};for(const i of chosen){const e=this.segments[i],a=local(e.a),b=local(e.b);net.segments.push({a,b,car:e.car});for(const [x,y] of [[a,b],[b,a]]){if(!net.edges.has(x))net.edges.set(x,new Map());net.edges.get(x)!.set(y,this.edges.get(e.a)!.get(e.b)!);}}return remember(net);
  }
+ /** One fixed road traversal, returned along the same streets when no circuit exists. */
+ patrolPath(from:RoadCoord):RoadCoord[]{
+  if(!this.segments.length)return [];let start=this.segments[0].a;
+  for(const id of this.edges.keys())if(roadDistance(from,this.nodes[id])<roadDistance(from,this.nodes[start]))start=id;
+  const seen=new Set([start]),queue=[start];for(let i=0;i<queue.length;i++)for(const id of this.edges.get(queue[i])!.keys())if(!seen.has(id)){seen.add(id);queue.push(id);}
+  const farthest=(origin:number)=>queue.reduce((best,id)=>roadDistance(this.nodes[origin],this.nodes[id])>roadDistance(this.nodes[origin],this.nodes[best])?id:best,origin);
+  const a=farthest(start),b=farthest(a),path=shortestPath(a,b,id=>[...(this.edges.get(id)||[])].map(([next,e])=>[next,e.cost] as [number,number])).map(id=>this.nodes[id]);
+  if(path.length<2||path.length>10000)return [];if(roadDistance(from,path.at(-1)!)<roadDistance(from,path[0]))path.reverse();return [...path,...path.slice(0,-1).reverse()];
+ }
  streetCandidates(){return this.candidateCache??=this.segments.flatMap(e=>[.15,.5,.85].map(t=>lerp(this.nodes[e.a],this.nodes[e.b],t)));}
  containsPosition(p:RoadCoord){return this.segments.some(e=>roadDistance(p,ll(project(xy(p),xy(this.nodes[e.a]),xy(this.nodes[e.b])).point))<5);}
  candidates(ring:RoadCoord[]){const points=this.nodes.filter(p=>insideZone(p,ring));for(const e of this.segments){const a=this.nodes[e.a],b=this.nodes[e.b],cuts=zoneCuts(a,b,ring);for(let i=1;i<cuts.length;i++){for(const t of [.15,.5,.85]){const p=lerp(a,b,cuts[i-1]+(cuts[i]-cuts[i-1])*t);if(insideZone(p,ring))points.push(p);}}}return points;}
