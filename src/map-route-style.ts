@@ -1,0 +1,3 @@
+export type RouteStyle={color:string;useActorColor:boolean;width:number;opacity:number;pattern:'solid'|'dashed'|'dotted';shadow:boolean;flow:boolean};
+export const defaultRouteStyle:RouteStyle={color:'#78dcde',useActorColor:true,width:3,opacity:.9,pattern:'dashed',shadow:true,flow:false};
+export function readRouteStyle(value:unknown):RouteStyle{if(value===undefined)return {...defaultRouteStyle};const s=value as RouteStyle;if(!s||!/^#[0-9a-f]{6}$/i.test(s.color)||typeof s.useActorColor!=='boolean'||typeof s.shadow!=='boolean'||typeof s.flow!=='boolean'||!Number.isFinite(s.width)||s.width<1||s.width>10||!Number.isFinite(s.opacity)||s.opacity<.1||s.opacity>1||!['solid','dashed','dotted'].includes(s.pattern))throw Error('Style de trajet invalide');return {...s};}

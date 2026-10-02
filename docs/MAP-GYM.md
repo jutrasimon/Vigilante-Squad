@@ -131,3 +131,19 @@ Pour intégrer un événement de jeu : `window.dispatchEvent(new CustomEvent('vi
 **DA → Pluie** ajoute une pluie d’ambiance indépendante : activation, densité, vitesse, vent, visibilité, teinte et éclaboussures. Elle respecte la réduction des animations et se suspend lorsque l’onglet est masqué. L’ancien effet ponctuel de pluie de particules reste lisible dans les anciens fichiers.
 
 L’export **Atelier complet (JSON)** conserve `scene.juice` (version 2, déclencheurs et règles), `scene.weather`, marges des secteurs, affectations, trajets, vitesse et tous les réglages existants. Les anciens ordres Patrouille deviennent Surveillance; les anciennes règles Juice individuelles sont conservées. Les tests couvrent le déplacement explicite, l’annulation confirmée, les routes tolérantes, les règles par type, la pluie et la comparaison intégrale de la scène après export/import/rechargement.
+
+## Fluidité, lieux et retours visuels — 2 octobre
+
+Le réseau routier ne se reconstruit que lorsque les données de rues changent. Chaque réseau garde les sous-réseaux de secteurs et leurs destinations en cache, par contour et marge. Le graphe d’un secteur contient seulement ses nœuds utiles. Les nouvelles étapes d’une surveillance réutilisent ces résultats; les mises à jour des autres couches n’invalident plus les rues. Le calcul ignore rapidement les rues éloignées et limite les tentatives de parcours. La progression de la fiche utilise un message léger, sans reconstruire sa fenêtre à chaque frame.
+
+Un point ouvre une fenêtre ancrée près de sa position géographique, en préférant une position qui évite la fiche du héros. Le curseur est une main sur les éléments cliquables. À l’arrivée sur un point (alerte, QG, etc.), le héros est représenté par un petit portrait cliquable à côté du point. Ce lien est sauvegardé dans `agents[].point`; `journey.targetPoint` conserve la destination pendant le trajet. Le bouton QG envoie explicitement le héros au QG le plus proche; l’annulation conserve son arrêt sur place.
+
+La fiche partagée affiche un progress bar et les secondes restantes, calculées sur la distance routière et la vitesse de simulation courantes. `journey.totalDistance` conserve la progression initiale à travers l’export/import. Les anciens trajets sans ce champ restent lisibles.
+
+**DA → Chemins de déplacement** expose la couleur commune ou celle du héros, l’épaisseur, l’opacité, le trait continu/tirets/points, le contour et une pulsation. Tout est conservé dans `scene.routeStyle`.
+
+**DA → Pluie** simule des impacts visibles par petits anneaux elliptiques. **Éclairs** fonctionne indépendamment de la pluie : force, couleur, intervalles minimum et maximum tirés aléatoirement, et bouton de test. Les réglages sont dans `scene.weather.lightning`; le calendrier transitoire du prochain éclair n’est pas enregistré.
+
+**Juice** ajoute Temporary Zoom (verrou des gestes caméra, approche, effet, retour au cadrage initial), Shake de l’objet, Pinpoint, Pulse et Glow. `centered` se déclenche après le bouton de recentrage de chaque type. `focus` active ses règles à la sélection, maintient Pulse/Glow puis les arrête à la désélection. Les autres effets focus sont ponctuels à l’entrée de sélection. Les règles de halo animé proviennent désormais de ce module commun. Les règles `click`, `arrival`, `hit` restent branchées; `solved` et les déclencheurs personnalisés sont prêts à être émis par le jeu et testables dans l’atelier.
+
+Tous les paramètres sont validés dans le JSON **Atelier complet**. Les tests vérifient cache réutilisé, changements de marge, progression réelle, retour QG, portraits persistants, non-chevauchement des fenêtres, fin du focus, déclenchement centered, retour de caméra, éclaboussures, éclairs et scène identique après export/import/rechargement.
