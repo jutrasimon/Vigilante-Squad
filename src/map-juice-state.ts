@@ -1,5 +1,5 @@
 export const connectedJuiceEvents=['click','arrival','hit','centered','focus'];
-export const juiceEffects={pop:'Pop',squash:'Squash & stretch',flash:'Flash',shake:'Secousse écran',zoom:'Zoom caméra',travel:'Travelling',burst:'Explosion',rain:'Pluie de particules',temporaryZoom:'Temporary Zoom · aller-retour',objectShake:'Shake de l’objet',pinpoint:'Pinpoint · radar',pulse:'Pulse',glow:'Glow'};
+export const juiceEffects={pop:'Pop',squash:'Squash & stretch',flash:'Flash',shake:'Secousse écran',zoom:'Zoom caméra',travel:'Travelling',burst:'Explosion',rain:'Pluie de particules',temporaryZoom:'Temporary Zoom · aller-retour',objectShake:'Shake de l’objet',pinpoint:'Pinpoint · radar',pulse:'Pulse',glow:'Glow',vignette:'Vignette écran'};
 export const juiceTypes:Record<string,string>={hero:'Tous les héros',vehicle:'Tous les véhicules',zone:'Tous les secteurs','point:alert':'Toutes les alertes','point:hq':'Tous les QG','point:police':'Tous les points Police','point:clue':'Tous les indices','point:civil':'Tous les points Civils','point:hospital':'Tous les secours','point:watch':'Tous les points Surveillance',map:'Carte · caméra'};
 export type JuiceConfig={effects:(keyof typeof juiceEffects)[];intensity:number;duration:number;color:string};
 export type JuiceRule={id:string;type:string;event:string;config:JuiceConfig;target?:string};
