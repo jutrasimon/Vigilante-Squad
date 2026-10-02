@@ -67,3 +67,5 @@ body{background:radial-gradient(ellipse at 70% 10%,#223440 0,transparent 55%),#0
 .hero-embedded .sheet .identity h1{font-size:58px}
 .hero-embedded .tags .tag{padding:12px 8px;gap:6px;flex:1 1 auto}
 .hero-embedded .tags .tag b{white-space:nowrap;font-size:14px}
+.hero-embedded .sheet{height:100dvh}
+.idle>div{grid-template-columns:repeat(3,minmax(0,1fr))}.idle button{gap:8px;padding:12px 8px;justify-content:center;flex-wrap:wrap}.idle button b{font-size:14px}.idle button svg{width:25px;height:25px}

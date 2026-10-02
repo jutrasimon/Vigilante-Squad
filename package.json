@@ -10,7 +10,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --import tsx --test tests/simulation.test.ts",
+    "test": "node --import tsx --test tests/simulation.test.ts tests/map-pencil.test.ts",
     "test:ui": "playwright test"
   },
   "repository": {

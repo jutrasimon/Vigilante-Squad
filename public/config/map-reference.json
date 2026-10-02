@@ -13,19 +13,19 @@
     "label": "#a8cede",
     "halo": "#142129",
     "accent": "#78dcde",
-    "roadWidth": 2.2,
-    "buildingOpacity": 0.9,
-    "labelSize": 0.8,
+    "roadWidth": 2.1,
+    "buildingOpacity": 0.85,
+    "labelSize": 1,
     "labels": true,
     "solidRoads": true,
     "roadNumbers": false,
     "buildings": true,
     "parks": true,
     "threeD": true,
-    "height": 1.6,
-    "grain": 0.17,
-    "vignette": 0.6,
-    "poiSize": 38,
+    "height": 2.2,
+    "grain": 0.03,
+    "vignette": 0.3,
+    "poiSize": 44,
     "poiLabels": true,
     "pitch": 52.741931579895486,
     "bearing": -94.16823827544492
@@ -38,35 +38,102 @@
       "lng": -73.57850768193227,
       "lat": 45.53826223599151,
       "color": "#edc25d"
+    },
+    {
+      "id": "eab6b2dd-b6a6-4dd0-99b8-d1b3775d666c",
+      "type": "hq",
+      "name": "QG",
+      "lng": -73.58191354002342,
+      "lat": 45.53736853964571,
+      "color": "#edc25d"
+    },
+    {
+      "id": "4f8d7fff-db1c-4c55-b5f6-ad578722e289",
+      "type": "alert",
+      "name": "Alerte",
+      "lng": -73.58108418903184,
+      "lat": 45.53564862800434,
+      "color": "#ed5e89"
     }
   ],
-  "overrides": {
-    "road_one_way_arrow": {
-      "visible": true
-    },
-    "@group:building": {
-      "visible": true,
-      "opacity": 0.95
-    },
-    "@group:road": {
-      "visible": true
-    },
-    "@group:places": {
-      "visible": false
-    }
-  },
+  "overrides": {},
   "camera": {
     "center": [
-      -73.57474409810834,
-      45.536720263619145
+      -73.57433244034752,
+      45.535084114502155
     ],
-    "zoom": 15.080196839933233,
+    "zoom": 15.400579411917033,
     "pitch": 52.741931579895486,
     "bearing": -94.16823827544492,
     "locked": true,
     "zoomBounds": {
       "min": 15.080196839933233,
       "max": 18.379892533720255
+    },
+    "movement": {
+      "frame": {
+        "center": [
+          -73.57474409810834,
+          45.536720263619145
+        ],
+        "zoom": 15.080196839933233,
+        "pitch": 52.741931579895486,
+        "bearing": -94.16823827544492,
+        "footprint": [
+          [
+            -0.00006391123256133113,
+            0.000083249896229598
+          ],
+          [
+            -0.00007530600748123506,
+            -0.00007310400884597001
+          ],
+          [
+            0.000024963765233088075,
+            -0.00003251745871418743
+          ],
+          [
+            0.000029414571055319527,
+            0.000028554469090502632
+          ]
+        ]
+      }
+    }
+  },
+  "scene": {
+    "ambience": {
+      "light": 0.6,
+      "lightColor": "#e9edff",
+      "azimuth": 210,
+      "contrast": 1,
+      "saturation": 1.2,
+      "glow": 0.65,
+      "pulse": true,
+      "shadows": true,
+      "zoneOpacity": 0.15
+    },
+    "agents": [
+      {
+        "id": "2c056103-e572-44bd-9e54-a9cbfd083aba",
+        "hero": "beton",
+        "position": [
+          -73.5765979615888,
+          45.53926911882169
+        ],
+        "order": "ready",
+        "hp": 6,
+        "mental": 8,
+        "energy": 75
+      }
+    ],
+    "vehicles": [],
+    "zones": [],
+    "window": {
+      "open": false,
+      "x": 0.2037131882202305,
+      "y": 0.02023752969121139,
+      "width": 451,
+      "agent": "2c056103-e572-44bd-9e54-a9cbfd083aba"
     }
   }
 }
