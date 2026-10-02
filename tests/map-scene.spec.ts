@@ -52,8 +52,9 @@ test('Shared surveillance activity, independent card height, movement and ground
  await frame.locator('[data-idle=watch]').click();await expect(frame.locator('.hero-state strong')).toHaveText('Surveillance');await expect.poll(async()=>(await saved(page)).scene.agents[0].order).toBe('watch');await expect(page.locator('.token-order .icon-tabler-eye')).toHaveCount(1);
  await page.locator('#hero-window-close').click();await page.locator('#center').click();await page.locator('#unselect').click();await page.getByText('Lieu & caméra',{exact:true}).click();
  for(const zoom of ['15','17','14']){await input(page,'#camera-zoom',zoom);const pin=(await page.locator('.poi-symbol').boundingBox())!,base=(await page.locator('.token-ground').boundingBox())!;expect(Math.abs(base.x+base.width/2-pin.x-pin.width/2)).toBeLessThan(2);expect(Math.abs(base.y+base.height/2-pin.y-pin.height/2)).toBeLessThan(2);}
- const before=(await saved(page)).scene.agents[0].position;await page.locator('[data-move-agent]').click();const box=(await page.locator('.viewport').boundingBox())!;await page.mouse.click(box.x+box.width*.7,box.y+box.height*.7);await expect(page.locator('#status')).toHaveText('Destination atteinte.');expect((await saved(page)).scene.agents[0].position).not.toEqual(before);
- await page.locator('#add-vehicle').click();const vehicleBefore=(await saved(page)).scene.vehicles[0].position;await page.locator('[data-move-vehicle]').click();await page.mouse.click(box.x+box.width*.6,box.y+box.height*.65);await expect(page.locator('#status')).toHaveText('Destination atteinte.');expect((await saved(page)).scene.vehicles[0].position).not.toEqual(vehicleBefore);
+ await page.locator('[data-agent]').click();await page.locator('#hero-center').click();await expect(page.locator('#hero-window')).toBeVisible();
+ const before=(await saved(page)).scene.agents[0].position;const box=(await page.locator('.viewport').boundingBox())!;await page.mouse.click(box.x+box.width*.85,box.y+box.height*.85);await expect(page.locator('#status')).toContainText('Aucun trajet routier');expect((await saved(page)).scene.agents[0].position).toEqual(before);
+
  await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await page.locator('[data-agent]').click();expect((await saved(page)).scene.window.height).toBeCloseTo(resized.height,0);
 });
 

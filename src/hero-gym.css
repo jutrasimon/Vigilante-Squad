@@ -63,9 +63,12 @@ body{background:radial-gradient(ellipse at 70% 10%,#223440 0,transparent 55%),#0
 .hero-embedded .lab,.hero-embedded .tools,.hero-embedded #notice{display:none}
 .hero-embedded .workspace{display:block;margin:0;padding:0;max-width:none}
 .hero-embedded .sheet{width:520px;height:872px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--accent) var(--background);padding:20px;box-shadow:none;border:0}
-.hero-embedded .sheet .identity{gap:16px}
-.hero-embedded .sheet .identity h1{font-size:58px}
-.hero-embedded .tags .tag{padding:12px 8px;gap:6px;flex:1 1 auto}
-.hero-embedded .tags .tag b{white-space:nowrap;font-size:14px}
+
+
+
+
 .hero-embedded .sheet{height:100dvh}
 .idle>div{grid-template-columns:repeat(3,minmax(0,1fr))}.idle button{gap:8px;padding:12px 8px;justify-content:center;flex-wrap:wrap}.idle button b{font-size:14px}.idle button svg{width:25px;height:25px}
+
+/* Shared sheet geometry: the embedded context changes only its outer viewport. */
+.sheet{container-type:inline-size}.sheet .identity{align-items:center;padding-bottom:36px}.sheet .identity-info{min-width:0}.sheet .hero-state{padding:12px}.sheet .hero-state:has(.mini-mission){padding-right:61px}.sheet .attributes-wrap .base-toggle{bottom:calc(100% + 2px)}.hero-sector-picker{display:grid;gap:8px;font-size:14px;margin-top:12px}.hero-sector-picker select{width:100%;padding:10px;background:var(--surface);color:var(--text);border:1px solid var(--accent);border-radius:4px;min-height:44px}

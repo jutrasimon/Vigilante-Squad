@@ -35,3 +35,10 @@
 .agent-token.is-selected .token-caption{border-color:var(--point);color:var(--point)}
 @keyframes hero-selection-pulse{0%,100%{filter:brightness(1);box-shadow:0 0 10px color-mix(in srgb,var(--point) 35%,transparent)}50%{filter:brightness(1.25);box-shadow:0 0 24px color-mix(in srgb,var(--point) 70%,transparent)}}
 @media(prefers-reduced-motion:reduce){.agent-token.is-selected .token-portrait,.agent-token.is-selected .token-ground{animation:none;box-shadow:0 0 16px color-mix(in srgb,var(--point) 50%,transparent)}}
+#hero-window{padding-bottom:18px}#hero-window-resize{width:18px;height:18px;min-height:18px;font-size:12px;background:transparent;border-radius:0;padding:0;color:#8eacb6}#hero-window-resize:hover{background:#78dcde18}
+.viewport .zone-label:hover,.viewport .zone-label:focus-visible,.zone-row:hover,.zone-row:focus-visible{color:var(--zone);border-color:var(--zone);background:color-mix(in srgb,var(--zone) 13%,#11232a);outline-color:var(--zone)}
+.workshop-tabs{display:flex;gap:6px;margin:16px 0}.workshop-tabs button{flex:1}.juice-mode>details,.juice-mode>#scene-tools{display:none}#juice-panel{display:grid;gap:12px}#juice-panel[hidden]{display:none}#juice-panel h2{margin:8px 0;color:var(--accent)}.juice-effects{display:grid;grid-template-columns:1fr 1fr;gap:4px}.juice-effects .check{font-size:12px}.juice-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}.hero-travel-hint{font-size:11px;color:#8eacb6}
+
+.viewport .zone-label{z-index:1}.viewport .poi{z-index:2}.viewport .agent-token,.viewport .vehicle-token{z-index:3}
+
+.vehicle-token.is-selected{filter:drop-shadow(0 0 7px #78dcde);outline:2px solid #78dcde;outline-offset:4px;border-radius:8px}
