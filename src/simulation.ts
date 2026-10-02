@@ -1,3 +1,4 @@
+import {WATCH_ENERGY_PER_SECOND} from './hero-activities';
 import {shortestPath} from './pathfinding';
 export type Stat = 'Corps' | 'Esprit' | 'Âme';
 export type IdleTask = 'rest' | 'patrol';
@@ -103,7 +104,7 @@ export class Simulation {
  i.report={names:team.map(a=>a.name),chance,roll,civils:i.type==='media'?0:success?2:1,trust:i.type==='media'?(success?2:-1):(success?1:0),injured:!success&&c.risk?team.map(a=>a.name):[]};i.history.push({time:this.time,text:success?'Action terminée : réussite.':'Action terminée : résultat partiel.'});this.log(`${i.place} — ${i.outcome}`);this.release(i);
  }
  advanceAgent(a:Agent,dt:number){
- if(a.task==='patrol'){a.energy=Math.max(0,a.energy-dt*.15);if(a.energy<15)this.resumeIdle(a);}
+ if(a.task==='patrol'){a.energy=Math.max(0,a.energy-dt*WATCH_ENERGY_PER_SECOND);if(a.energy<15)this.resumeIdle(a);}
  if(a.path.length){a.move+=dt*(a.tags.includes('Genou fragile')?0.85:1)/5;if(a.move>=1){a.node=a.path.shift()!;a.move=0;if(this.encounter(a))return;}return;}
  if(this.encounter(a))return;
  if(a.task==='return'){a.task='idle';this.log(`${a.name} est de retour au QG.`);}

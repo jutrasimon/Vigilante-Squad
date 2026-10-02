@@ -4,3 +4,5 @@ export const heroActivities = {
  watch: {label:'Surveillance',short:'Surveillance',icon:'eye' as IconName,order:'watch',color:'#78dcde'}
 } as const;
 export const activityForOrder=(order:string)=>heroActivities[order==='watch'||order==='patrol'?'watch':'rest'];
+
+export const WATCH_ENERGY_PER_SECOND=.15;

@@ -16,7 +16,7 @@ export function createCameraPolicy(map:Map){
    pose=restore??{pitch:map.getPitch(),bearing:map.getBearing(),zoom:map.getZoom()};
    locked=next;bounds={...limits};
    map.setMinZoom(0);map.setMaxZoom(22);map.setMinPitch(0);map.setMaxPitch(60);
-   map.dragPan.enable();map.scrollZoom.enable();map.doubleClickZoom.enable();
+   map.dragPan.enable();map.scrollZoom.enable();map.doubleClickZoom.disable();
    map.boxZoom.enable();map.keyboard.enable();map.touchZoomRotate.enable();
    if(locked){
     map.dragRotate.disable();map.touchPitch.disable();
