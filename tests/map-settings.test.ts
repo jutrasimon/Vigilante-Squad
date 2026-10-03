@@ -27,3 +27,18 @@ import {continuousJuice} from '../src/map-juice-state';
 import {connectedBuildingBlock} from '../src/map-building-block';
 test('Continuous Juice resolves competing channels and restores lower priority after recovery',()=>{const s=emptyJuice();for(const [event,color,effects] of [['idle','#111111',['glow']],['focus','#222222',['glow','pulse']],['low_energy','#333333',['glow']],['low_hp','#ff0000',['glow']]] as const)s.rules.push({id:event,type:'point:alert',event,config:{effects:[...effects],color,intensity:1,duration:1000}});const rules=continuousJuice(s,'point:alert','point:a',['idle','focus','low_energy','low_hp']);assert.deepEqual(rules.map(r=>[r.event,r.config.effects]),[['low_hp',['glow']],['focus',['pulse']]]);assert.equal(continuousJuice(s,'point:alert','point:a',['idle'])[0].event,'idle');});
 test('Building blocks join touching footprints, preserve heights and stop at streets',()=>{const part=(x:number,height:number)=>({height,geometry:{type:'Polygon' as const,coordinates:[[[x,45],[x+.0001,45],[x+.0001,45.0001],[x,45.0001],[x,45]]]}});const a=part(-73,10),b=part(-72.9999,20),c=part(-72.9995,30);assert.deepEqual(connectedBuildingBlock(a,[a,b,c]).map(p=>p.height),[10,20]);});
+
+import {matchingJuice,emptyJuice,validateJuiceConfig} from '../src/map-juice-state';
+import {effectConfig,effectValue} from '../src/map-juice-options';
+test('Point Juice resolves exactly one scope per trigger, including empty individual overrides',()=>{
+ const s=emptyJuice();s.rules=[{id:'all',type:'point',event:'idle',config:{effects:['glow'],intensity:1,duration:1000,color:'#112233'}},{id:'alert',type:'point:alert',event:'idle',config:{effects:['pulse'],intensity:1,duration:1000,color:'#334455'}},{id:'one',type:'point:alert',target:'point:a',event:'idle',config:{effects:[],intensity:1,duration:1000,color:'#556677'}}];
+ assert.deepEqual(matchingJuice(s,'point:hq','idle','point:q').map(r=>r.id),['all']);assert.deepEqual(matchingJuice(s,'point:alert','idle','point:b').map(r=>r.id),['alert']);assert.deepEqual(matchingJuice(s,'point:alert','idle','point:a').map(r=>r.id),['one']);assert.equal(matchingJuice(s,'hero','idle','hero:a').length,0);
+ const c={effects:['glow' as const,'pulse' as const],intensity:1,duration:650,color:'#112233',effectSettings:{glow:{radius:60,duration:1700,color:'#ff0000'},pulse:{amplitude:30,duration:2300}}};validateJuiceConfig(c);assert.equal(effectConfig(c,'glow').duration,1700);assert.equal(effectConfig(c,'pulse').duration,2300);assert.equal(effectValue(c,'glow','radius'),60);assert.throws(()=>validateJuiceConfig({...c,effectSettings:{glow:{radius:Infinity}}}));
+});
+import {boundaryDirections} from '../src/map-screen-effects';
+import {buildingOutline} from '../src/map-building-outline';
+assert.deepEqual(boundaryDirections(-30,12,[-20,0]),['left']);
+assert.deepEqual(boundaryDirections(30,-12,[20,0]),['right']);
+assert.deepEqual(boundaryDirections(-30,-12,[-20,-20]),['left','top']);
+const outline=buildingOutline({type:'Polygon',coordinates:[[[0,0],[.001,0],[.001,.001],[0,.001],[0,0]]]},20,'#ffffff','b');
+assert.equal(outline.length,8);assert.equal(outline.filter(f=>f.properties?.base>20).length,4);assert.ok(outline.every(f=>f.properties?.height>20));

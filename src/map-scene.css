@@ -119,3 +119,5 @@
 /* Empty dock space must pass map clicks through; cards remain interactive. */
 #hero-dock{pointer-events:none}
 #hero-dock>.hero-preview{pointer-events:auto}
+
+.hero-stat-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0 14px}.hero-stat-controls input{width:100%;padding:6px}.juice-effect-options{border:1px solid #435460;padding:0 10px 10px;border-radius:5px}.juice-effect-options summary{color:var(--accent)}
