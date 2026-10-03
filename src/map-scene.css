@@ -115,3 +115,7 @@
 .viewport:has(#hero-dock:not([hidden])) .pencil-toolbar{bottom:201px}
 .poi-resident{width:34px;height:34px;aspect-ratio:1;border-radius:3px}
 .poi-resident img{object-position:center 18%}
+
+/* Empty dock space must pass map clicks through; cards remain interactive. */
+#hero-dock{pointer-events:none}
+#hero-dock>.hero-preview{pointer-events:auto}

@@ -26,3 +26,33 @@ test('Continuous Juice starts immediately and resolves concurrent hero condition
 test('Rain impacts are map ground features below building volumes',async({page})=>{
  await page.getByText('Direction artistique',{exact:true}).click();await page.locator('#rain-enabled').check();await page.waitForTimeout(900);await page.getByText('Sauvegarde & export',{exact:true}).click();const style=await exported(page,true);const layer=style.layers.find((l:any)=>l.id==='scene-rain-splashes');expect(layer.type).toBe('circle');expect(layer.paint['circle-pitch-alignment']).toBe('map');expect(style.sources['scene-rain-splashes'].data.features.length).toBeGreaterThan(0);expect(style.layers.findIndex((l:any)=>l.id==='scene-rain-splashes')).toBeLessThan(style.layers.findIndex((l:any)=>l.type==='fill-extrusion'));await page.screenshot({path:'/tmp/map-feedback-rain.png'});
 });
+
+test('Points beneath empty dock space are clickable; relocation is explicit and cancellable',async({page})=>{
+ const marker=page.locator('[data-poi=qg]');
+ await marker.evaluate(el=>{el.style.transform='translate(650px, 790px)';});
+ await marker.click();await expect(page.locator('#edit-name')).toHaveValue('qg');await page.locator('#unselect').click();
+ const before=(await saved(page)).points.find((p:any)=>p.id==='qg');const b=(await marker.boundingBox())!;
+ await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+100,b.y-70,{steps:8});await page.mouse.up();expect((await saved(page)).points.find((p:any)=>p.id==='qg')).toEqual(before);
+ await page.locator('[data-select=qg]').click();await page.locator('#relocate-point').click();await page.keyboard.press('Escape');expect((await saved(page)).points.find((p:any)=>p.id==='qg')).toEqual(before);await expect(page.locator('#selection')).toBeVisible();
+ await page.locator('#relocate-point').click();const box=(await page.locator('.maplibregl-canvas').boundingBox())!;await page.mouse.click(box.x+box.width*.55,box.y+box.height*.4);
+ await expect(page.locator('#selection')).toBeVisible();const after=(await saved(page)).points.find((p:any)=>p.id==='qg');expect(after.lng).not.toBe(before.lng);expect(after.lat).not.toBe(before.lat);await expect(page.locator('#status')).toHaveText('Point déplacé.');
+});
+
+test('Destruction leaves footprint rubble, restores cleanly and exports explosion controls',async({page})=>{
+ await page.locator('#pick-building').click();const box=(await page.locator('.maplibregl-canvas').boundingBox())!;await page.mouse.click(box.x+box.width/2,box.y+box.height/2);await expect(page.locator('#building-editor')).toBeVisible();
+ await page.getByText('Sauvegarde & export',{exact:true}).click();let style=await exported(page,true);expect(style.layers.find((l:any)=>l.id==='scene-building-volume').filter).toEqual(['==',['get','destroyed'],true]);
+ await page.locator('#building-destroy').click();await expect(page.locator('.destruction-vfx')).toBeVisible();style=await exported(page,true);expect(style.sources['scene-rubble'].data.features.length).toBeGreaterThan(5);await page.screenshot({path:'/tmp/map-destruction-preview.png'});
+ await page.locator('#building-restore').click();style=await exported(page,true);expect(style.sources['scene-rubble'].data.features).toHaveLength(0);
+ await page.locator('#juice-tab').click();await page.locator('#juice-type').selectOption('building');await page.locator('#juice-trigger').selectOption('destroyed');await page.locator('[data-explosion=scale]').fill('1.75');await page.locator('[data-explosion=smoke]').fill('0.5');await page.locator('#juice-test').click();await expect(page.locator('.destruction-vfx')).toBeVisible();
+ await page.locator('#settings-tab').click();const backup=await exported(page);const rule=backup.scene.juice.rules.find((r:any)=>r.type==='building'&&r.event==='destroyed');expect(rule.config.explosion).toMatchObject({scale:1.75,smoke:.5});await page.locator('#import').setInputFiles({name:'explosion.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await expect(page.locator('#status')).toHaveText('Atelier importé.');expect((await saved(page)).scene.juice.rules.find((r:any)=>r.id===rule.id).config.explosion).toEqual(rule.config.explosion);
+});
+
+test('Default point colors persist per type without recoloring existing points',async({page})=>{
+ const before=(await saved(page)).points;
+ await page.locator('#point-type').selectOption('alert');await page.locator('#point-color').fill('#3366aa');await page.locator('#point-type').selectOption('hq');await expect(page.locator('#point-color')).toHaveValue('#edc25d');await page.locator('#point-type').selectOption('alert');await expect(page.locator('#point-color')).toHaveValue('#3366aa');await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await page.locator('#point-type').selectOption('alert');await expect(page.locator('#point-color')).toHaveValue('#3366aa');expect((await saved(page)).points).toEqual(before);
+ await page.locator('#center').click();expect((await saved(page)).points.at(-1).color).toBe('#3366aa');await page.getByText('Sauvegarde & export',{exact:true}).click();const backup=await exported(page);expect(backup.pointColors.alert).toBe('#3366aa');await page.locator('#point-color').fill('#112233');await page.locator('#import').setInputFiles({name:'colors.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await expect(page.locator('#status')).toHaveText('Atelier importé.');await expect(page.locator('#point-color')).toHaveValue('#3366aa');
+});
+
+test('Point names follow their type until customized, and blank restores automatic naming',async({page})=>{
+ await page.locator('#point-type').selectOption('alert');await expect(page.locator('#point-name')).toHaveAttribute('placeholder','Alerte');await page.locator('#center').click();await expect(page.locator('#edit-name')).toHaveValue('Alerte');await page.locator('#edit-type').selectOption('police');await expect(page.locator('#edit-name')).toHaveValue('Police');await page.locator('#edit-name').fill('Poste du quartier');await page.locator('#edit-type').selectOption('hq');await expect(page.locator('#edit-name')).toHaveValue('Poste du quartier');await page.locator('#edit-name').fill('');await page.locator('#edit-type').focus();await expect(page.locator('#edit-name')).toHaveValue('QG');await page.locator('#edit-type').selectOption('clue');await expect(page.locator('#edit-name')).toHaveValue('Indice');expect((await saved(page)).points.at(-1).name).toBe('Indice');
+});

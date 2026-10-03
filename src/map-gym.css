@@ -42,3 +42,7 @@
 .boundary-zoom{background:linear-gradient(to right,var(--edge-color) var(--edge-solid,0%),transparent var(--edge-width)),linear-gradient(to left,var(--edge-color) var(--edge-solid,0%),transparent var(--edge-width)),linear-gradient(to bottom,var(--edge-color) var(--edge-solid,0%),transparent var(--edge-width)),linear-gradient(to top,var(--edge-color) var(--edge-solid,0%),transparent var(--edge-width))}
 
 .map-credit{right:78px;margin:0;border:0;background:transparent}.map-credit summary{padding:0;font-size:14px;line-height:20px;list-style:none}.map-credit a{position:absolute;bottom:28px;right:0;padding:8px;background:#10212bf5;white-space:nowrap;color:#b3c6ce}.map-credit summary::-webkit-details-marker{display:none}#map-fps{position:absolute;bottom:5px;right:10px;z-index:7;font:11px monospace;color:#afc1c6;padding:2px 5px;background:#10212bd9;pointer-events:none}
+
+.poi{cursor:pointer}
+
+#point-relocation{position:absolute;z-index:8;left:16px;top:104px;max-width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:10px;background:#15252bf5;border:1px solid var(--accent);border-radius:5px;font-size:13px}#point-relocation[hidden]{display:none}
