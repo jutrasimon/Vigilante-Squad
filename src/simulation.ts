@@ -1,3 +1,4 @@
+import {HQ_RECOVERY_PER_SECOND} from './hero-activities';
 import {WATCH_ENERGY_PER_SECOND} from './hero-activities';
 import {shortestPath} from './pathfinding';
 export type Stat = 'Corps' | 'Esprit' | 'Âme';
@@ -116,7 +117,7 @@ export class Simulation {
  }
  if(a.task==='patrol')this.patrolRoute(a);
  if(a.task==='investigate'){a.timer+=dt;if(a.timer>=20){a.timer=0;const unknown=this.visible().find(i=>!i.known&&i.phase==='signal');if(unknown){unknown.known=true;this.log(`${a.name} : renseignements obtenus à ${unknown.place}.`);}a.energy=Math.max(0,a.energy-3);if(a.energy<15)this.resumeIdle(a);}}
- if(a.task==='idle'&&a.node===5){a.hp=Math.min(a.maxHp,a.hp+dt*.08);a.sanity=Math.min(a.maxSanity,a.sanity+dt*.12);if(a.hp===a.maxHp)a.injured=false;a.energy=Math.min(100,a.energy+dt*.7);if(a.idleTask==='patrol'&&a.energy>=100)this.resumeIdle(a);}
+ if(a.task==='idle'&&a.node===5){a.hp=Math.min(a.maxHp,a.hp+dt*HQ_RECOVERY_PER_SECOND.hp);a.sanity=Math.min(a.maxSanity,a.sanity+dt*HQ_RECOVERY_PER_SECOND.mental);if(a.hp===a.maxHp)a.injured=false;a.energy=Math.min(100,a.energy+dt*HQ_RECOVERY_PER_SECOND.energy);if(a.idleTask==='patrol'&&a.energy>=100)this.resumeIdle(a);}
  }
  tick(dt:number){if(!this.started||this.ended)return; // fixed substeps preserve timing at x4
  let left=dt;while(left>0&&!this.ended){const step=Math.min(left,0.25);left-=step;this.step(step);}}

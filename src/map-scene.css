@@ -97,3 +97,21 @@
 .hero-preview-center svg{width:13px;height:13px}
 .hero-preview-center:hover{color:#edc25d;border-color:#edc25d}
 .viewport:has(#hero-dock:not([hidden])) .pencil-toolbar{bottom:174px}
+
+/* Compact mission status and three readable resource rows. */
+.hero-preview{height:169px;flex-basis:112px}
+.hero-preview-open>img{height:87px}
+.preview-info>[data-task]{top:87px;left:0;right:0;height:23px;display:flex;align-items:center;justify-content:center;gap:3px;background:#edc25d18;border-top:1px solid #9c874c;border-bottom:1px solid #9c874c;color:#edc25d;font:700 11px/1 'Barlow Condensed',sans-serif}
+.preview-info>[data-task] svg{width:13px;height:13px;flex-shrink:0}
+.preview-info>[data-task] b{overflow:hidden;text-overflow:ellipsis}
+.preview-resources{display:grid;gap:4px;left:5px;right:5px;bottom:6px}
+.preview-meter{display:grid;grid-template-columns:14px 1fr 26px;align-items:center;gap:4px;height:12px;position:relative;font:600 10px/1 'Barlow',sans-serif}
+.preview-meter>span:first-child{display:contents}
+.preview-meter>span:first-child>span{display:none}
+.preview-meter svg{grid-column:1;width:12px;height:12px}
+.preview-meter b{grid-column:3;grid-row:1;text-align:right}
+.preview-meter .preview-track{grid-column:2;grid-row:1;height:5px}
+.hero-preview-center{top:61px}
+.viewport:has(#hero-dock:not([hidden])) .pencil-toolbar{bottom:201px}
+.poi-resident{width:34px;height:34px;aspect-ratio:1;border-radius:3px}
+.poi-resident img{object-position:center 18%}

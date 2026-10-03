@@ -6,3 +6,5 @@ export const heroActivities = {
 export const activityForOrder=(order:string)=>heroActivities[order==='watch'||order==='patrol'?'watch':'rest'];
 
 export const WATCH_ENERGY_PER_SECOND=.15;
+
+export const HQ_RECOVERY_PER_SECOND={hp:.08,mental:.12,energy:.7} as const;

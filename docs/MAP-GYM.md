@@ -183,3 +183,13 @@ Juice inclut « Vignette écran ». Sa forme suit la DA, avec la couleur/intensi
 - Les éclaboussures utilisent la position exacte du point pour éviter que les bâtiments voisins ne masquent toute une rue étroite. Les libellés sont placés avant les volumes dans le style pour l’occlusion.
 - L’attribution est repliée dans un bouton d’information et un compteur FPS apparaît en bas à droite.
 - L’export complet comprend les préférences idle, parcours, couleurs, bâtiments, règles Juice, météo et paramètres de fondu; la configuration de référence n’est pas remplacée.
+
+### Ressources, blocs et effets permanents
+
+- La miniature montre le statut, puis trois rangées icône/jauge/valeur. Le portrait adjacent à un point est carré. Les popups évitent aussi l’emprise des marqueurs.
+- Au QG, sans trajet actif, les ressources remontent avec les taux partagés de la simulation : HP +0,08/s, Mental +0,12/s, Énergie +0,7/s. Le statut et la section de tâche affichent Au QG. La carte reste l’autorité des ressources; la fiche reflète ses valeurs.
+- La sélection de bâtiment prévisualise le bloc collé au survol. Les empreintes jointives (joint jusqu’à 1,5 m) forment un bloc; chaque volume conserve sa hauteur. Les rues séparent les blocs. Les volumes `buildings[].parts` sont conservés à l’export et à l’import.
+- Les impacts de pluie sont des cercles géographiques animés dans une couche MapLibre sous les volumes, plutôt qu’un canvas filtré devant toute la carte.
+- Juice ajoute `idle` (permanent), `low_hp`, `low_mental`, `low_energy` (≤25 %) et `moving` (y compris le mouvement de surveillance). Ils sont automatiques et protégés de la suppression. Les règles se sauvegardent immédiatement et les changements s’appliquent aux effets actifs.
+- Priorité : Low HP > Low Mental > Low Energy > Moving > Focus > Idle. Un seul effet est retenu par canal (taille, lueur, luminosité, translation); les canaux différents coexistent. À priorité égale, une règle individuelle prime. La vignette globale n’est pas multipliée par le nombre de cibles. Les effets de caméra/explosion sont ponctuels à l’activation; les effets locaux continus s’arrêtent lorsque la condition disparaît.
+- La référence a été remplacée par `vigilante-map-atelier (2).json` fourni le 2 octobre. Une sauvegarde locale reste prioritaire; « Restaurer la référence » charge cette nouvelle base.
