@@ -1,5 +1,5 @@
 import {validateEffectSettings,type EffectSettings} from './map-juice-options';
-export const connectedJuiceEvents=['click','arrival','hit','centered','focus','destroyed','restored','idle','low_hp','low_mental','low_energy','moving'];
+export const connectedJuiceEvents=['click','arrival','hit','centered','focus','destroyed','is_destroyed','restored','idle','low_hp','low_mental','low_energy','moving'];
 export const juiceEffects={pop:'Pop',squash:'Squash & stretch',flash:'Flash',shake:'Secousse écran',zoom:'Zoom caméra',travel:'Travelling',burst:'Explosion',rain:'Pluie de particules',temporaryZoom:'Temporary Zoom · aller-retour',objectShake:'Shake de l’objet',pinpoint:'Pinpoint · radar',pulse:'Pulse',glow:'Glow',vignette:'Vignette écran',smoke:'Fumée résiduelle',debris:'Débris'};
 export const juiceTypes:Record<string,string>={point:'Tous les points',building:'Tous les bâtiments',hero:'Tous les héros',vehicle:'Tous les véhicules',zone:'Tous les secteurs','point:alert':'Toutes les alertes','point:hq':'Tous les QG','point:police':'Tous les points Police','point:clue':'Tous les indices','point:civil':'Tous les points Civils','point:hospital':'Tous les secours','point:watch':'Tous les points Surveillance',map:'Carte · caméra'};
 export type ExplosionStyle={scale:number;smoke:number;rise:number;debris:number};
@@ -18,7 +18,7 @@ export function readJuice(value:unknown):JuiceState{
 export function matchingJuice(state:JuiceState,type:string,event:string,target:string){const candidates=state.rules.filter(r=>r.config.effects.length>0&&r.event===event&&(r.target?r.target===target:r.type===type||(r.type==='point'&&type.startsWith('point:'))));const rank=(r:JuiceRule)=>r.target?3:r.type===type?2:1;const best=Math.max(0,...candidates.map(rank));return candidates.filter(r=>rank(r)===best);}
 
 
-export const continuousJuiceEvents=['low_hp','low_mental','low_energy','moving','focus','idle'];
-export const juiceEventLabels:Record<string,string>={low_hp:'Low HP · ≤ 25 %',low_mental:'Low Mental · ≤ 25 %',low_energy:'Low Energy · ≤ 25 %',moving:'Moving',idle:'idle · permanent'};
+export const continuousJuiceEvents=['is_destroyed','low_hp','low_mental','low_energy','moving','focus','idle'];
+export const juiceEventLabels:Record<string,string>={is_destroyed:'Is destroyed · tant que détruit',low_hp:'Low HP · ≤ 25 %',low_mental:'Low Mental · ≤ 25 %',low_energy:'Low Energy · ≤ 25 %',moving:'Moving',idle:'idle · permanent'};
 /** A single winner per visual channel, with target-specific rules breaking equal-priority ties. */
 export function continuousJuice(state:JuiceState,type:string,key:string,events:string[]){const used=new Set<string>(),resolved:JuiceRule[]=[];for(const event of continuousJuiceEvents){if(!events.includes(event))continue;const rules=matchingJuice(state,type,event,key).sort((a,b)=>Number(!!b.target)-Number(!!a.target));for(const r of rules){const effects=r.config.effects.filter(effect=>{const channel=type==='building'&&['pulse','glow','flash'].includes(effect)?'material':['pulse','pop','squash'].includes(effect)?'scale':effect==='objectShake'?'translate':effect==='glow'?'shadow':effect==='flash'?'brightness':['zoom','travel','temporaryZoom'].includes(effect)?'camera':effect;if(used.has(channel))return false;used.add(channel);return true;});if(effects.length)resolved.push({...r,config:{...r.config,effects}});}}return resolved;}

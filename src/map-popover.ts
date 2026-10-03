@@ -20,7 +20,7 @@ function clampWindow(panel:HTMLElement){const viewport=panel.parentElement!,w=Ma
 function equipWindow(panel:HTMLElement){
  panel.classList.add('map-floating-window');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','false');
  const head=panel.querySelector<HTMLElement>('.selection-head');if(head){
- const title=head.querySelector('b')!,close=head.querySelector('button')!,center=panel.querySelector<HTMLButtonElement>('#center-point,[data-center-zone]');
+ const title=head.querySelector('b')!,close=head.querySelector('button')!,center=panel.querySelector<HTMLButtonElement>('#center-point,[data-center-zone],#building-center');
  const bar=document.createElement('div');bar.className='hero-window-bar map-window-bar';const drag=document.createElement('button');drag.dataset.windowAction='drag';drag.setAttribute('aria-label','Déplacer la fiche');drag.innerHTML=`<span>${title.innerHTML}</span>${icon('arrows-move')}`;bar.append(drag);
  for(const [action,label,text] of [['smaller','Rapetisser la fiche','−'],['larger','Agrandir la fiche','+']]){const b=document.createElement('button');b.dataset.windowAction=action;b.setAttribute('aria-label',label);b.textContent=text;bar.append(b);}
  if(center){center.innerHTML=icon('target');center.setAttribute('aria-label','Centrer sur la carte');bar.append(center);}bar.append(close);head.replaceWith(bar);
