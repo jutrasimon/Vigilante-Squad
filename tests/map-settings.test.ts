@@ -42,3 +42,8 @@ assert.deepEqual(boundaryDirections(30,-12,[20,0]),['right']);
 assert.deepEqual(boundaryDirections(-30,-12,[-20,-20]),['left','top']);
 const outline=buildingOutline({type:'Polygon',coordinates:[[[0,0],[.001,0],[.001,.001],[0,.001],[0,0]]]},20,'#ffffff','b');
 assert.equal(outline.length,8);assert.equal(outline.filter(f=>f.properties?.base>20).length,4);assert.ok(outline.every(f=>f.properties?.height>20));
+import {cutBuildings} from '../src/map-building-cut';
+const rect=(x:number,y:number,w:number,h:number)=>({type:'Polygon' as const,coordinates:[[[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]]]});
+assert.deepEqual(cutBuildings(rect(0,0,4,4),[rect(1,0,2,4)]).coordinates.length,2);
+assert.deepEqual(cutBuildings(rect(0,0,4,4),[rect(-1,-1,6,6)]).coordinates,[]);
+assert.deepEqual(cutBuildings(rect(5,5,1,1),[rect(0,0,4,4)]).coordinates,[rect(5,5,1,1).coordinates]);
