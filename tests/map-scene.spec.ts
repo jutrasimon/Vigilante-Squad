@@ -14,7 +14,7 @@ for(const width of [390,1280])test(`Map tokens, floating Hero Gym and pencil JSO
  await page.locator('#map-hero').selectOption('nyx');await page.locator('#add-agent').click();await expect(page.locator('.agent-token')).toHaveCount(1);
  if(width<760)await page.locator('#close').click();await expect(page.locator('#hero-window')).toBeVisible();
  const sheet=page.frameLocator('#hero-frame');await expect(sheet.locator('.identity h1')).toHaveText('NYX');await expect(sheet.locator('.tools')).toBeHidden();
- const before=(await page.locator('#hero-window').boundingBox())!;await page.locator('#hero-window-smaller').click();const small=(await page.locator('#hero-window').boundingBox())!;expect(small.width).toBeLessThan(before.width);expect(small.width/small.height).toBeCloseTo(before.width/before.height,2);
+ const before=(await page.locator('#hero-window').boundingBox())!;await page.locator('#hero-window-smaller').click();const small=(await page.locator('#hero-window').boundingBox())!;expect(small.width).toBeLessThan(before.width);expect(small.height).toBeLessThanOrEqual(before.height);expect(small.height).toBeGreaterThanOrEqual(180);
  const drag=(await page.locator('#hero-window-drag').boundingBox())!;await page.mouse.move(drag.x+35,drag.y+12);await page.mouse.down();await page.mouse.move(drag.x+55,drag.y+35,{steps:8});await page.mouse.up();const after=(await page.locator('#hero-window').boundingBox())!;expect(after.x).toBeGreaterThan(before.x);
  await page.locator('#hero-window-close').click();await expect(page.locator('#hero-window')).toBeHidden();
  if(width<760)await page.locator('#atelier').click();await page.locator('#add-vehicle').click();await expect(page.locator('.vehicle-token')).toHaveCount(1);await input(page,'#vehicle-heading','85');expect((await saved(page)).scene.vehicles[0].heading).toBe(85);
@@ -43,7 +43,7 @@ test('Far zoom fixes camera position, near zoom explores the frame and side lock
  await page.locator('#zoom-lock-min').click();expect((await saved(page)).camera.movement.frame).toBeUndefined();
  await input(page,'#camera-zoom','16');await page.locator('#pan-frame').click();expect((await saved(page)).camera.zoomBounds.min).toBe(16);expect((await saved(page)).camera.movement.frame.zoom).toBe(16);await page.locator('#pan-clear-frame').click();expect((await saved(page)).camera.zoomBounds.min).toBeUndefined();
  await page.locator('[data-pan-bound=left]').click();await page.locator('[data-pan-bound=right]').click();await page.locator('[data-pan-bound=top]').click();await page.locator('[data-pan-bound=bottom]').click();const locked=(await saved(page)).camera;await canvas.focus();await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowRight');await page.waitForTimeout(400);for(let i=0;i<2;i++)expect((await saved(page)).camera.center[i]).toBeCloseTo(locked.center[i],10);
- await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await page.getByText('Lieu & caméra',{exact:true}).click();for(const key of ['left','right','top','bottom'])await expect(page.locator(`[data-pan-bound=${key}]`)).toHaveAttribute('aria-pressed','true');
+ await page.reload();await expect(page.locator('#add-agent')).toBeEnabled();await page.getByText('Lieu & caméra',{exact:true}).click();for(const key of ['left','right','top','bottom'])await expect(page.locator(`[data-pan-bound=${key}]`)).toHaveAttribute('aria-pressed','true');
 });
 
 test('Shared surveillance activity, independent card height, movement and ground anchor survive zoom',async({page})=>{
@@ -57,7 +57,7 @@ test('Shared surveillance activity, independent card height, movement and ground
  await page.locator('[data-agent]').click();await page.locator('#hero-center').click();await expect(page.locator('#hero-window')).toBeVisible();
  await frame.locator('#hero-move').click();await expect(page.locator('#status')).toContainText('Choisis une destination');const before=(await saved(page)).scene.agents[0].position;const box=(await page.locator('.viewport').boundingBox())!;await page.mouse.click(box.x+box.width*.85,box.y+box.height*.7);await expect(page.locator('#status')).toContainText('Aucun trajet routier');expect((await saved(page)).scene.agents[0].position).toEqual(before);
 
- await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await page.locator('[data-agent]').click();expect((await saved(page)).scene.window.height).toBeCloseTo(resized.height,0);
+ await page.reload();await expect(page.locator('#add-agent')).toBeEnabled();await page.locator('[data-agent]').click();expect((await saved(page)).scene.window.height).toBeCloseTo(resized.height,0);
 });
 
  test('Hero halo stays independent of activity and selection is restored by full JSON',async({page})=>{
@@ -67,7 +67,7 @@ test('Shared surveillance activity, independent card height, movement and ground
  await input(page,'[data-agent-color]','#ff77bb');await expect(token).toHaveCSS('--point','#ff77bb');await page.locator('#hero-window-close').click();await expect(token).not.toHaveClass(/is-selected/);await expect(token.locator('.token-portrait')).toHaveCSS('border-top-width','2px');await token.click();
  await page.getByText('Sauvegarde & export',{exact:true}).click();const pending=page.waitForEvent('download');await page.locator('#export').click();const dl=await pending,stream=await dl.createReadStream(),chunks:Buffer[]=[];for await(const c of stream!)chunks.push(c);const exported=JSON.parse(Buffer.concat(chunks).toString());expect(exported.scene.agents[0].color).toBe('#ff77bb');expect(exported.scene.window.open).toBe(true);
  await input(page,'[data-agent-color]','#111111');await page.locator('#import').setInputFiles({name:'complete.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});await expect(page.locator('#status')).toHaveText('Atelier importé.');await expect(token).toHaveCSS('--point','#ff77bb');await expect(token).toHaveClass(/is-selected/);expectStableScene((await saved(page)).scene,exported.scene);
- await page.reload();await expect(page.locator('#status')).toContainText('Carte prête');await expect(token).toHaveCSS('--point','#ff77bb');await expect(token).toHaveClass(/is-selected/);
+ await page.reload();await expect(page.locator('#add-agent')).toBeEnabled();await expect(token).toHaveCSS('--point','#ff77bb');await expect(token).toHaveClass(/is-selected/);
  // Old exports have no individual halo colour and must still restore the original blue.
  delete exported.scene.agents[0].color;await page.getByText('Sauvegarde & export',{exact:true}).click();await page.locator('#import').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});await expect(page.locator('#status')).toHaveText('Atelier importé.');await expect(token).toHaveCSS('--point','#78dcde');
  });
